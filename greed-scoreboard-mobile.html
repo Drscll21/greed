@@ -88,6 +88,9 @@
     font-weight: 600;
     transition: transform .05s, opacity .15s;
     min-height: 44px;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    user-select: none;
   }
   button:active { transform: scale(0.97); }
   .btn-primary { background: #fef3e2; color: #7a3518; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
@@ -355,7 +358,7 @@
     <div class="panel leaderboard-panel">
       <label style="font-size:13px;color:#f0d5a8;margin-bottom:6px;display:block;">All-Time Leaderboard</label>
       <div id="leaderboard"></div>
-      <img class="logo" style="margin-top:auto;padding-top:10px;align-self:center;max-height:70px;max-width:110px;" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRI8ZUcJBBNsAPRqep5lcV9Xcom0hzrt-hWY19orp26BMs7yoLBoZsgZcrA&s=10" alt="Rose Island Greed">
+      <img class="logo" style="margin-top:auto;padding-top:10px;align-self:center;max-height:70px;max-width:110px;" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRI8ZUcJBBNsAPRqep5lc[...]
     </div>
 
     <div class="actions">
@@ -542,51 +545,51 @@
 
   const PHRASES_BAD = [
     "{name} rolled more than just bones there.",
-    "That’s cute, {name}. Try harder.",
-    "Someone tell {name} the dice aren’t shy.",
+    "That's cute, {name}. Try harder.",
+    "Someone tell {name} the dice aren't shy.",
     "{name} just whispered sweet nothings to a 50.",
-    "Even a wet finger could’ve rolled that, {name}.",
+    "Even a wet finger could've rolled that, {name}.",
     "{name} is rolling with the wrong technique tonight.",
-    "That’s called a warm-up, {name}. A bad one.",
+    "That's called a warm-up, {name}. A bad one.",
     "Dice saw {name} coming and yawned.",
     "If apathy scored, {name} would be winning.",
     "{name}—your dice called. They want a break.",
     "Cute roll, {name}. Adorable, really.",
-    "That wasn’t a roll, {name}, that was a suggestion.",
+    "That wasn't a roll, {name}, that was a suggestion.",
     "{name} is treating this like a wrist exercise. A weak one.",
     "Tell {name} to stop mollycoddling the dice.",
-    "That’s about as convincing as {name}’s poker face.",
+    "That's about as convincing as {name}'s poker face.",
     "The dice are literally bored of {name}.",
-    "{name} must’ve used two fingers on that one.",
+    "{name} must've used two fingers on that one.",
     "That roll had commitment issues, just like {name}.",
     "Did {name} even touch the dice?",
     "Tell {name} those are dice, not drumsticks.",
     "{name} rolled something so sad the dice apologized.",
     "That roll had less oomph than {name}.",
     "{name} is making the dice reconsider their careers.",
-    "If throwing like a hobby was points, {name} still wouldn’t score.",
+    "If throwing like a hobby was points, {name} still wouldn't score.",
     "Rough handling, {name}.",
     "{name} rolled like the dice owed them money.",
-    "That wasn’t a roll; that was a cry for help, {name}.",
+    "That wasn't a roll; that was a cry for help, {name}.",
     "{name} gave that roll less energy than a Monday morning.",
-    "That’s the worst thing I’ve seen since {name} last spoke.",
+    "That's the worst thing I've seen since {name} last spoke.",
     "Bone dry roll, {name}.",
     "{name} basically just handed the next player a turn.",
     "Zero personality, zero power, zero points—{name} in a nutshell.",
     "That roll had the urgency of a sloth on vacation.",
     "{name} rolled like they were afraid of the dice.",
-    "That wasn’t a roll, {name}, that was a sigh.",
-    "The dice felt sorry for {name} and still didn’t give anything.",
-    "{name} rolled so softly the numbers didn’t notice.",
-    "Did {name} even try? Don’t answer that.",
-    "That’s what I call a non-event, {name}.",
+    "That wasn't a roll, {name}, that was a sigh.",
+    "The dice felt sorry for {name} and still didn't give anything.",
+    "{name} rolled so softly the numbers didn't notice.",
+    "Did {name} even try? Don't answer that.",
+    "That's what I call a non-event, {name}.",
     "Even a gentle breeze would roll harder than {name}.",
     "{name} is officially the weakest link tonight.",
     "That roll had less backbone than {name}.",
     "{name} just embarrassed the dice publicly.",
     "That was the equivalent of rolling paper, {name}.",
     "The dice are filing a complaint against {name}.",
-    "{name} rolled like they were borrowing someone else’s luck.",
+    "{name} rolled like they were borrowing someone else's luck.",
     "That roll had the force of a feather falling.",
     "{name} just proved gravity works.",
     "The dice deserve hazard pay after that, {name}.",
@@ -594,12 +597,12 @@
   ];
   const PHRASES_NORMAL = [
     "{name} is rolling with purpose.",
-    "Nice grip, {name}. Don’t let go.",
+    "Nice grip, {name}. Don't let go.",
     "Solid form, {name}. The dice approve.",
     "{name} is finding rhythm now.",
     "Decent control, {name}. Keep it steady.",
     "{name} just turned patience into points.",
-    "That’s how you handle the bone, {name}.",
+    "That's how you handle the bone, {name}.",
     "Good fortune favors {name}.",
     "Smooth session, {name}.",
     "{name} knows exactly how this works.",
@@ -623,7 +626,7 @@
     "Good tempo, {name}.",
     "Talent showing, {name}.",
     "Nice take, {name}.",
-    "That’s a well-earned chunk, {name}.",
+    "That's a well-earned chunk, {name}.",
     "Meaty roll from {name}.",
     "{name} just wrangled a good score.",
     "Decent handful, {name}.",
@@ -644,7 +647,7 @@
     "Nice output, {name}.",
     "Solid session, {name}.",
     "{name} is making it look easy.",
-    "The dice are on {name}’s side.",
+    "The dice are on {name}'s side.",
     "Nice session, {name}.",
     "{name} pulled points from nowhere.",
     "Nice technique, {name}.",
@@ -656,7 +659,7 @@
     "Decent result, {name}.",
     "{name} drilled it well.",
     "Nice approach, {name}.",
-    "That’s good form, {name}.",
+    "That's good form, {name}.",
     "{name} has the touch.",
     "The dice are complying with {name}.",
     "Nice control, {name}.",
@@ -696,14 +699,14 @@
     "The dice know {name} means business.",
     "Excellent board presence, {name}.",
     "{name} rolled with clear intent.",
-    "That’s seasoned technique, {name}.",
+    "That's seasoned technique, {name}.",
     "The dice are aligned with {name}.",
     "Fantastic control, {name}.",
     "{name} is running a clinic.",
     "The dice met their match, {name}.",
     "Confident roll, {name}. Beautiful.",
     "Skilled and surgical, {name}.",
-    "The dice can’t escape {name}.",
+    "The dice can't escape {name}.",
     "Impressive control, {name}.",
     "Clean display, {name}.",
     "The dice are putting on a show for {name}.",
@@ -711,11 +714,11 @@
     "{name} really owns this mid-game.",
     "The dice finally cooperate with {name}.",
     "Superb touch, {name}.",
-    "That’s a clinic in controlled rolling, {name}.",
+    "That's a clinic in controlled rolling, {name}.",
     "{name} makes it look too easy.",
-    "The dice are butter in {name}’s hands.",
+    "The dice are butter in {name}'s hands.",
     "Supreme confidence, {name}. Nice roll.",
-    "That’s a masterclass, {name}.",
+    "That's a masterclass, {name}.",
     "The dice roll where {name} points.",
     "Impeccable technique, {name}."
   ];
@@ -724,7 +727,7 @@
     "Glorious. {name} is a machine.",
     "{name} is dominating so hard the dice are swooning.",
     "Absolute unit, {name}. Mad respect.",
-    "{name} isn’t playing—they’re conquering.",
+    "{name} isn't playing—they're conquering.",
     "Unmatched vigor, {name}. Magnificent.",
     "{name} just went feral on the scoreboard.",
     "That was aggressive, {name}. Beautiful.",
@@ -733,11 +736,11 @@
     "{name} just pounded the table into submission.",
     "Supreme thrust, {name}. No survivors.",
     "{name} is seriously drilling these numbers.",
-    "Big, thick, unyielding. That’s {name}’s style.",
-    "{name} doesn’t roll. They enforce.",
+    "Big, thick, unyielding. That's {name}'s style.",
+    "{name} doesn't roll. They enforce.",
     "Legends are written by {name} now.",
     "That was a full-on assault, {name}.",
-    "Pure muscle and luck. That’s {name}.",
+    "Pure muscle and luck. That's {name}.",
     "Sublime domination, {name}.",
     "{name} has entered god-mode. Pray.",
     "Bullseye, {name}. Keep pounding.",
@@ -749,46 +752,46 @@
     "That was a nuclear-level roll, {name}.",
     "{name} is rewriting the rulebook.",
     "The dice are genuinely afraid of {name}.",
-    "That wasn’t luck. That was {name} being {name}.",
+    "That wasn't luck. That was {name} being {name}.",
     "{name} just set a new standard.",
     "Historic rolling, {name}.",
     "{name} is making scoring look boring.",
-    "That roll was more dominant than {name}’s personality.",
+    "That roll was more dominant than {name}'s personality.",
     "{name} is the final boss of this table.",
     "That was a statement roll, {name}.",
-    "{name} doesn’t get lucky. The dice get coerced.",
-    "The scoreboard is {name}’s playground.",
+    "{name} doesn't get lucky. The dice get coerced.",
+    "The scoreboard is {name}'s playground.",
     "That was a professional-grade dismantling, {name}.",
     "{name} just made 700 look pedestrian.",
     "The dice no longer have free will against {name}.",
-    "That’s what I call breaking the game, {name}.",
+    "That's what I call breaking the game, {name}.",
     "{name} is operating on another level.",
     "The dice have surrendered to {name}.",
     "That was a championship-caliber roll, {name}.",
     "{name} is the reason dice have trust issues.",
     "Unstoppable. Unstoppable. {name}.",
-    "That roll had more authority than {name}’s bedtime.",
-    "The board is honored by {name}’s presence.",
+    "That roll had more authority than {name}'s bedtime.",
+    "The board is honored by {name}'s presence.",
     "{name} is scoring like the table owes rent."
   ];
   const PHRASES_INNUENDO = [
     "{name} really knows how to work those bones.",
     "Long, hard session for {name} tonight.",
-    "That’s the hardest {name} has gone all night.",
+    "That's the hardest {name} has gone all night.",
     "Talk about deep penetration, {name}.",
     "Look at {name} handling that meat.",
     "Slow and deep, {name}.",
     "That was an incredible roll, {name}.",
     "Length over girth, {name}.",
-    "That’s what I call a meaty finish, {name}.",
+    "That's what I call a meaty finish, {name}.",
     "{name} gave it the full treatment."
   ];
   const PHRASES_NO_SCORE = [
     "{name} just folded like a cheap chair.",
-    "Pathetic. {name} couldn’t score if the dice blinked.",
+    "Pathetic. {name} couldn't score if the dice blinked.",
     "{name} decided to donate this turn.",
     "And {name} gives the dice a free pass.",
-    "Zero points. Just like {name}’s confidence.",
+    "Zero points. Just like {name}'s confidence.",
     "{name} voluntarily handed the board a win.",
     "Did {name} forget how to hold dice?",
     "That was less of a roll and more of a surrender.",
@@ -797,18 +800,18 @@
     "{name} chose nothing.",
     "The dice deserve better than {name}.",
     "{name} rolled absolutely nothing, just like their effort.",
-    "That was the weakest display I’ve seen tonight, {name}.",
+    "That was the weakest display I've seen tonight, {name}.",
     "{name} is basically a spectator at this point.",
     "Score? Not today, {name}.",
     "{name} basically forfeited.",
     "{name} just waved the white flag mid-roll.",
     "Zero. Zilch. Nada. {name}.",
-    "Even a warm roll would’ve helped {name}.",
+    "Even a warm roll would've helped {name}.",
     "{name} rolled less than a whisper.",
-    "That rolled like {name}’s résumé—empty.",
-    "Softer than {name}’s resolve.",
+    "That rolled like {name}'s résumé—empty.",
+    "Softer than {name}'s resolve.",
     "Even a rock rolls harder than {name}.",
-    "That’s rolling over, {name} style.",
+    "That's rolling over, {name} style.",
     "{name} curled up and died on the mat.",
     "Did {name} even try?",
     "{name} rolled into a coma.",
@@ -816,19 +819,19 @@
     "{name} just gifted the next player momentum.",
     "The dice laughed at {name}.",
     "{name} rolled like they were scared of the numbers.",
-    "That was the most half-hearted effort I’ve seen, {name}.",
-    "{name} couldn’t buy a point right now.",
+    "That was the most half-hearted effort I've seen, {name}.",
+    "{name} couldn't buy a point right now.",
     "The dice gave {name} nothing, and {name} asked for less.",
     "That was less a roll, more a shrug, {name}.",
     "{name} is officially the turn-sitter tonight.",
-    "Scoreboard? {name} hasn’t met it yet.",
+    "Scoreboard? {name} hasn't met it yet.",
     "That roll had the impact of a soap bubble, {name}.",
     "{name} just proved the dice are impartial.",
     "Even luck abandoned {name}.",
     "That was an encore of nothing, {name}.",
     "{name} is now the definition of low yield.",
-    "The dice don’t fear {name}. They pity {name}.",
-    "{name} rolled so faintly the table didn’t notice.",
+    "The dice don't fear {name}. They pity {name}.",
+    "{name} rolled so faintly the table didn't notice.",
     "That was the dice saying no, {name}.",
     "{name} basically apologized for rolling.",
     "No score, no glory, just {name}.",
@@ -998,55 +1001,18 @@
     scoreInput.focus();
   });
 
-  // UNDO ALWAYS AVAILABLE
-  undoBtn.addEventListener('click', () => {
-    if (!history.length) return;
-    const last = history.pop();
-    const pid = players.findIndex(p => p.name === last.player);
-    if (pid === -1) return;
-
-    if (endMode && endTurnsRemaining[pid]) {
-      endTurnsRemaining[pid].remaining += 1;
-    }
-
-    players[pid].total -= last.score;
-    players[pid].last = null;
-
-    // if undoing the trigger back below 5000, cancel end mode
-    if (endMode) {
-      const anyHigh = players.some((p, idx) => p.total >= 5000 && endTurnsRemaining[idx] && endTurnsRemaining[idx].remaining > 0);
-      if (!anyHigh) {
-        endMode = false;
-        endModeTriggerIdx = -1;
-        endTurnsRemaining = players.map(() => ({ remaining: 0 }));
-      }
-    }
-
-    winnerDeclared = false;
-    current = pid;
-    render();
-    scoreInput.focus();
-  });
-
-  document.getElementById('reset-btn').addEventListener('click', () => {
-    if (!confirm('Reset everything and return to setup?')) return;
+  const resetBtn = document.getElementById('reset-btn');
+  resetBtn.addEventListener('click', () => {
     gameRunning = false;
-    players = [];
-    history = [];
     setupEl.style.display = 'block';
     gameEl.style.display = 'none';
-    bannerEl.innerHTML = '';
-    winnerDeclared = false;
-    endMode = false;
-    endModeTriggerIdx = -1;
-    endTurnsRemaining = [];
     playerRows.innerHTML = '';
-    refreshDeleteButtons();
+    addPlayerRow();
+    addPlayerRow();
     renderSavedPlayers();
     renderLeaderboard();
   });
 
-  refreshDeleteButtons();
   renderSavedPlayers();
   renderLeaderboard();
 })();
