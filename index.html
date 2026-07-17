@@ -3,15 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Greed">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#c0522a">
 <title>Rose Island Greed Tournament</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; }
+  .head, body { margin: 0; }
+  * { box-sizing: border-box; }
+  html { height: 100%; box-sizing: border-box; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: #c0522a;
     color: #fef3e2;
-    padding: 16px;
+    padding: 14px;
+    min-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
     overflow-y: auto;
     -webkit-tap-highlight-color: transparent;
   }
@@ -321,7 +328,7 @@
     <div class="panel">
       <label style="font-size:13px;color:#f0d5a8;margin-bottom:6px;display:block;">Add Score</label>
       <div class="controls">
-        <input type="number" id="score-input" inputmode="none" placeholder="Score..." min="0" step="50" />
+        <input type="number" id="score-input" inputmode="none" readonly placeholder="Score..." min="0" step="50" onfocus="this.blur()" />
         <button class="btn-primary" id="add-btn">+</button>
       </div>
       <div class="quick-adds" id="quick-adds">
@@ -836,21 +843,34 @@
     "{name} rolled like the point was personal."
   ];
 
+  let lastAnnouncement = '';
   function pickAnnouncement(score, name) {
     return pickScorePhrase(score, name);
+  }
+
+  function uniquePhrase(pool) {
+    if (pool.length <= 1) return pool[0];
+    let text;
+    let tries = 0;
+    do {
+      text = pool[Math.floor(seededRand() * pool.length)];
+      tries++;
+    } while (text === lastAnnouncement && tries < 20 && pool.length > 1);
+    lastAnnouncement = text;
+    return text;
   }
 
   function pickScorePhrase(score, name) {
     const rand = seededRand();
     const useInnuendo = rand < 0.05;
-    if (useInnuendo) return PHRASES_INNUENDO[Math.floor(seededRand() * PHRASES_INNUENDO.length)].replace(/\{name\}/g, name);
-    if (score < 100) return PHRASES_BAD[Math.floor(seededRand() * PHRASES_BAD.length)].replace(/\{name\}/g, name);
-    if (score <= 450) return PHRASES_NORMAL[Math.floor(seededRand() * PHRASES_NORMAL.length)].replace(/\{name\}/g, name);
-    return PHRASES_HIGH[Math.floor(seededRand() * PHRASES_HIGH.length)].replace(/\{name\}/g, name);
+    if (useInnuendo) return uniquePhrase(PHRASES_INNUENDO).replace(/\{name\}/g, name);
+    if (score < 100) return uniquePhrase(PHRASES_BAD).replace(/\{name\}/g, name);
+    if (score <= 450) return uniquePhrase(PHRASES_NORMAL).replace(/\{name\}/g, name);
+    return uniquePhrase(PHRASES_HIGH).replace(/\{name\}/g, name);
   }
 
   function pickNoScorePhrase(name) {
-    return PHRASES_NO_SCORE[Math.floor(seededRand() * PHRASES_NO_SCORE.length)].replace(/\{name\}/g, name);
+    return uniquePhrase(PHRASES_NO_SCORE).replace(/\{name\}/g, name);
   }
 
   function flashAnnouncement(text) {
@@ -981,6 +1001,8 @@
   });
 
   document.querySelectorAll('#quick-adds button').forEach(btn => {
+    btn.addEventListener('touchstart', () => document.activeElement.blur(), { passive: true });
+    btn.addEventListener('mousedown', () => document.activeElement.blur());
     btn.addEventListener('click', () => addScore(btn.dataset.score, true));
   });
 
