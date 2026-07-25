@@ -2,8 +2,17 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>$GREED — Rose Island International Greed Tournament</title>
+
+<!-- ===== PWA / Add-to-Home-Screen (full-screen standalone) ===== -->
+<meta name="theme-color" content="#140c09">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="$GREED">
+<!-- Inline manifest (no external file needed) -->
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%20%22%24GREED%20Rose%20Island%22%2C%20%22short_name%22%3A%20%22%24GREED%22%2C%20%22start_url%22%3A%20%22.%22%2C%20%22display%22%3A%20%22standalone%22%2C%20%22display_override%22%3A%20%5B%22standalone%22%5D%2C%20%22background_color%22%3A%20%22%23140c09%22%2C%20%22theme_color%22%3A%20%22%23140c09%22%2C%20%22orientation%22%3A%20%22portrait%22%2C%20%22icons%22%3A%20%5B%7B%22src%22%3A%20%22data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgZmlsbD0iIzE0MGMwOSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTYlIiBmb250LXNpemU9IjIwMCIgZmlsbD0iI2Q5NzI0YSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IkFyaWFsLEhlbHZldGljYSxzYW5zLXNlcmlmIj4kR1JFRUQ8L3RleHQ%2BPC9zdmc%2B%22%2C%20%22sizes%22%3A%20%22512x512%22%2C%20%22type%22%3A%20%22image%2Fsvg%2Bxml%22%7D%5D%7D">
 <style>
   :root{
     --bg-1:#241610;
@@ -37,6 +46,41 @@
   button{font-family:inherit; cursor:pointer; border:none; -webkit-tap-highlight-color:transparent;}
   input{font-family:inherit;}
   ::selection{background:var(--gold); color:#000;}
+
+  /* ---------- Full-screen standalone (added to home screen) ---------- */
+  /* Respect notches/status bar when launched from the home screen; the OS
+     chrome is hidden in standalone mode, so pad using the safe-area insets. */
+  body{
+    padding-top: max(16px, env(safe-area-inset-top));
+    padding-bottom: max(40px, env(safe-area-inset-bottom));
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+  }
+
+  /* ---------- Add-to-Home-Screen popup ---------- */
+  .a2hs-overlay{
+    position:fixed; inset:0; z-index:1200; display:flex; align-items:flex-end;
+    justify-content:center; background:rgba(8,5,3,0.62); backdrop-filter:blur(3px);
+    padding: env(safe-area-inset-top) 12px env(safe-area-inset-bottom);
+  }
+  .a2hs-card{
+    width:100%; max-width:440px; background:linear-gradient(160deg,var(--bg-1),var(--bg-2));
+    border:1px solid var(--card-border); border-radius:18px; padding:20px 18px 16px;
+    box-shadow:0 18px 50px rgba(0,0,0,0.55); animation:slideUp .28s ease-out;
+  }
+  @keyframes slideUp{ from{ transform:translateY(40px); opacity:0; } to{ transform:translateY(0); opacity:1; } }
+  .a2hs-card h3{ font-size:18px; letter-spacing:1px; margin-bottom:8px; color:var(--gold); }
+  .a2hs-card p{ font-size:13.5px; line-height:1.5; color:var(--text); margin:0 0 12px; }
+  .a2hs-steps{ display:flex; flex-direction:column; gap:8px; margin:0 0 14px; padding:0; list-style:none; }
+  .a2hs-steps li{
+    display:flex; gap:10px; align-items:flex-start; font-size:13.5px; color:var(--text);
+    background:rgba(143,174,92,0.08); border:1px solid var(--card-border);
+    border-radius:10px; padding:9px 11px;
+  }
+  .a2hs-steps .ico{ font-size:18px; line-height:1.2; }
+  .a2hs-actions{ display:flex; gap:10px; }
+  .a2hs-actions .btn{ flex:1; }
+  .a2hs-hide{ display:none !important; }
 
   .wrap{max-width:900px; margin:0 auto;}
 
@@ -482,6 +526,19 @@
 </style>
 </head>
 <body>
+
+<!-- Add-to-Home-Screen prompt (mobile only, not when already standalone) -->
+<div class="a2hs-overlay a2hs-hide" id="a2hsOverlay">
+  <div class="a2hs-card">
+    <h3>📲 Add $GREED to your Home Screen</h3>
+    <p id="a2hsIntro">For a full-screen, app-like experience with no browser bars, save this page to your home screen.</p>
+    <ol class="a2hs-steps" id="a2hsSteps"></ol>
+    <div class="a2hs-actions">
+      <button class="btn btn-ghost" onclick="dismissA2HS()">Maybe later</button>
+      <button class="btn btn-primary" id="a2hsPrimary" onclick="dismissA2HS()">Got it</button>
+    </div>
+  </div>
+</div>
 
 <div class="admin-gear" id="adminGear" onclick="openAdmin()">⚙</div>
 <div class="toast" id="toast"></div>
@@ -2422,7 +2479,83 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   renderScoreGuide();
   renderSetup();
+  initA2HS();
 });
+
+// =========================================================================
+// ADD-TO-HOME-SCREEN PROMPT + FULL-SCREEN STANDALONE SUPPORT
+// =========================================================================
+let deferredInstallPrompt = null; // Android/Chrome native install prompt
+
+window.addEventListener("beforeinstallprompt", (e) => {
+  // Don't let Chrome auto-show its mini-infobar; we surface our own card.
+  e.preventDefault();
+  deferredInstallPrompt = e;
+});
+
+function isMobile() {
+  return /Android|iPhone|iPod|iPad|Mobile|Windows Phone/i.test(navigator.userAgent)
+    || (window.matchMedia && window.matchMedia("(max-width:560px)").matches && "ontouchstart" in window);
+}
+function isStandalone() {
+  return (window.navigator.standalone === true)        // iOS
+      || (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches); // Android/Chrome
+}
+
+function initA2HS() {
+  if (isStandalone()) return;            // already installed → no nag
+  if (!isMobile()) return;               // desktop → no nag
+  if (sessionStorage.getItem("a2hsDismissed") === "1") return; // already dismissed this visit
+
+  const isIOS = /iPhone|iPod|iPad/i.test(navigator.userAgent);
+  const stepsEl = document.getElementById("a2hsSteps");
+
+  if (isIOS) {
+    document.getElementById("a2hsIntro").textContent =
+      "For a full-screen $GREED app with no browser bars, add this page to your Home Screen:";
+    stepsEl.innerHTML = `
+      <li><span class="ico">📤</span><span>Tap the <b>Share</b> button at the bottom of the screen.</span></li>
+      <li><span class="ico">➕</span><span>Scroll and tap <b>“Add to Home Screen”</b>.</span></li>
+      <li><span class="ico">✅</span><span>Tap <b>Add</b> — then open $GREED from your Home Screen.</span></li>`;
+  } else if (deferredInstallPrompt) {
+    document.getElementById("a2hsIntro").textContent =
+      "For a full-screen $GREED app with no browser bars, install it:";
+    stepsEl.innerHTML = `
+      <li><span class="ico">📲</span><span>Tap <b>Install</b> below (or the menu ⋮ → “Install app”).</span></li>
+      <li><span class="ico">✅</span><span>$GREED opens full-screen from your Home Screen.</span></li>`;
+    const primary = document.getElementById("a2hsPrimary");
+    primary.textContent = "Install";
+    primary.onclick = installFromPrompt;
+  } else {
+    // Android without a captured install prompt (e.g. Firefox): generic menu hint.
+    document.getElementById("a2hsIntro").textContent =
+      "For a full-screen $GREED app, add this page to your Home Screen from your browser menu:";
+    stepsEl.innerHTML = `
+      <li><span class="ico">⋮</span><span>Open the browser menu (top-right).</span></li>
+      <li><span class="ico">➕</span><span>Tap <b>“Add to Home Screen” / “Install”</b>.</span></li>
+      <li><span class="ico">✅</span><span>Open $GREED from your Home Screen.</span></li>`;
+  }
+
+  // Show after a short beat so the game UI is visible first.
+  setTimeout(() => {
+    const ov = document.getElementById("a2hsOverlay");
+    if (ov) ov.classList.remove("a2hs-hide");
+  }, 900);
+}
+
+async function installFromPrompt() {
+  if (!deferredInstallPrompt) return dismissA2HS();
+  deferredInstallPrompt.prompt();
+  try { await deferredInstallPrompt.userChoice; } catch (e) {}
+  deferredInstallPrompt = null;
+  dismissA2HS();
+}
+
+function dismissA2HS() {
+  const ov = document.getElementById("a2hsOverlay");
+  if (ov) ov.classList.add("a2hs-hide");
+  sessionStorage.setItem("a2hsDismissed", "1"); // don't nag again this session
+}
 
 const SCORE_GUIDE = [
   ["1× G", "50"],
