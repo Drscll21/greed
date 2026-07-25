@@ -17,8 +17,8 @@
     --card-border:#4a3021;
     --text:#f7ede4;
     --text-dim:#c2a58f;
-    --danger:#e8935a;
-    --radius:18px;
+    --e-green:#7bb661;
+    --e-blue:#3b6fb5;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{margin:0;padding:0;}
@@ -122,9 +122,14 @@
     font-weight:600;
   }
   .setup-row input[type=text]:focus{ outline:none; border-color:var(--gold); }
-  .row-cpu{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; flex-shrink:0; }
-  .row-cpu input{ width:18px; height:18px; accent-color:var(--electric); cursor:pointer; }
-  .row-cpu label{ font-size:9px; letter-spacing:1px; text-transform:uppercase; color:var(--text-dim); cursor:pointer; }
+  .row-cpu{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; flex-shrink:0; width:84px; }
+  .row-cpu .ai-label{ font-size:9px; letter-spacing:1px; text-transform:uppercase; color:var(--text-dim); text-align:center; line-height:1.1; }
+  .row-cpu .switch{ position:relative; display:inline-block; width:42px; height:22px; }
+  .row-cpu .switch input{ opacity:0; width:0; height:0; }
+  .row-cpu .slider{ position:absolute; cursor:pointer; inset:0; background:#3a2a4d; border-radius:22px; transition:.2s; }
+  .row-cpu .slider:before{ content:""; position:absolute; height:16px; width:16px; left:3px; top:3px; background:#c9b8dd; border-radius:50%; transition:.2s; }
+  .row-cpu .switch input:checked + .slider{ background:var(--electric); }
+  .row-cpu .switch input:checked + .slider:before{ transform:translateX(20px); background:#fff; }
   .row-remove{
     width:42px; height:42px; flex-shrink:0;
     border-radius:10px;
@@ -264,6 +269,11 @@
   }
   .manual-entry input[type=number]:focus{ outline:none; border-color:var(--gold); }
   .manual-entry .btn{ flex-shrink:0; }
+  @media (max-width:560px){
+    .manual-entry{ flex-wrap:wrap; }
+    .manual-entry input[type=number]{ flex:1 1 100%; }
+    .manual-entry .btn{ flex:1 1 100%; }
+  }
 
   .quick-grid{
     display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:14px;
@@ -346,6 +356,21 @@
   }
   .modal-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;}
   .modal-close{ width:36px; height:36px; border-radius:50%; background:var(--card-bg); font-size:18px; color:var(--text);}
+  .setup-note{ font-size:12.5px; line-height:1.5; color:var(--text-dim); margin-top:12px; background:var(--card-bg); border:1px solid var(--card-border); border-radius:12px; padding:10px 12px; }
+  .setup-note strong{ color:var(--text); }
+  .setup-note em{ color:var(--electric); font-style:normal; }
+  .rules-body{ font-size:13.5px; line-height:1.55; color:var(--text-dim); }
+  .rules-body h4{ color:var(--gold); margin:16px 0 6px; font-size:14px; letter-spacing:1px; text-transform:uppercase; }
+  .rules-body h4:first-child{ margin-top:0; }
+  .rules-body p{ margin:6px 0; }
+  .rules-body ol{ margin:6px 0 6px 18px; padding:0; }
+  .rules-body li{ margin:4px 0; }
+  .rules-table{ width:100%; border-collapse:collapse; margin:8px 0; font-size:13px; }
+  .rules-table td{ padding:5px 8px; border:1px solid var(--card-border); }
+  .rules-table td:nth-child(odd){ color:var(--text); font-weight:600; width:22%; }
+  .rules-table td:nth-child(even){ color:var(--gold); width:14%; }
+  .rules-small{ font-size:12px; opacity:0.85; }
+  .rules-callout{ background:rgba(232,147,90,0.12); border:1px solid var(--hot-pink); border-radius:12px; padding:10px 12px; color:var(--text); margin-top:8px; }
   .admin-pw-input{
     width:100%; padding:14px; border-radius:12px; border:2px solid var(--card-border);
     background:#1a0e2b; color:var(--text); font-size:16px; margin-bottom:12px;
@@ -393,15 +418,25 @@
   .score-guide .sg-k{ white-space:nowrap; }
   .score-guide .sg-v{ color:var(--green); font-weight:800; font-variant-numeric:tabular-nums; }
   .score-guide .sg-note{ font-size:10px; opacity:0.7; margin-top:6px; text-align:center; line-height:1.3; }
+  .score-guide .sg-note.sg-warn{ opacity:0.95; color:var(--gold); border-top:1px dashed var(--card-border); padding-top:6px; }
+  .score-guide .sg-legend{ display:flex; flex-wrap:wrap; gap:4px 10px; justify-content:center; margin-top:8px; font-size:10px; color:var(--text-dim); }
+  .score-guide .sg-legend span{ display:inline-flex; align-items:center; gap:4px; }
+  .score-guide .sg-legend .dot{ width:11px; height:11px; border-radius:3px; display:inline-block; border:1px solid rgba(255,255,255,0.2); }
+  .score-guide .sg-legend .dot.dollar{ background:#1e7a4d; }
+  .score-guide .sg-legend .dot.g{ background:#ffd400; }
+  .score-guide .sg-legend .dot.r{ background:#c0392b; }
+  .score-guide .sg-legend .dot.e-green{ background:#7bb661; }
+  .score-guide .sg-legend .dot.e-blue{ background:#3b6fb5; }
+  .score-guide .sg-legend .dot.d{ background:#0a0a0a; }
   .dice-row{ display:flex; flex-wrap:wrap; gap:10px; justify-content:center; min-height:72px; align-items:center; perspective:700px; }
   .dice-row.side{ min-height:64px; justify-content:flex-start; align-content:flex-start; }
   .dice-prompt{ color:var(--text-dim); font-size:14px; text-align:center; }
   .die{ width:62px; height:62px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:34px; font-weight:900; box-shadow:0 4px 8px rgba(0,0,0,0.35); user-select:none; background:var(--text); color:#241610; transform-style:preserve-3d; }
-  .die.dollar{ background:var(--electric); color:#f1fbf9; border:2px solid #5fd0c2; }
+  .die.dollar{ background:#1e7a4d; color:#eafff0; border:2px solid #0f5130; }
   .die.g{ background:#ffd400; color:#1a1a1a; border:2px solid #e6b800; }
-  .die.r{ background:var(--gold-2); color:#fff5ee; border:2px solid var(--hot-pink); }
-  .die.e-red{ background:#9b2226; color:#fff; border:2px solid #e07a7a; }
-  .die.e-pink{ background:#db2777; color:#fff; border:2px solid #f472b6; }
+  .die.r{ background:#c0392b; color:#fff5ee; border:2px solid #8c1f15; }
+  .die.e-green{ background:#7bb661; color:#10240c; border:2px solid #5a9447; }
+  .die.e-blue{ background:#3b6fb5; color:#fff; border:2px solid #2a527f; }
   .die.d{ background:#0a0a0a; color:#f5f5f5; border:2px solid #3a3a3a; }
   .die.selectable{ cursor:pointer; transition:transform .1s ease, box-shadow .1s ease; }
   .die.selectable:hover{ transform:translateY(-3px) scale(1.05); box-shadow:0 0 0 3px rgba(192,82,42,0.55), 0 6px 14px rgba(0,0,0,0.4); }
@@ -434,8 +469,8 @@
 
 <div class="wrap">
   <div class="app-header">
-    <div class="title">$ Greed</div>
-    <div class="subtitle">Rose Island International Greed Tournament</div>
+    <div class="title">$GREED</div>
+    <div class="subtitle">ROSE ISLAND EDITION - HOUSE RULES APPLY</div>
   </div>
 
   <!-- ================= SETUP SCREEN ================= -->
@@ -463,6 +498,13 @@
 
     <button class="btn btn-cyan btn-block" style="margin-top:14px; padding:16px;" onclick="startGame('score')">📝 Start Scoring Game</button>
     <button class="btn btn-primary btn-block" style="margin-top:10px; padding:18px;" onclick="startGame('dice')">🎲 Start Virtual Dice Game</button>
+
+    <p class="setup-note">
+      <strong>Single-player?</strong> Add your name as Player 1, then add 1–3 <em>Ai Opponent</em> seats (flip the slider on each) to play against. The AI rolls and banks automatically.
+    </p>
+    <div style="display:flex; gap:10px; margin-top:4px;">
+      <button class="btn btn-ghost btn-block" style="flex:1;" onclick="openRules()">📖 How to Play / Rules</button>
+    </div>
 
     <div class="lb-section">
       <div class="lb-title">🏆 Leaderboard</div>
@@ -534,6 +576,47 @@
     <div class="winner-total" id="winnerTotalDisplay"></div>
     <div class="cards-grid" id="finalCardsGrid" style="margin-top:24px;"></div>
     <button class="btn btn-primary btn-block" style="margin-top:20px; padding:16px;" onclick="newGame()">New Game</button>
+  </div>
+</div>
+
+<!-- ================= RULES MODAL ================= -->
+<div id="rulesOverlay" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>$GREED — How to Play</h3>
+      <button class="modal-close" onclick="closeRules()">✕</button>
+    </div>
+    <div class="rules-body">
+      <h4>Goal</h4>
+      <p>Be the first player to reach <strong>5000 points</strong>. Roll six dice, bank scoring combos, and push your luck — but if a roll scores nothing, you <strong>GREED OUT</strong> and lose everything banked that turn.</p>
+
+      <h4>Scoring &amp; Combos</h4>
+      <table class="rules-table">
+        <tr><td>1× G</td><td>50</td><td>3× G</td><td>500</td></tr>
+        <tr><td>1× D</td><td>100</td><td>3× R</td><td>400</td></tr>
+        <tr><td>3× $</td><td>600</td><td>3× E</td><td>300</td></tr>
+        <tr><td>4× D</td><td>1000</td><td>$GREED / Full set</td><td>1000</td></tr>
+        <tr><td>6 of a kind</td><td>5000</td><td colspan="2">extra matching die +50 / +100</td></tr>
+      </table>
+      <p class="rules-small"><strong>Dice:</strong> <span style="color:#7bb661;font-weight:700;">E light green</span>, <span style="color:#5a9bd4;font-weight:700;">E blue</span>, G yellow, R red, <span style="color:#3fbf7f;font-weight:700;">$ dark green</span>, D black. Only G and D score as <em>single</em> dice. Every other symbol needs 3+ to score. A 4-of-a-kind pays the trio value plus any extra single (e.g. 4× G = 500 + 50 = 550).</p>
+      <p class="rules-callout"><strong>$GREED (Full set) needs both coloured E's.</strong> To earn the 1000-point full set you must have one of every symbol in a single roll — including <em>both</em> the light-green E and the blue E. Two E's of the same colour do not complete the set. Note: the two E colours are separate entities — a 3-of-a-kind must be <em>3× light-green E</em> or <em>3× blue E</em>, never a mix of colours.</p>
+
+      <h4>How a Turn Works</h4>
+      <ol>
+        <li>Roll all six dice. Tap the scoring dice to set them aside.</li>
+        <li>Bank your points, or roll the <em>remaining</em> dice for more.</li>
+        <li>Set-aside dice are safe; only the dice you reroll are at risk.</li>
+        <li>If a reroll shows <strong>zero</strong> scoring dice → GREED OUT: the whole turn is forfeited (0 scored, passed on).</li>
+        <li>Roll all six again (a "hot roll") and the turn continues.</li>
+      </ol>
+
+      <h4>Ending the Game (First to 5000)</h4>
+      <p>When any player crosses <strong>5000</strong>, the <strong>final round</strong> begins. Every other player gets <strong>one last turn</strong> to try to overtake. Highest total after those final turns wins.</p>
+      <p class="rules-callout"><strong>Strategy — roll bust on purpose to delay the end:</strong> If you're near 5000 but an opponent is also close, banking a thin lead (e.g. you're on 4900, roll +200 → 5100) opens the final round and hands them a free last turn to beat you. Instead, <em>reroll your remaining dice</em> — if you bust, the turn ends at 0 and the final round is <strong>not</strong> triggered yet, buying you another go next round to land a bigger, safer lead.</p>
+
+      <h4>Single-Player vs AI</h4>
+      <p>Add your name as Player 1, then flip the <em>Ai Opponent</em> slider on 1–3 seats (named Claude, Gwen, Gemma). The AI rolls, banks the best scoring set, and uses positional strategy near 5000 — including the deliberate bust above.</p>
+    </div>
   </div>
 </div>
 
@@ -633,13 +716,14 @@ let diceAnimTimer = null;
 let diceSpinTimer = null;
 let diceWatchdog = null;
 let pendingRoll = null;     // {finalDice, fresh} locked-in result awaiting settle
+let hotStreak = false;      // true when the last throw was all-6-scoring → player must set all 6 aside & reroll (or bust)
 
 const DICE_SYMS = [
   { sym: "$", cls: "dollar" },
   { sym: "G", cls: "g" },
   { sym: "R", cls: "r" },
-  { sym: "E", cls: "e-red", color: "red" },
-  { sym: "E", cls: "e-pink", color: "pink" },
+  { sym: "E", cls: "e-green", color: "green" },
+  { sym: "E", cls: "e-blue", color: "blue" },
   { sym: "D", cls: "d" }
 ];
 
@@ -703,18 +787,15 @@ function evalRoll(dice) {
     for (let k = 0; k < 3; k++) kept.add(idx["R"][k]);
     for (let k = 3; k < idx["R"].length; k++) { score += 50; kept.add(idx["R"][k]); }
   }
-  // 3 E same colour (300) + any extra single E of that colour (50 each)
-  const eRed = idx["E"].filter(i => dice[i].color === "red");
-  const ePink = idx["E"].filter(i => dice[i].color === "pink");
-  if (eRed.length >= 3) {
-    score += 300;
-    for (let k = 0; k < 3; k++) kept.add(eRed[k]);
-    for (let k = 3; k < eRed.length; k++) { score += 50; kept.add(eRed[k]); }
-  } else if (ePink.length >= 3) {
-    score += 300;
-    for (let k = 0; k < 3; k++) kept.add(ePink[k]);
-    for (let k = 3; k < ePink.length; k++) { score += 50; kept.add(ePink[k]); }
-  }
+  // 3 E (300) or 4 E (350) — colours are independent entities: must be 3+ of ONE colour.
+  const eGreen = idx["E"].filter(i => dice[i].color === "green");
+  const eBlue  = idx["E"].filter(i => dice[i].color === "blue");
+  const scoreErun = (run) => {
+    if (run.length >= 4) { score += 350; run.slice(0, 4).forEach(i => kept.add(i)); }
+    else if (run.length >= 3) { score += 300; run.slice(0, 3).forEach(i => kept.add(i)); }
+  };
+  scoreErun(eGreen);
+  scoreErun(eBlue);
 
   return { score, kept: [...kept] };
 }
@@ -727,6 +808,7 @@ function resetDice() {
   clearTimeout(diceWatchdog);
   diceWatchdog = null;
   pendingRoll = null;
+  hotStreak = false;
   turnDice = [];
   bankedDice = [];
   rollGroups = [];
@@ -857,6 +939,12 @@ function settleDice(finalDice, fresh) {
     return;
   }
 
+  const res = evalRoll(finalDice);
+  hotStreak = res.score > 0 && res.kept.length === finalDice.length;
+  // NOTE: we do NOT auto-set-aside on a hot roll. The player must tap all 6 dice
+  // themselves (below), then either reroll all 6 to continue the streak, or choose
+  // to bust via "No Score / Pass". Banking mid-streak is not allowed.
+
   turnDice = finalDice;
   dicePhase = "select";
   recomputeTurnScore();
@@ -943,33 +1031,52 @@ function renderDiceControls() {
 
   rollBtn.classList.add("hidden");
   bankBtn.classList.remove("hidden");
-  bankBtn.disabled = turnScore <= 0;
-  bankBtn.textContent = "💰 BANK +" + turnScore;
-  // Only allow rerolling when there's already something banked to protect AND
-  // the remaining dice actually offer a scoring option. If the tray can't score
-  // at all (e.g. 2R + 1$, or any all-non-scoring set), rolling again is just a
-  // greed-out gamble that forfeits what's banked — so hide the roll button and
-  // force a BANK / PASS decision instead.
-  const remainingScore = evalRoll(turnDice).score;
-  const canReroll = turnScore > 0 && (turnDice.length === 0 || remainingScore > 0);
-  hotBtn.classList.toggle("hidden", !canReroll);
-  if (canReroll) {
-    hotBtn.textContent = turnDice.length === 0 ? "🎲 HOT DICE (6)" : `🎲 ROLL REMAINING (${turnDice.length})`;
+  // hotStreak (module flag) = last throw was all-6-scoring. The player must tap
+  // all 6 dice themselves, then either reroll all 6 to continue, or bust (Pass).
+  const allSelected = turnDice.length === 0;
+  if (hotStreak) {
+    bankBtn.disabled = true;
+    bankBtn.textContent = "🔥 LOCKED — SET ALL 6";
+    hotBtn.classList.remove("hidden");
+    hotBtn.disabled = !allSelected; // only allow reroll once every die is set aside
+    hotBtn.textContent = allSelected ? "🎲 SELECT ALL 6 & REROLL" : "🎲 TAP ALL 6 TO CONTINUE";
+    clearBtn.classList.add("hidden"); // can't partially unselect during a hot roll
+    hint.textContent = allSelected
+      ? `🔥 HOT ROLL! +${turnScore} so far — all 6 set aside. Reroll all 6 to build, BANK is locked, or PASS to bust.`
+      : `🔥 HOT ROLL! Tap ALL 6 dice to set them aside — then reroll, or PASS to bust (forfeit).`;
+  } else {
+    bankBtn.disabled = turnScore <= 0;
+    bankBtn.textContent = "💰 BANK +" + turnScore;
+    // Offer a reroll whenever there are leftover dice to throw AND something to protect.
+    const canReroll = turnScore > 0 && turnDice.length > 0;
+    hotBtn.classList.toggle("hidden", !canReroll);
+    if (canReroll) hotBtn.textContent = `🎲 ROLL REMAINING (${turnDice.length})`;
+    clearBtn.classList.toggle("hidden", rollGroups[lastIdx].length === 0);
+    hint.textContent = turnScore > 0
+      ? (canReroll
+          ? `Set aside from ${rollGroups.length} roll(s) = +${turnScore} — bank it or roll the rest`
+          : `Remaining dice don't score — BANK +${turnScore} or PASS`)
+      : "Tap dice to set them aside";
   }
-  clearBtn.classList.toggle("hidden", rollGroups[lastIdx].length === 0);
-  hint.textContent = turnScore > 0
-    ? (canReroll
-        ? `Set aside from ${rollGroups.length} roll(s) = +${turnScore} — bank it or roll the rest`
-        : `Remaining dice don't score — BANK +${turnScore} or PASS`)
-    : "Tap dice to set them aside";
 }
 
-function diceBank() {
+async function diceBank() {
   if (winnerDeclared) return;
   if (turnScore <= 0) return;
+  // Defensive: never allow banking mid hot-streak (all 6 scored last throw).
+  if (hotStreak) return;
   const s = turnScore;
+  const committed = await addScore(s); // normal entry: advances turn, triggers end mode, etc.
+  if (committed === false) {
+    // First-score gate rejected the bank (under 500). Keep the turn intact so the
+    // player can roll the remaining dice for more, or pass to try again next round.
+    if (players[current] && players[current].cpu && gameMode === "dice") {
+      cpuThinking = false;
+      setTimeout(() => { if (dicePhase === "select") diceRoll(); }, 380); // AI keeps gambling
+    }
+    return;
+  }
   resetDice();
-  addScore(s); // normal entry: advances turn, triggers end mode, etc.
 }
 
 // =========================================================================
@@ -1002,12 +1109,67 @@ function cpuDecide() {
   keep.forEach(idx => toggleDie(idx));
 
   if (turnDice.length === 0) {
-    // All dice scored this roll → reroll hot dice for more.
+    // All dice scored this roll → free hot-dice reroll for more.
     setTimeout(() => { if (dicePhase === "select") diceRoll(); }, 380);
     return;
   }
-  // Decide: bank or roll the remaining dice.
-  const bank = (turnScore >= 1000) || (Math.random() < 0.45);
+
+  // ---- Risk model: bust probability by dice remaining (from simulation) ----
+  const nLeft = turnDice.length;
+  const BUST = {1:0.667, 2:0.444, 3:0.277, 4:0.157, 5:0.077};
+  const bust = BUST[nLeft] || 0.30;
+  // Threshold scales DOWN when few dice remain (risky) → bank sooner;
+  // scales UP when many dice remain (safe) → roll for more.
+  const riskMult = 0.35 + 1.1 * (1 - bust);   // ~0.72 at 1 die … ~1.37 at 5 dice
+
+  // ---- Positions ----
+  const me = players[current];
+  const total = me.total;
+  const projected = total + turnScore;
+  const leaderTotal = Math.max(...players.map(p => p.total));
+  const oppMax = players.reduce((m, p, i) => i === current ? m : Math.max(m, p.total), 0);
+  const leaderIsMe = total >= leaderTotal;
+  const oppClose = oppMax >= 5000 - 1000;     // an opponent within ~one big turn of 5000
+  const bankWin = projected >= 5000;          // banking would cross 5000 & trigger end mode
+
+  let bank;
+  if (endMode) {
+    // Final-turn play: maximise the final total, protect a lead.
+    if (bankWin) {
+      bank = true;                                   // bank the win outright
+    } else if (leaderIsMe && turnScore > 0) {
+      bank = true;                                   // already leading → lock it
+    } else if (turnScore > 0 && projected > oppMax) {
+      bank = true;                                   // just took the lead over best opp → bank
+    } else {
+      // Behind in final turn → gamble, but the risk model keeps it sane.
+      const thr = 1200 * riskMult;
+      bank = turnScore >= thr || (Math.random() < 0.30 * (1 - bust));
+    }
+  } else if (bankWin) {
+    // Banking would trigger the final round.
+    if (!oppClose) {
+      bank = true;                                   // no one close → safe to end it
+    } else {
+      const margin = projected - oppMax;
+      // DENY-THE-LEADER: an opponent is poised to win on their turn. Only open the final
+      // round if the lead is large enough to likely survive their final turn (~1000);
+      // otherwise gamble (and accept a bust that DELAYS the final round) rather than hand
+      // them the final-turn cushion at a vulnerable score. A tie does NOT count as safe.
+      bank = margin >= 1000;
+    }
+  } else {
+    // Mid-game: aggression scales with position; risk model adjusts by dice left.
+    const behind = leaderTotal - total;
+    let base;
+    if (behind > 1200)   base = 1500;   // far behind → high target, gamble hard
+    else if (leaderIsMe) base = 800;    // leading → bank a bit sooner
+    else                 base = 1000;   // neutral
+    const thr = base * riskMult;
+    const rnd = (behind > 1200) ? 0.25 : (leaderIsMe ? 0.60 : 0.45);
+    bank = turnScore >= thr || (Math.random() < rnd * (1 - bust));
+  }
+
   if (bank) {
     setTimeout(() => { cpuThinking = false; diceBank(); }, 380);
   } else {
@@ -1173,11 +1335,14 @@ async function getSavedPlayers() {
 }
 
 async function mergeAndSaveNames(newNames) {
+  // Never persist auto-assigned AI opponent names (Claude / Gwen / Gemma).
+  const AI_NAMES = ["Claude", "Gwen", "Gemma"];
+  const humanNames = newNames.filter(n => !AI_NAMES.includes(n));
   const existing = getLocalSavedPlayers();
-  const merged = Array.from(new Set([...existing, ...newNames]));
+  const merged = Array.from(new Set([...existing, ...humanNames]));
   setLocalSavedPlayers(merged);
   if (SB) {
-    for (const name of newNames) {
+    for (const name of humanNames) {
       sbPost("greed_players", { name }, { "Prefer": "resolution=ignore-duplicates,return=minimal" });
     }
   }
@@ -1303,6 +1468,14 @@ function updateSetupName(idx, val) {
 }
 function updateSetupCpu(idx, checked) {
   setupCpu[idx] = checked;
+  if (checked) {
+    // Auto-assign an AI name based on how many AI seats are already active.
+    // Claude (1st) → Gwen (2nd) → Gemma (3rd).
+    const AI_NAMES = ["Claude", "Gwen", "Gemma"];
+    const aiCount = setupCpu.filter(Boolean).length; // includes this one
+    const aiName = AI_NAMES[Math.min(aiCount, AI_NAMES.length) - 1];
+    setupNames[idx] = aiName;
+  }
 }
 
 function renderSetupRows() {
@@ -1314,9 +1487,12 @@ function renderSetupRows() {
     row.innerHTML = `
       <input type="text" placeholder="Player ${idx + 1} name" value="${escapeHtml(name)}"
         oninput="updateSetupName(${idx}, this.value)" maxlength="24">
-      <label class="row-cpu" title="CPU auto-plays this seat (dice mode)">
-        <input type="checkbox" ${setupCpu[idx] ? "checked" : ""} onchange="updateSetupCpu(${idx}, this.checked)">
-        <span>CPU</span>
+      <label class="row-cpu" title="AI auto-plays this seat (dice mode)">
+        <span class="switch">
+          <input type="checkbox" ${setupCpu[idx] ? "checked" : ""} onchange="updateSetupCpu(${idx}, this.checked)">
+          <span class="slider"></span>
+        </span>
+        <span class="ai-label">Ai Opponent</span>
       </label>
       <button class="row-remove" ${setupNames.length <= 2 ? "disabled" : ""} onclick="removePlayerRow(${idx})">−</button>
     `;
@@ -1439,10 +1615,18 @@ function cardClasses(i) {
 }
 
 async function addScore(rawScore, bonus) {
-  if (winnerDeclared) return;
+  if (winnerDeclared) return false;
   let score = Math.max(0, parseInt(rawScore) || 0);
   const i = current;
   const name = players[i].name;
+
+  // First-score gate: every player must bank at least 500 on their opening score.
+  // Bonuses ($GREED 1000 / 6-of-a-kind 5000) always clear it. Once a player has
+  // banked >=500 once, the gate stays open for the rest of the game.
+  if (!bonus && score > 0 && players[i].total === 0 && (players[i].last === null || players[i].last === 0) && score < 500) {
+    toast(`${name}: first score must be at least 500 — bank more or it's a bust`);
+    return false; // reject the entry; player keeps rolling / can pass to try next round
+  }
 
   players[i].last = score;
   players[i].total += score;
@@ -1483,7 +1667,7 @@ async function addScore(rawScore, bonus) {
       await declareWinner();
       saveGameState();
       renderGame();
-      return;
+      return true;
     }
   }
 
@@ -1492,6 +1676,7 @@ async function addScore(rawScore, bonus) {
   }
   saveGameState();
   renderGame();
+  return true;
 }
 
 function advance() {
@@ -1546,12 +1731,12 @@ function handleBonus(type) {
   addScore(score, type);
 }
 
-function submitManualScore() {
+async function submitManualScore() {
   if (winnerDeclared) return;
   const input = document.getElementById("manualScoreInput");
   const val = input.value;
-  input.value = "";
-  addScore(val, undefined);
+  const committed = await addScore(val, undefined);
+  if (committed !== false) input.value = "";
 }
 
 function handleNoScore() {
@@ -1873,6 +2058,17 @@ function showWinnerScreen() {
   renderLeaderboardUI();
 }
 
+function openRules() {
+  document.getElementById("rulesOverlay").classList.remove("hidden");
+}
+function closeRules() {
+  document.getElementById("rulesOverlay").classList.add("hidden");
+}
+// Close rules (or any modal) when tapping the dark backdrop.
+document.addEventListener("click", (e) => {
+  if (e.target && e.target.id === "rulesOverlay") closeRules();
+});
+
 function renderSetup() {
   renderSetupRows();
   renderSavedChips();
@@ -2178,7 +2374,6 @@ const SCORE_GUIDE = [
   ["3× R", "400"],
   ["3× E", "300"],
   ["4× D", "1000"],
-  ["4× any", "1000"],
   ["Full set", "1000"],
   ["6 of a kind", "5000"],
   ["extra matching", "+50 / +100"],
@@ -2190,7 +2385,16 @@ function renderScoreGuide() {
   el.innerHTML = `
     <h4>Scoring Possibilities</h4>
     <ul>${SCORE_GUIDE.map(([k, v]) => `<li><span class="sg-k">${k}</span><span class="sg-v">${v}</span></li>`).join("")}</ul>
+    <div class="sg-legend">
+      <span><i class="dot dollar"></i>$ dark green</span>
+      <span><i class="dot g"></i>G yellow</span>
+      <span><i class="dot r"></i>R red</span>
+      <span><i class="dot e-green"></i>E light green</span>
+      <span><i class="dot e-blue"></i>E blue</span>
+      <span><i class="dot d"></i>D black</span>
+    </div>
     <div class="sg-note">3+ of a kind counts the combo PLUS any extra matching die (e.g. 4×G = 500 + 50).</div>
+    <div class="sg-note sg-warn">$GREED (Full set, +1000) requires one of each symbol <strong>including both coloured E's</strong> (light green + blue).</div>
   `;
 }
 </script>
