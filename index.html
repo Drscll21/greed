@@ -273,6 +273,13 @@
     .manual-entry{ flex-wrap:wrap; }
     .manual-entry input[type=number]{ flex:1 1 100%; }
     .manual-entry .btn{ flex:1 1 100%; }
+    /* Stack the dice main tray over the side panel so "Set Aside" and
+       "Score Possibilities" each get the full phone width instead of a
+       cramped half-pane side-by-side. */
+    .dice-tray{ flex-direction:column; }
+    .dice-main{ min-width:0; width:100%; }
+    .dice-side{ flex:1 1 auto; width:100%; min-width:0; }
+    .score-guide .sg-legend{ justify-content:flex-start; }
   }
 
   .quick-grid{
