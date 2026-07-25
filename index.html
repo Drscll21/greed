@@ -306,9 +306,21 @@
     background:var(--card-bg); border:1px solid var(--card-border);
     border-radius:10px; padding:10px 14px;
   }
+  .lb-head{
+    display:flex; align-items:center; gap:10px;
+    padding:4px 14px; font-size:11px; color:var(--text-dim);
+  }
   .lb-rank{ font-weight:900; color:var(--gold); width:24px; }
   .lb-name{ flex:1; font-weight:700; }
   .lb-wins{ font-weight:900; color:var(--electric); }
+  .lb-col{
+    flex:0 0 34px; text-align:center; font-weight:700; font-variant-numeric:tabular-nums;
+  }
+  .lb-head .lb-col{ font-size:14px; }
+  .lb-legend{
+    margin-top:8px; text-align:center; font-size:11px; color:var(--text-dim);
+    line-height:1.5; letter-spacing:0.3px;
+  }
 
   /* ---------- Score history log ---------- */
   .history-log-list{
@@ -507,7 +519,7 @@
     </div>
 
     <div class="lb-section">
-      <div class="lb-title">🏆 Leaderboard</div>
+      <div class="lb-title">🏆 IN VENUE LIVE LEADERBOARD</div>
       <div class="lb-list" id="leaderboardList"></div>
     </div>
   </div>
@@ -734,8 +746,10 @@ function rollDie() {
 
 // Score a set of dice -> { score, kept:[indices] }
 function evalRoll(dice) {
-  // 6 of a kind = 5000 (matches the 6-OF-A-KIND bonus)
-  if (dice.length === 6 && new Set(dice.map(d => d.sym)).size === 1) {
+  // 6 of a kind = 5000 (matches the 6-OF-A-KIND bonus). Must be SIX IDENTICAL
+  // dice: same symbol AND same colour. The two E's are different colours, so a
+  // mix (e.g. 5 green E + 1 blue E) is NOT six-of-a-kind — key on sym+colour.
+  if (dice.length === 6 && new Set(dice.map(d => d.sym + (d.color || ""))).size === 1) {
     return { score: 5000, kept: [0,1,2,3,4,5] };
   }
   let score = 0;
@@ -1334,10 +1348,21 @@ async function getSavedPlayers() {
   return Array.from(new Set([...local, ...cloudNames]));
 }
 
-async function mergeAndSaveNames(newNames) {
-  // Never persist auto-assigned AI opponent names (Claude / Gwen / Gemma).
+// Names the system auto-generates and must NEVER persist to the saved-players
+// list or leaderboard: AI opponents (Claude/Gwen/Gemma) and the default
+// "Player N" / "CPU N" placeholders used when a setup seat is left blank.
+function isReservedName(n) {
   const AI_NAMES = ["Claude", "Gwen", "Gemma"];
-  const humanNames = newNames.filter(n => !AI_NAMES.includes(n));
+  if (AI_NAMES.includes(n)) return true;
+  if (/^Player \d+$/.test(n)) return true;
+  if (/^CPU \d+$/.test(n)) return true;
+  return false;
+}
+
+async function mergeAndSaveNames(newNames) {
+  // Never persist auto-assigned / default names (Claude / Gwen / Gemma,
+  // Player 1/2…, CPU 1…).
+  const humanNames = newNames.filter(n => !isReservedName(n));
   const existing = getLocalSavedPlayers();
   const merged = Array.from(new Set([...existing, ...humanNames]));
   setLocalSavedPlayers(merged);
@@ -1469,13 +1494,17 @@ function updateSetupName(idx, val) {
 function updateSetupCpu(idx, checked) {
   setupCpu[idx] = checked;
   if (checked) {
-    // Auto-assign an AI name based on how many AI seats are already active.
-    // Claude (1st) → Gwen (2nd) → Gemma (3rd).
+    // Auto-assign the next unused AI name: Claude (1st) → Gwen (2nd) → Gemma (3rd).
+    // Pick the first name not already taken by another seat so re-toggling never duplicates.
     const AI_NAMES = ["Claude", "Gwen", "Gemma"];
-    const aiCount = setupCpu.filter(Boolean).length; // includes this one
-    const aiName = AI_NAMES[Math.min(aiCount, AI_NAMES.length) - 1];
+    const used = setupNames.filter(n => AI_NAMES.includes(n));
+    const aiName = AI_NAMES.find(n => !used.includes(n)) || AI_NAMES[Math.min(setupCpu.filter(Boolean).length, AI_NAMES.length) - 1] || "Claude";
     setupNames[idx] = aiName;
+  } else {
+    // Toggling off clears the auto-assigned name (the seat is human again).
+    setupNames[idx] = "";
   }
+  renderSetupRows(); // redraw so the autofilled name shows in the input immediately
 }
 
 function renderSetupRows() {
@@ -1535,19 +1564,41 @@ async function renderSavedChips() {
 }
 
 async function renderLeaderboardUI() {
-  const lb = await getLeaderboard();
+  const lb = await getLeaderboard();   // [{name, wins}]
+  const stats = await getAllStats();   // {name: {biggest,games,comeback,greed,six}}
   const el = document.getElementById("leaderboardList");
   if (lb.length === 0) {
     el.innerHTML = `<div style="text-align:center; font-size:13px; color:var(--text-dim);">No games recorded yet</div>`;
     return;
   }
-  el.innerHTML = lb.map((r, i) => `
-    <div class="lb-row">
-      <div class="lb-rank">#${i + 1}</div>
-      <div class="lb-name">${escapeHtml(r.name)}</div>
-      <div class="lb-wins">${r.wins} 🏆</div>
-    </div>
-  `).join("");
+  const statsFor = (name) => stats[name] || { biggest: 0, games: 0, comeback: 0, greed: 0, six: 0 };
+  el.innerHTML = `
+    <div class="lb-head">
+      <div class="lb-rank">#</div>
+      <div class="lb-name">Player</div>
+      <div class="lb-col" title="Wins">🏆</div>
+      <div class="lb-col" title="Biggest single score">📈</div>
+      <div class="lb-col" title="Games played">🎲</div>
+      <div class="lb-col" title="Biggest comeback">🔥</div>
+      <div class="lb-col" title="$GREED rolled">💲</div>
+      <div class="lb-col" title="Six of a kind">6️⃣</div>
+    </div>` + lb.map((r, i) => {
+      const s = statsFor(r.name);
+      return `
+      <div class="lb-row">
+        <div class="lb-rank">${i + 1}</div>
+        <div class="lb-name">${escapeHtml(r.name)}</div>
+        <div class="lb-col">${r.wins}</div>
+        <div class="lb-col">${s.biggest || 0}</div>
+        <div class="lb-col">${s.games || 0}</div>
+        <div class="lb-col">${s.comeback || 0}</div>
+        <div class="lb-col">${s.greed || 0}</div>
+        <div class="lb-col">${s.six || 0}</div>
+      </div>`;
+    }).join("") + `
+    <div class="lb-legend">
+      🏆 Wins &nbsp;·&nbsp; 📈 Biggest &nbsp;·&nbsp; 🎲 Games &nbsp;·&nbsp; 🔥 Comeback &nbsp;·&nbsp; 💲 $GREED &nbsp;·&nbsp; 6️⃣ Six-of-a-kind
+    </div>`;
 }
 
 async function startGame(mode) {
