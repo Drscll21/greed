@@ -1305,6 +1305,8 @@ function saveGameState() {
     const snapshot = {
       players, current, history, gameRunning, endMode,
       endModeTriggerIdx, endTurnsRemaining, winnerDeclared, scoreLog,
+      // Persist dice/turn state so CPU turns resume correctly after a page reload
+      dicePhase, turnDice, bankedDice, rollGroups, turnScore, hotStreak,
       savedAt: Date.now()
     };
     localStorage.setItem(LS_ACTIVE_GAME, JSON.stringify(snapshot));
@@ -1333,12 +1335,35 @@ function restoreGameState(snapshot) {
   endTurnsRemaining = snapshot.endTurnsRemaining;
   winnerDeclared = snapshot.winnerDeclared;
   scoreLog = snapshot.scoreLog || [];
+  // Restore dice/turn state so in-progress turns (esp. CPU turns) resume correctly
+  dicePhase = snapshot.dicePhase || "idle";
+  turnDice = snapshot.turnDice || [];
+  bankedDice = snapshot.bankedDice || [];
+  rollGroups = snapshot.rollGroups || [];
+  turnScore = snapshot.turnScore || 0;
+  hotStreak = snapshot.hotStreak || false;
+  // Clear any stale timers from a previous session
+  clearTimeout(diceAnimTimer); diceAnimTimer = null;
+  clearTimeout(diceSpinTimer); diceSpinTimer = null;
+  clearTimeout(diceWatchdog); diceWatchdog = null;
+  pendingRoll = null;
 
   document.getElementById("setupScreen").classList.add("hidden");
   document.getElementById("winnerScreen").classList.add("hidden");
   document.getElementById("gameScreen").classList.remove("hidden");
-  renderGame();
+  renderGame(true); // skip resetDice() — restore the in-progress turn state instead
+  // Render the dice controls for the restored phase (select/greedOut/idle)
+  renderDiceControls();
   toast("Restored your in-progress game");
+  // If it's a CPU's turn, resume their decision-making:
+  // - If dice are already showing (select phase), call cpuDecide() directly
+  // - If idle (start of their turn), call maybeRunCpu() which calls cpuTakeTurn()
+  if (players[current] && players[current].cpu && dicePhase === "select") {
+    cpuThinking = true;
+    setTimeout(cpuDecide, 650);
+  } else {
+    maybeRunCpu();
+  }
 }
 
 // Checks localStorage for a cached in-progress game on load and, if found,
@@ -1932,8 +1957,8 @@ function renderPlayerCards(targetGridId) {
   }).join("");
 }
 
-function renderGame() {
-  resetDice();
+function renderGame(skipDiceReset) {
+  if (!skipDiceReset) resetDice();
   bannerState();
   renderPlayerCards("cardsGrid");
   renderHistoryLog();

@@ -69,6 +69,8 @@
     box-shadow:0 18px 50px rgba(0,0,0,0.55); animation:slideUp .28s ease-out;
   }
   @keyframes slideUp{ from{ transform:translateY(40px); opacity:0; } to{ transform:translateY(0); opacity:1; } }
+  @keyframes fadeIn{ from{ opacity:0; } to{ opacity:1; } }
+  @keyframes bounceIn{ 0%{ opacity:1; transform:rotate(3deg) scale(0.8); } 60%{ transform:rotate(3deg) scale(1.05); } 100%{ opacity:1; transform:rotate(3deg) scale(1); } }
   .a2hs-card h3{ font-size:18px; letter-spacing:1px; margin-bottom:8px; color:var(--gold); }
   .a2hs-card p{ font-size:13.5px; line-height:1.5; color:var(--text); margin:0 0 12px; }
   .a2hs-steps{ display:flex; flex-direction:column; gap:8px; margin:0 0 14px; padding:0; list-style:none; }
@@ -166,14 +168,7 @@
     font-weight:600;
   }
   .setup-row input[type=text]:focus{ outline:none; border-color:var(--gold); }
-  .row-cpu{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; flex-shrink:0; width:84px; }
-  .row-cpu .ai-label{ font-size:9px; letter-spacing:1px; text-transform:uppercase; color:var(--text-dim); text-align:center; line-height:1.1; }
-  .row-cpu .switch{ position:relative; display:inline-block; width:42px; height:22px; }
-  .row-cpu .switch input{ opacity:0; width:0; height:0; }
-  .row-cpu .slider{ position:absolute; cursor:pointer; inset:0; background:#3a2a4d; border-radius:22px; transition:.2s; }
-  .row-cpu .slider:before{ content:""; position:absolute; height:16px; width:16px; left:3px; top:3px; background:#c9b8dd; border-radius:50%; transition:.2s; }
-  .row-cpu .switch input:checked + .slider{ background:var(--electric); }
-  .row-cpu .switch input:checked + .slider:before{ transform:translateX(20px); background:#fff; }
+  .setup-row input[type=text].first-player{ border-color:var(--electric); box-shadow:0 0 0 3px rgba(42,157,143,0.25); background:#1a0e2b; }
   .row-remove{
     width:42px; height:42px; flex-shrink:0;
     border-radius:10px;
@@ -361,13 +356,21 @@
     display:flex; align-items:center; gap:10px;
     padding:4px 14px; font-size:11px; color:var(--text-dim);
   }
-  .lb-rank{ font-weight:900; color:var(--gold); width:24px; }
-  .lb-name{ flex:1; font-weight:700; }
-  .lb-wins{ font-weight:900; color:var(--electric); }
+  .lb-rank{ font-weight:600; color:var(--gold); width:24px; }
+  .lb-name{ flex:1; font-weight:600; }
+  .lb-wins{ font-weight:600; color:var(--electric); }
   .lb-col{
-    flex:0 0 34px; text-align:center; font-weight:700; font-variant-numeric:tabular-nums;
+    flex:0 0 34px; text-align:center; font-weight:500; font-variant-numeric:tabular-nums;
   }
   .lb-head .lb-col{ font-size:14px; }
+  /* Mobile: make leaderboard tallies lighter for better fit */
+  @media (max-width:480px){
+    .lb-col{ font-weight:400; font-size:12px; }
+    .lb-rank{ font-weight:500; }
+    .lb-name{ font-weight:500; }
+    .lb-wins{ font-weight:500; }
+    .lb-head{ font-size:10px; }
+  }
   .lb-legend{
     margin-top:8px; text-align:center; font-size:11px; color:var(--text-dim);
     line-height:1.5; letter-spacing:0.3px;
@@ -572,12 +575,15 @@
 
     <div class="setup-error" id="setupError"></div>
 
-    <button class="btn btn-cyan btn-block" style="margin-top:14px; padding:16px;" onclick="startGame('score')">📝 Start Scoring Game</button>
-    <button class="btn btn-primary btn-block" style="margin-top:10px; padding:18px;" onclick="window.location.href='greed-dice.html'">🎲 Start Virtual Dice Game</button>
+    <!-- Shuffle button: left-aligned, above Start button -->
+    <div style="text-align:left; margin-top:14px;">
+      <button class="btn btn-secondary" id="shuffleBtn" style="padding:6px 12px; font-size:11px; font-weight:700; border-radius:8px;" onclick="shuffleFirstPlayer()">🎲 Shuffle Who Goes First</button>
+    </div>
 
-    <p class="setup-note">
-      <strong>Single-player?</strong> Add your name as Player 1, then add 1–3 <em>Ai Opponent</em> seats (flip the slider on each) to play against. The AI rolls and banks automatically.
-    </p>
+    <button class="btn btn-cyan btn-block" style="margin-top:14px; padding:16px;" onclick="startGame('score')">📝 Start Scoring Game</button>
+    <div style="text-align:right; margin-top:10px;">
+      <button class="btn btn-primary" id="virtualDiceBtn" style="padding:6px 10px; font-size:10px; font-weight:700; border-radius:8px; min-width:200px;" onclick="window.location.href='greed-dice.html'">TAKE ME TO VIRTUAL DICE GAME</button>
+    </div>
     <div style="display:flex; gap:10px; margin-top:4px;">
       <button class="btn btn-ghost btn-block" style="flex:1;" onclick="openRules()">📖 How to Play / Rules</button>
     </div>
@@ -771,11 +777,11 @@ let bannerFlashTimer = null;
 let scoreLog = [];             // {text, ts} — human-readable event log (scores, bonuses, passes, undos)
 
 let setupNames = ["", ""];     // setup screen rows
-let setupCpu = [false, false]; // parallel to setupNames: is this slot a CPU player?
 let gameMode = "dice";         // "dice" | "score"
 let session = { unlocked: false };
 let adminActiveTab = "players";
 let localStats = {};           // fallback cache {name: {biggest,games,comeback,greed,six}}
+let playerOrder = null;        // null = natural order; array of indices when shuffled
 
 // =========================================================================
 // HYBRID DICE ROLL — generates the suggested score from a real GREED roll.
@@ -1543,32 +1549,15 @@ function toast(msg) {
 function addPlayerRow() {
   if (setupNames.length >= 6) return;
   setupNames.push("");
-  setupCpu.push(false);
   renderSetupRows();
 }
 function removePlayerRow(idx) {
   if (setupNames.length <= 2) return;
   setupNames.splice(idx, 1);
-  setupCpu.splice(idx, 1);
   renderSetupRows();
 }
 function updateSetupName(idx, val) {
   setupNames[idx] = val;
-}
-function updateSetupCpu(idx, checked) {
-  setupCpu[idx] = checked;
-  if (checked) {
-    // Auto-assign the next unused AI name: Claude (1st) → Gwen (2nd) → Gemma (3rd).
-    // Pick the first name not already taken by another seat so re-toggling never duplicates.
-    const AI_NAMES = ["Claude", "Gwen", "Gemma"];
-    const used = setupNames.filter(n => AI_NAMES.includes(n));
-    const aiName = AI_NAMES.find(n => !used.includes(n)) || AI_NAMES[Math.min(setupCpu.filter(Boolean).length, AI_NAMES.length) - 1] || "Claude";
-    setupNames[idx] = aiName;
-  } else {
-    // Toggling off clears the auto-assigned name (the seat is human again).
-    setupNames[idx] = "";
-  }
-  renderSetupRows(); // redraw so the autofilled name shows in the input immediately
 }
 
 function renderSetupRows() {
@@ -1577,16 +1566,12 @@ function renderSetupRows() {
   setupNames.forEach((name, idx) => {
     const row = document.createElement("div");
     row.className = "setup-row";
+    // Highlight the player who will go first (if shuffle was used)
+    const isFirst = playerOrder && playerOrder[0] === idx;
+    const firstClass = isFirst ? ' class="first-player"' : "";
     row.innerHTML = `
       <input type="text" placeholder="Player ${idx + 1} name" value="${escapeHtml(name)}"
-        oninput="updateSetupName(${idx}, this.value)" maxlength="24">
-      <label class="row-cpu" title="AI auto-plays this seat (dice mode)">
-        <span class="switch">
-          <input type="checkbox" ${setupCpu[idx] ? "checked" : ""} onchange="updateSetupCpu(${idx}, this.checked)">
-          <span class="slider"></span>
-        </span>
-        <span class="ai-label">Ai Opponent</span>
-      </label>
+        oninput="updateSetupName(${idx}, this.value)" maxlength="24"${firstClass}>
       <button class="row-remove" ${setupNames.length <= 2 ? "disabled" : ""} onclick="removePlayerRow(${idx})">−</button>
     `;
     container.appendChild(row);
@@ -1665,6 +1650,101 @@ async function renderLeaderboardUI() {
     </div>`;
 }
 
+// Shuffle player order: randomly pick who goes first, keeping others in entered order
+function shuffleFirstPlayer() {
+  const names = setupNames.filter(n => n.trim().length > 0);
+  if (names.length < 2) {
+    toast("Need 2+ players to shuffle");
+    return;
+  }
+  // Pick a random player to go first
+  const firstIdx = Math.floor(Math.random() * names.length);
+  // Build the order: firstIdx goes first, then the rest in their original relative order
+  const indices = [];
+  // Start with the chosen first player's original index
+  indices.push(firstIdx);
+  // Add all others in their original order (skipping the first player)
+  for (let i = 0; i < names.length; i++) {
+    if (i !== firstIdx) indices.push(i);
+  }
+  playerOrder = indices;
+  toast(`🎲 ${names[firstIdx]} goes first! (order shuffled)`);
+  // Update the shuffle button text to show who's first
+  const btn = document.getElementById("shuffleBtn");
+  if (btn) btn.textContent = `🎲 ${names[firstIdx]} goes first — reshuffle?`;
+  // Re-render setup rows to apply the first-player highlight
+  renderSetupRows();
+}
+
+function showMoveNotice() {
+  if (document.getElementById("moveNoticeOverlay")) return; // already shown
+
+  // Position the note above the virtual dice game button
+  const btn = document.getElementById("virtualDiceBtn");
+  if (!btn) return;
+  const rect = btn.getBoundingClientRect();
+
+  const overlay = document.createElement("div");
+  overlay.id = "moveNoticeOverlay";
+  overlay.style.cssText = "position:fixed; top:0; left:0; width:100%; height:100%; z-index:1300; pointer-events:none; opacity:0; animation:fadeIn .3s forwards 0.1s;";
+
+  const note = document.createElement("div");
+  note.style.cssText = "position:absolute; background:#fff8dc; border:2px solid #d9724a; border-radius:8px; padding:14px; max-width:260px; font-family:'Segoe UI',system-ui,sans-serif; box-shadow:6px 6px 0 rgba(0,0,0,0.2); transform:rotate(3deg) scale(0.9); animation:bounceIn .3s forwards 0.1s; left:" + (rect.left + rect.width / 2 - 130) + "px; top:" + Math.max(20, rect.top - 140) + "px; pointer-events:auto;";
+  note.style.fontFamily = "'Segoe UI',system-ui,sans-serif";
+
+  // Post-it note arrow/tail pointing down
+  const tail = document.createElement("div");
+  tail.style.cssText = "position:absolute; top:100%; left:50%; transform:translateX(-50%) rotate(45deg); width:16px; height:16px; background:#fff8dc; border:2px solid #d9724a; border-left:none; border-top:none;";
+  note.appendChild(tail);
+
+  const title = document.createElement("h3");
+  title.textContent = "📌 Game Moved!";
+  title.style.cssText = "font-size:14px; color:#d9724a; margin:0 0 6px;";
+
+  const msg = document.createElement("p");
+  msg.style.cssText = "font-size:11px; line-height:1.4; color:#5a3a1a; margin:0 0 10px;";
+  // Build the popup message, noting if a player has been selected to go first
+  let msgText = "The Virtual Dice Game now has its own page. Player selection is now done on that page. Click below to go there.";
+  if (playerOrder) {
+    const firstPlayerName = setupNames[playerOrder[0]].trim() || "Player " + (playerOrder[0] + 1);
+    msgText += `<br><br><strong>🎲 ${firstPlayerName}</strong> is set to go first.`;
+  }
+  msg.innerHTML = msgText;
+
+  const navBtn = document.createElement("button");
+  navBtn.textContent = "Go to Virtual Dice Game";
+  navBtn.style.cssText = "background:#d9724a; color:#fff5ee; border:1px solid #c0522a; padding:5px 12px; border-radius:5px; font-weight:700; font-size:11px; cursor:pointer; transition:transform .1s ease, background .1s ease; width:100%; margin-bottom:5px;";
+  navBtn.onmouseenter = function() { this.style.transform = "scale(1.02)"; this.style.background = "#c0522a"; };
+  navBtn.onmouseleave = function() { this.style.transform = "scale(1)"; this.style.background = "#d9724a"; };
+  navBtn.onclick = function() {
+    document.body.removeChild(overlay);
+    window.location.href = 'greed-dice.html';
+  };
+
+  const closeBtn = document.createElement("button");
+  closeBtn.innerHTML = "✕ CLOSE";
+  closeBtn.style.cssText = "background:#d9724a; color:#fff5ee; border:1px solid #c0522a; padding:8px 16px; border-radius:6px; font-weight:700; font-size:12px; cursor:pointer; transition:all .1s ease; width:100%; margin-top:5px;";
+  closeBtn.onmouseenter = function() { this.style.transform = "scale(1.02)"; this.style.background = "#c0522a"; };
+  closeBtn.onmouseleave = function() { this.style.transform = "scale(1)"; this.style.background = "#d9724a"; };
+  closeBtn.onclick = function() {
+    document.body.removeChild(overlay);
+  };
+
+  note.appendChild(title);
+  note.appendChild(msg);
+  note.appendChild(navBtn);
+  note.appendChild(closeBtn);
+  overlay.appendChild(note);
+  document.body.appendChild(overlay);
+
+  // Click anywhere on overlay to close (except the buttons)
+  overlay.onclick = function(e) {
+    if (e.target === overlay) {
+      document.body.removeChild(overlay);
+    }
+  };
+}
+
 async function startGame(mode) {
   gameMode = (mode === "score") ? "score" : "dice";
   const errEl = document.getElementById("setupError");
@@ -1672,14 +1752,19 @@ async function startGame(mode) {
   const names = setupNames.map((n, i) => {
     const base = n.trim();
     if (base.length > 0) return base;
-    return setupCpu[i] ? "CPU " + (i + 1) : "Player " + (i + 1);
+    return "Player " + (i + 1);
   }).filter(Boolean);
 
   if (names.length < 2) { errEl.textContent = "Enter at least 2 player names"; return; }
   if (names.length > 6) { errEl.textContent = "Max 6 players"; return; }
 
-  players = names.map((n, i) => ({ name: n, total: 0, last: null, cpu: !!setupCpu[i] }));
+  players = names.map((n, i) => ({ name: n, total: 0, last: null, cpu: false }));
   current = 0;
+  // Apply shuffled player order if one was set
+  if (playerOrder) {
+    players = playerOrder.map(idx => players[idx]);
+    playerOrder = null; // reset after applying
+  }
   history = [];
   gameRunning = true;
   endMode = false;
@@ -1920,7 +2005,10 @@ function newGame() {
   winnerDeclared = false;
   scoreLog = [];
   setupNames = ["", ""];
-  setupCpu = [false, false];
+  playerOrder = null;
+  // Reset the shuffle button text
+  const shuffleBtn = document.getElementById("shuffleBtn");
+  if (shuffleBtn) shuffleBtn.textContent = "🎲 Shuffle Who Goes First";
 
   document.getElementById("gameScreen").classList.add("hidden");
   document.getElementById("winnerScreen").classList.add("hidden");
@@ -2480,6 +2568,8 @@ document.addEventListener("DOMContentLoaded", () => {
   renderScoreGuide();
   renderSetup();
   initA2HS();
+  // Show the post-it note about the virtual dice game moving
+  setTimeout(showMoveNotice, 500);
 });
 
 // =========================================================================
