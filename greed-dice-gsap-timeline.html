@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>$GREED — GSAP Tweening Demo</title>
+<script src="gsap.min.js"></script>
+<style>
+  :root{
+    --bg-1:#241610; --bg-2:#140c09; --gold:#d9724a; --gold-2:#c0522a;
+    --hot-pink:#e8935a; --electric:#2a9d8f; --green:#8fae5c;
+    --card-bg:#2e1c14; --card-border:#4a3021; --text:#f7ede4;
+    --text-dim:#c2a58f;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg-1);color:var(--text);}
+  .wrap{max-width:900px;margin:0 auto;padding:16px;}
+  .header{text-align:center;padding:18px 10px 22px;margin-bottom:20px;}
+  .title{font-size:clamp(28px,7vw,44px);font-weight:900;background:linear-gradient(90deg,var(--gold),var(--hot-pink),var(--electric));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:shine 6s linear infinite;text-transform:uppercase;}
+  .subtitle{font-size:12px;letter-spacing:4px;color:var(--text-dim);text-transform:uppercase;margin-top:4px;}
+  @keyframes shine{to{background-position:200% center;}}
+  .demo-section{background:var(--card-bg);border:1px solid var(--card-border);border-radius:16px;padding:24px;margin-bottom:20px;}
+  .section-title{font-size:13px;text-transform:uppercase;letter-spacing:2px;color:var(--text-dim);margin-bottom:16px;}
+  .dice-container{border:1px solid var(--card-border);border-radius:12px;background:#1a0e2b;padding:20px;margin-bottom:16px;display:flex;justify-content:center;}
+  .dice{display:grid;grid-template-columns:repeat(3, 70px);grid-template-rows:repeat(3, 70px);gap:8px;perspective:500px;transform-style:preserve-3d;}
+  .die{width:70px;height:70px;background:var(--text);color:#241610;font-weight:900;font-size:20px;display:flex;align-items:center;justify-content:center;border-radius:10px;border:2px solid currentColor;cursor:pointer;transition:all 0.3s ease;position:relative;}
+  .die.selected{outline:3px solid var(--green);outline-offset:2px;transform:scale(1.05);}
+  .die.rolling{animation:pulse 0.3s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.1);}}
+  .face-value{position:absolute;top:50%;left:50%;transform:translate(-50%, -50%);}
+  .controls{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:16px;}
+  .btn{padding:12px 20px;font-weight:800;border:none;border-radius:12px;cursor:pointer;font-family:inherit;font-size:14px;text-transform:uppercase;transition:transform 0.1s ease;}
+  .btn:active{transform:scale(0.95);}
+  .btn-primary{background:linear-gradient(135deg,var(--gold),var(--gold-2));color:#0f0620;}
+  .btn-secondary{background:linear-gradient(135deg,#4a3021,#331f15);color:var(--text);border:1px solid var(--card-border);}
+  .btn-danger{background:linear-gradient(135deg,var(--hot-pink),#c46a35);color:#fff5ee;}
+  .status{margin-top:16px;text-align:center;color:var(--text-dim);font-size:14px;}
+  .code-box{background:#0f0620;color:#c2a58f;padding:12px;border-radius:8px;font-family:monospace;font-size:12px;margin-top:16px;overflow-x:auto;}
+  .timeline{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:16px;}
+  .timeline-step{background:rgba(192,82,42,0.15);border:1px solid rgba(192,82,42,0.4);border-radius:8px;padding:12px;text-align:center;}
+  .step-label{font-size:11px;color:var(--text-dim);text-transform:uppercase;margin-bottom:6px;}
+  .step-status{font-size:16px;font-weight:900;color:var(--gold);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div class="title">$GREED - GSAP Tweening Approach</div>
+    <div class="subtitle">Professional Timeline-Based Animations</div>
+  </div>
+
+  <div class="demo-section">
+    <div class="section-title">3. The GSAP Tweening Approach</div>
+    <div class="dice-container">
+      <div class="dice" id="demoDice3">
+        <div class="die" data-id="die1">1</div>
+        <div class="die" data-id="die2">2</div>
+        <div class="die" data-id="die3">3</div>
+        <div class="die" data-id="die4">4</div>
+        <div class="die" data-id="die5">5</div>
+        <div class="die" data-id="die6">6</div>
+        <div class="die" data-id="die7">7</div>
+        <div class="die" data-id="die8">8</div>
+        <div class="die" data-id="die9">9</div>
+      </div>
+    </div>
+    
+    <div class="controls">
+      <button class="btn btn-primary" onclick="rollWithGSAP()">🎲 Roll with Timeline</button>
+      <button class="btn btn-secondary" onclick="shakeSelected()">🎯 Shake Selected</button>
+      <button class="btn btn-danger" onclick="popLand()">✨ Pop Landing</button>
+      <button class="btn btn-secondary" onclick="clearSelection3()">⭕ Clear Selection</button>
+    </div>
+    
+    <div class="timeline">
+      <div class="timeline-step">
+        <div class="step-label">Step 1</div>
+        <div class="step-status" id="step1">Idle</div>
+      </div>
+      <div class="timeline-step">
+        <div class="step-label">Step 2</div>
+        <div class="step-status" id="step2">Idle</div>
+      </div>
+      <div class="timeline-step">
+        <div class="step-status" id="step3">Idle</div>
+        <div class="step-label">Step 3</div>
+      </div>
+    </div>
+    
+    <div class="status" id="status3">Click "Roll with Timeline" to see the GSAP-powered animation</div>
+    
+    <div class="code-box">
+/* GSAP Tweening Key Features: */
+/* 1. Precise timeline control with GSAP TimelineLite */  
+/* 2. Staggered animations for grouped dice */
+/* 3. Custom easing curves (bounce, elastic, etc.) */
+/* 4. Event-driven triggers (shake, pop, settle) */
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <div class="section-title">How to use in your project:</div>
+    <div class="code-box">
+const timeline=gsap.timeline({paused:true});
+
+/* Create a rolling sequence: */
+timeline
+  .to('.die', {rotationX:360, rotationY:360, duration:0.5, stagger:0.1, ease:'power2.inOut'})
+  .to('.die', {scale:1.2, duration:0.2, stagger:0.05, ease:'elastic.out(1.5,0.5)'},'-=0.2')
+  .to('.die', {scale:1, duration:0.3, stagger:0.05, ease:'back.out(1.7)'},'-=0.1');
+
+timeline.play();
+    </div>
+  </div>
+</div>
+
+<script>
+// Initialize the GSAP demo
+let selectedDice=[];
+
+document.querySelectorAll('.die').forEach(die=>{
+  die.addEventListener('click',function(){
+    if(!this.classList.contains('rolling')){
+      this.classList.toggle('selected');
+      updateSelection();
+    }
+  });
+});
+
+function updateSelection(){
+  selectedDice=Array.from(document.querySelectorAll('.die.selected'));
+  document.getElementById('status3').textContent=selectedDice.length>0?'Selected '+selectedDice.length+' dice.':'Click dice to select them.';
+}
+
+function rollWithGSAP(){
+  const allDice=document.querySelectorAll('.die');
+  const timeline=gsap.timeline();
+  
+  // Step 1: Shake and roll all dice
+  timeline.set('#step1',{textContent:'Shaking...'});
+  timeline.to(allDice,{rotationX:360, rotationY:360, duration:0.6, stagger:0.08, ease:'power2.inOut'},0);
+  timeline.to(allDice,{y:-10, duration:0.3, stagger:0.05, repeat:2, yoyo:true, ease:'sine.inOut'},0.6);
+  
+  // Step 2: Pop and settle
+  timeline.set('#step2',{textContent:'Popping...'});
+  timeline.to(allDice,{scale:1.5, duration:0.4, stagger:0.05, ease:'elastic.out(1.5,0.5)'},1.2);
+  timeline.to(allDice,{scale:1, duration:0.3, stagger:0.05, ease:'back.out(1.7)'},1.6);
+  
+  // Step 3: Final positions
+  timeline.set('#step3',{textContent:'Settled'});
+  
+  // Randomize final values
+  allDice.forEach((die,index)=>{
+    const value=Math.floor(Math.random()*6)+1;
+    gsap.to(die, {
+      duration:0.5,
+      delay:2.0+index*0.05,
+      onComplete:function(){
+        this.textContent=value;
+        this.style.color=value===6?'#ffd400':value===1?'#1e7a4d':value===2?'#c0392b':value===3?'#0a0a0a':value===4?'#7bb661':'#3b6fb5';
+      }
+    });
+  });
+  
+  timeline.add(() =>{
+    document.getElementById('status3').textContent='Animation complete! Dice landed with dramatic GSAP effects.';
+    updateSelection();
+  },2.5);
+  
+  timeline.play();
+}
+
+function shakeSelected(){
+  if(selectedDice.length===0){
+    document.getElementById('status3').textContent='Select dice first by clicking on them!';
+    return;
+  }
+  
+  gsap.to(selectedDice,{
+    x:20, 
+    y:-10, 
+    rotation:15, 
+    duration:0.2, 
+    repeat:3, 
+    yoyo:true, 
+    ease:'sine.inOut',
+    onStart:function(){ document.getElementById('status3').textContent='Selected dice are shaking!'; },
+    onComplete:function(){ document.getElementById('status3').textContent='Shake complete!'; }
+  });
+}
+
+function popLand(){
+  const timeline=gsap.timeline();
+  
+  timeline.set('#step1',{textContent:'Popping!'});
+  timeline.to(selectedDice.length>0?selectedDice:[].length>0?document.querySelectorAll('.die'):[],{
+    scale:2, 
+    rotation:180, 
+    duration:0.3, 
+    stagger:0.05, 
+    ease:'elastic.out(2,0.5)'
+  },0);
+  
+  timeline.to(selectedDice.length>0?selectedDice:[].length>0?document.querySelectorAll('.die'):[],{
+    scale:1, 
+    duration:0.5, 
+    stagger:0.05, 
+    ease:'back.out(1.5)'
+  },0.3);
+  
+  timeline.add(()=>{
+    document.getElementById('status3').textContent='Land! All dice have popped and settled with elastic physics!';
+    updateSelection();
+  },0.8);
+  
+  timeline.play();
+}
+
+function clearSelection3(){
+  document.querySelectorAll('.die').forEach(die=>die.classList.remove('selected'));
+  selectedDice=[];
+  document.getElementById('status3').textContent='Selection cleared. Click dice to select them again.';
+}
+</script>
+</body>
+</html>
