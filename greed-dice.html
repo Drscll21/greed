@@ -297,21 +297,42 @@
   .score-guide .sg-legend .dot.e-green{ background:#7bb661; }
   .score-guide .sg-legend .dot.e-blue{ background:#3b6fb5; }
   .score-guide .sg-legend .dot.d{ background:#0a0a0a; }
-  .dice-row{ display:flex; flex-wrap:wrap; gap:10px; justify-content:center; min-height:72px; align-items:center; perspective:700px; }
+  .dice-row{ display:flex; flex-wrap:wrap; gap:16px; justify-content:center; min-height:72px; align-items:center; perspective:700px; }
   .dice-row.side{ min-height:64px; justify-content:flex-start; align-content:flex-start; }
   .dice-prompt{ color:var(--text-dim); font-size:14px; text-align:center; }
-  .die{ width:62px; height:62px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:34px; font-weight:900; box-shadow:0 4px 8px rgba(0,0,0,0.35); user-select:none; background:var(--text); color:#241610; transform-style:preserve-3d; }
-  .die.dollar{ background:#1e7a4d; color:#eafff0; border:2px solid #0f5130; }
-  .die.g{ background:#ffd400; color:#1a1a1a; border:2px solid #e6b800; }
-  .die.r{ background:#c0392b; color:#fff5ee; border:2px solid #8c1f15; }
-  .die.e-green{ background:#7bb661; color:#10240c; border:2px solid #5a9447; }
-  .die.e-blue{ background:#3b6fb5; color:#fff; border:2px solid #2a527f; }
-  .die.d{ background:#0a0a0a; color:#f5f5f5; border:2px solid #3a3a3a; }
+  /* 3D cube die structure */
+  .die{ width:62px; height:62px; position:relative; transform-style:preserve-3d; }
+  .die-face{
+    position:absolute; width:62px; height:62px;
+    border:2px solid rgba(255,255,255,0.15);
+    border-radius:10px;
+    font-size:30px; font-weight:900;
+    line-height:58px; text-align:center;
+    display:flex; align-items:center; justify-content:center;
+    backface-visibility:hidden;
+    user-select:none;
+    box-shadow:0 4px 8px rgba(0,0,0,0.35);
+    transition:background .2s, color .2s, border-color .2s;
+  }
+  .die-face--front  { transform: translateZ(31px); }
+  .die-face--back   { transform: rotateY(180deg) translateZ(31px); }
+  .die-face--right  { transform: rotateY(90deg) translateZ(31px); }
+  .die-face--left   { transform: rotateY(-90deg) translateZ(31px); }
+  .die-face--top    { transform: rotateX(90deg) translateZ(31px); }
+  .die-face--bottom { transform: rotateX(-90deg) translateZ(31px); }
+  /* Symbol color classes (same as existing) */
+  .die-face.dollar{ background:#1e7a4d; color:#eafff0; border-color:#0f5130; }
+  .die-face.g{ background:#ffd400; color:#1a1a1a; border-color:#e6b800; }
+  .die-face.r{ background:#c0392b; color:#fff5ee; border-color:#8c1f15; }
+  .die-face.e-green{ background:#7bb661; color:#10240c; border-color:#5a9447; }
+  .die-face.e-blue{ background:#3b6fb5; color:#fff; border-color:#2a527f; }
+  .die-face.d{ background:#0a0a0a; color:#f5f5f5; border-color:#3a3a3a; }
+  .die{ background:transparent; }
   .die.selectable{ cursor:pointer; transition:transform .1s ease, box-shadow .1s ease; }
   .die.selectable:hover{ transform:translateY(-3px) scale(1.05); box-shadow:0 0 0 3px rgba(192,82,42,0.55), 0 6px 14px rgba(0,0,0,0.4); }
   .die.banked{ outline:3px solid var(--green); outline-offset:1px; cursor:pointer; }
   .die.banked:hover{ transform:scale(0.95); }
-  .die.rolling{ animation:tumble 0.42s linear infinite; will-change:transform; }
+  .die.rolling{ animation:tumble 1.2s linear; will-change:transform; }
   @keyframes tumble{
     0%{ transform:translateY(0) rotateX(0deg) rotateY(0deg); }
     25%{ transform:translateY(-12px) rotateX(200deg) rotateY(110deg); }
@@ -511,7 +532,7 @@
 
 <!-- Version footer -->
 <div style="text-align:center; margin-top:16px; padding:8px; color:var(--text-dim); font-size:11px; opacity:0.7;">
-  $GREED Dice v1.3.10 — Local Only
+  $GREED Dice v1.3.11 — Local Only
 </div>
 </div>
 
@@ -609,6 +630,51 @@ const DICE_SYMS = [
 function rollDie() {
   const base = DICE_SYMS[Math.floor(Math.random() * DICE_SYMS.length)];
   return { sym: base.sym, cls: base.cls, color: base.color || null };
+}
+
+// Fisher-Yates shuffle an array in place
+function shuffleArray(arr) {
+  for (let j = arr.length - 1; j > 0; j--) {
+    const k = Math.floor(Math.random() * (j + 1));
+    [arr[j], arr[k]] = [arr[k], arr[j]];
+  }
+  return arr;
+}
+
+// Create a 3D cube die element with 6 faces
+// The front face shows the outcome symbol (sym/cls). The other 5 faces
+// show random symbols so hidden sides remain visible in 3D when viewed from angles.
+function createCubeDie(cls, sym, randomFaces) {
+  const die = document.createElement("div");
+  die.className = "die " + cls;
+  die.dataset.outcomeSym = sym;
+  die.dataset.outcomeCls = cls;
+  const sides = ['front', 'back', 'right', 'left', 'top', 'bottom'];
+  const symbols = [...DICE_SYMS];
+  if (randomFaces) {
+    shuffleArray(symbols);
+  }
+  sides.forEach((side, index) => {
+    const face = document.createElement("div");
+    let faceCls, faceSym;
+    if (randomFaces) {
+      // Tumbling: all faces random
+      faceCls = symbols[index].cls;
+      faceSym = symbols[index].sym;
+    } else if (side === 'front') {
+      // Settled: front face shows the dice outcome
+      faceCls = cls;
+      faceSym = sym;
+    } else {
+      // Settled: other faces show random symbols (still different colours/letters)
+      faceCls = symbols[index].cls;
+      faceSym = symbols[index].sym;
+    }
+    face.className = "die-face die-face--" + side + " " + faceCls;
+    face.textContent = faceSym;
+    die.appendChild(face);
+  });
+  return die;
 }
 
 // Score a set of dice -> { score, kept:[indices] }
@@ -721,12 +787,18 @@ function diceRoll() {
   const row = document.getElementById("diceRow");
   row.innerHTML = "";
   const spinEls = [];
+  // Randomize the start order for a more natural, less mechanical cascade
+  const startOrder = [...Array(count).keys()];
+  shuffleArray(startOrder);
   for (let i = 0; i < count; i++) {
-    const el = document.createElement("div");
-    el.className = "die rolling";
-    el.textContent = DICE_SYMS[0].sym;
+    // Create a 3D cube die with random face permutation, marked as rolling
+    const el = createCubeDie(finalDice[i].cls, finalDice[i].sym, true);
+    el.classList.add("rolling");
+    // Stagger the animation start by randomized order, not left-to-right
+    const orderIndex = startOrder.indexOf(i);
+    el.style.animationDelay = (orderIndex * 0.05) + "s";
     row.appendChild(el);
-    spinEls.push(el);
+    spinEls.push({ el, orderIndex });
   }
   dicePhase = "rolling";
   document.getElementById("rollBtn").classList.add("hidden");
@@ -738,24 +810,12 @@ function diceRoll() {
   // Lock in the result now so we can settle even if a timer is lost (e.g. tab throttled).
   pendingRoll = { finalDice, fresh };
 
-  // Cycle random faces while tumbling, then land on the real result
+  // Wait for tumble animation to complete (1.2s + max stagger) then settle
   clearTimeout(diceAnimTimer);
   clearTimeout(diceSpinTimer);
   clearTimeout(diceWatchdog);
-  let ticks = 0;
-  const totalTicks = 10;
-  diceSpinTimer = setInterval(() => {
-    ticks++;
-    spinEls.forEach((el, i) => {
-      const r = rollDie();
-      el.className = "die " + r.cls + " rolling";
-      el.textContent = r.sym;
-    });
-    if (ticks >= totalTicks) {
-      clearInterval(diceSpinTimer);
-      diceAnimTimer = setTimeout(() => settleDice(finalDice, fresh), 140);
-    }
-  }, 70);
+  const maxStagger = (count - 1) * 0.05;
+  diceAnimTimer = setTimeout(() => settleDice(finalDice, fresh), 1200 + maxStagger * 1000);
   // Safety net: if for any reason the settle timer never fires, force a settle
   diceWatchdog = setTimeout(() => {
     if (dicePhase === "rolling") settleDice(finalDice, fresh);
@@ -779,13 +839,13 @@ function settleDice(finalDice, fresh) {
   rollGroups.push([]);
 
   // Render the real final faces with a land-pop (replaces the spinning ones)
+  // Note: renderDiceControls will rebuild with selectable + staggered land-pop
   const row = document.getElementById("diceRow");
   if (row) {
     row.innerHTML = "";
     finalDice.forEach(d => {
-      const el = document.createElement("div");
-      el.className = "die " + d.cls + " land";
-      el.textContent = d.sym;
+      const el = createCubeDie(d.cls, d.sym);
+      el.classList.add("land");
       row.appendChild(el);
     });
   }
@@ -793,7 +853,7 @@ function settleDice(finalDice, fresh) {
 
   if (evalRoll(finalDice).score === 0) {
     // No scoring option on this throw → GREED OUT.
-    // On a reroll this forfeits EVERYTHING set aside earlier this turn.
+    // On a reroll this forfeits EVERYTHING set aside earlier in the turn.
     // Auto-commit a 0 and pass to the next player.
     rollGroups = [];
     bankedDice = [];
@@ -877,7 +937,10 @@ function renderDiceControls() {
   }
 
   if (dicePhase === "greedOut") {
-    row.innerHTML = turnDice.map(d => `<div class="die ${d.cls}">${d.sym}</div>`).join("");
+    row.innerHTML = turnDice.map(d => {
+      const el = createCubeDie(d.cls, d.sym);
+      return el.outerHTML;
+    }).join("");
     bankedRow.innerHTML = "";
     hint.textContent = "GREED OUT — tap “No Score / Pass” to lose the turn";
     rollBtn.classList.add("hidden");
@@ -889,17 +952,29 @@ function renderDiceControls() {
 
   // select — player taps dice in the main tray to set them aside
   if (turnDice.length > 0) {
-    row.innerHTML = turnDice.map((d, i) =>
-      `<div class="die ${d.cls} selectable land" onclick="toggleDie(${i})">${d.sym}</div>`).join("");
+    // Randomized stagger order for the land-pop animation
+    const landOrder = [...Array(turnDice.length).keys()];
+    shuffleArray(landOrder);
+    row.innerHTML = turnDice.map((d, i) => {
+      const el = createCubeDie(d.cls, d.sym);
+      el.classList.add("selectable", "land");
+      el.setAttribute("onclick", `toggleDie(${i})`);
+      // Stagger the land-pop: each die lands 100ms after the one before in random order
+      const orderIdx = landOrder.indexOf(i);
+      el.style.animationDelay = (orderIdx * 0.1) + "s";
+      return el.outerHTML;
+    }).join("");
   } else {
     row.innerHTML = '<div class="dice-prompt">All dice set aside — reroll!</div>';
   }
   // Side tray: earlier rolls are locked; current roll's picks are tappable to undo
   const lastIdx = rollGroups.length - 1;
-  bankedRow.innerHTML = rollGroups.map((g, gi) => g.map((d, k) =>
-    gi === lastIdx
-      ? `<div class="die ${d.cls} banked" onclick="unselectDie(${k})">${d.sym}</div>`
-      : `<div class="die ${d.cls} banked">${d.sym}</div>`).join("")).join("");
+  bankedRow.innerHTML = rollGroups.map((g, gi) => g.map((d, k) => {
+    const el = createCubeDie(d.cls, d.sym);
+    el.classList.add("banked");
+    if (gi === lastIdx) el.setAttribute("onclick", `unselectDie(${k})`);
+    return el.outerHTML;
+  }).join("")).join("");
 
   // Show current roll score in the Set Aside column
   const currentRollEl = document.getElementById("currentRollScore");
@@ -2009,7 +2084,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // Version display
-const APP_VERSION = "1.3.10";
+const APP_VERSION = "1.3.11";
 console.log(`$GREED Dice v${APP_VERSION} loaded`);
 </script>
 </body>
