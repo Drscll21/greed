@@ -3,16 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>$GREED — Rose Island International Greed Tournament</title>
+<title>$GREED — Virtual Dice Game</title>
 
 <!-- ===== PWA / Add-to-Home-Screen (full-screen standalone) ===== -->
 <meta name="theme-color" content="#140c09">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="$GREED">
+<meta name="apple-mobile-web-app-title" content="$GREED Dice">
 <!-- Inline manifest (no external file needed) -->
-<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%20%22%24GREED%20Rose%20Island%22%2C%20%22short_name%22%3A%20%22%24GREED%22%2C%20%22start_url%22%3A%20%22.%22%2C%20%22display%22%3A%20%22standalone%22%2C%20%22display_override%22%3A%20%5B%22standalone%22%5D%2C%20%22background_color%22%3A%20%22%23140c09%22%2C%20%22theme_color%22%3A%20%22%23140c09%22%2C%20%22orientation%22%3A%20%22portrait%22%2C%20%22icons%22%3A%20%5B%7B%22src%22%3A%20%22data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgZmlsbD0iIzE0MGMwOSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTYlIiBmb250LXNpemU9IjIwMCIgZmlsbD0iI2Q5NzI0YSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IkFyaWFsLEhlbHZldGljYSxzYW5zLXNlcmlmIj4kR1JFRUQ8L3RleHQ%2BPC9zdmc%2B%22%2C%20%22sizes%22%3A%20%22512x512%22%2C%20%22type%22%3A%20%22image%2Fsvg%2Bxml%22%7D%5D%7D">
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%20%22%24GREED%20Dice%22%2C%20%22short_name%22%3A%20%22%24GREED%20Dice%22%2C%20%22start_url%22%3A%20%22.%22%2C%20%22display%22%3A%20%22standalone%22%2C%20%22display_override%22%3A%20%5B%22standalone%22%5D%2C%20%22background_color%22%3A%20%22%23140c09%22%2C%20%22theme_color%22%3A%20%22%23140c09%22%2C%20%22orientation%22%3A%20%22portrait%22%2C%20%22icons%22%3A%20%5B%7B%22src%22%3A%20%22data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgZmlsbD0iIzE0MGMwOSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTYlIiBmb250LXNpemU9IjIwMCIgZmlsbD0iI2Q5NzI0YSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IkFyaWFsLEhlbHZldGljYSxzYW5zLXNlcmlmIj4kR1JFRUQ8L3RleHQ%2BPC9zdmc%2B%22%2C%20%22sizes%22%3A%20%22512x512%22%2C%20%22type%22%3A%20%22image%2Fsvg%2Bxml%22%7D%5D%7D">
 <style>
   :root{
     --bg-1:#241610;
@@ -48,39 +48,12 @@
   ::selection{background:var(--gold); color:#000;}
 
   /* ---------- Full-screen standalone (added to home screen) ---------- */
-  /* Respect notches/status bar when launched from the home screen; the OS
-     chrome is hidden in standalone mode, so pad using the safe-area insets. */
   body{
     padding-top: max(16px, env(safe-area-inset-top));
     padding-bottom: max(40px, env(safe-area-inset-bottom));
     padding-left: max(16px, env(safe-area-inset-left));
     padding-right: max(16px, env(safe-area-inset-right));
   }
-
-  /* ---------- Add-to-Home-Screen popup ---------- */
-  .a2hs-overlay{
-    position:fixed; inset:0; z-index:1200; display:flex; align-items:flex-end;
-    justify-content:center; background:rgba(8,5,3,0.62); backdrop-filter:blur(3px);
-    padding: env(safe-area-inset-top) 12px env(safe-area-inset-bottom);
-  }
-  .a2hs-card{
-    width:100%; max-width:440px; background:linear-gradient(160deg,var(--bg-1),var(--bg-2));
-    border:1px solid var(--card-border); border-radius:18px; padding:20px 18px 16px;
-    box-shadow:0 18px 50px rgba(0,0,0,0.55); animation:slideUp .28s ease-out;
-  }
-  @keyframes slideUp{ from{ transform:translateY(40px); opacity:0; } to{ transform:translateY(0); opacity:1; } }
-  .a2hs-card h3{ font-size:18px; letter-spacing:1px; margin-bottom:8px; color:var(--gold); }
-  .a2hs-card p{ font-size:13.5px; line-height:1.5; color:var(--text); margin:0 0 12px; }
-  .a2hs-steps{ display:flex; flex-direction:column; gap:8px; margin:0 0 14px; padding:0; list-style:none; }
-  .a2hs-steps li{
-    display:flex; gap:10px; align-items:flex-start; font-size:13.5px; color:var(--text);
-    background:rgba(143,174,92,0.08); border:1px solid var(--card-border);
-    border-radius:10px; padding:9px 11px;
-  }
-  .a2hs-steps .ico{ font-size:18px; line-height:1.2; }
-  .a2hs-actions{ display:flex; gap:10px; }
-  .a2hs-actions .btn{ flex:1; }
-  .a2hs-hide{ display:none !important; }
 
   .wrap{max-width:900px; margin:0 auto;}
 
@@ -110,20 +83,20 @@
     margin-top:4px;
   }
 
-  .admin-gear{
-    position:fixed; top:14px; right:14px; z-index:50;
+  .back-link{
+    position:fixed; top:14px; left:14px; z-index:50;
     width:44px; height:44px; border-radius:50%;
     background:var(--card-bg); border:2px solid var(--card-border);
     display:flex; align-items:center; justify-content:center;
-    font-size:20px;
+    font-size:20px; color:var(--text); text-decoration:none;
   }
-  .admin-gear:active{ transform:scale(0.92); }
+  .back-link:active{ transform:scale(0.92); }
 
   /* ---------- Card shell ---------- */
   .panel{
     background:rgba(36,18,56,0.7);
     border:1px solid var(--card-border);
-    border-radius:var(--radius);
+    border-radius:16px;
     padding:20px;
     backdrop-filter:blur(6px);
   }
@@ -150,6 +123,7 @@
   .btn-ghost{ background:transparent; color:var(--text-dim); border:1px dashed var(--card-border);}
   .btn:disabled{ opacity:0.35; cursor:not-allowed; transform:none !important; filter:grayscale(0.4);}
   .btn-block{ width:100%; }
+  .btn-sm{ padding:8px 12px; font-size:12px; margin-top:8px; width:100%; }
 
   /* ---------- SETUP SCREEN ---------- */
   .setup-row{
@@ -301,175 +275,7 @@
   .achv-pill.greed{ background:rgba(232,147,90,0.18); color:var(--hot-pink); }
   .achv-pill.six{ background:rgba(42,157,143,0.18); color:var(--electric); }
 
-  /* ---------- Score entry ---------- */
-  .entry-panel{ margin-top:6px; }
-
-  .manual-entry{
-    display:flex; gap:8px; margin-bottom:14px;
-  }
-  .manual-entry input[type=number]{
-    flex:1; padding:16px; border-radius:12px; border:2px solid var(--card-border);
-    background:#1a0e2b; color:var(--text); font-size:20px; font-weight:800; text-align:center;
-  }
-  .manual-entry input[type=number]:focus{ outline:none; border-color:var(--gold); }
-  .manual-entry .btn{ flex-shrink:0; }
-  @media (max-width:560px){
-    .manual-entry{ flex-wrap:wrap; }
-    .manual-entry input[type=number]{ flex:1 1 100%; }
-    .manual-entry .btn{ flex:1 1 100%; }
-    /* Stack the dice main tray over the side panel so "Set Aside" and
-       "Score Possibilities" each get the full phone width instead of a
-       cramped half-pane side-by-side. */
-    .dice-tray{ flex-direction:column; }
-    .dice-main{ min-width:0; width:100%; }
-    .dice-side{ flex:1 1 auto; width:100%; min-width:0; }
-    .score-guide .sg-legend{ justify-content:flex-start; }
-  }
-
-  .quick-grid{
-    display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:14px;
-  }
-  .quick-btn{
-    padding:16px 8px; border-radius:12px;
-    background:linear-gradient(135deg,#3a251a,#291810);
-    border:1px solid var(--card-border);
-    color:var(--text); font-weight:800; font-size:16px;
-  }
-  .quick-btn:active{ background:linear-gradient(135deg,var(--gold),var(--gold-2)); color:#fff5ee; transform:scale(0.94);}
-
-  .bonus-grid{
-    display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;
-  }
-  .bonus-btn{ padding:16px 8px; border-radius:12px; font-size:14px; }
-
-  .action-row{ display:flex; gap:10px; margin-top:8px; }
-  .action-row .btn{ flex:1; }
-
-  /* ---------- Leaderboard ---------- */
-  .lb-section{ margin-top:26px; }
-  .lb-title{
-    font-size:13px; letter-spacing:3px; text-transform:uppercase; color:var(--text-dim);
-    margin-bottom:10px; text-align:center;
-  }
-  .lb-list{ display:flex; flex-direction:column; gap:6px; }
-  .lb-row{
-    display:flex; align-items:center; gap:10px;
-    background:var(--card-bg); border:1px solid var(--card-border);
-    border-radius:10px; padding:10px 14px;
-  }
-  .lb-head{
-    display:flex; align-items:center; gap:10px;
-    padding:4px 14px; font-size:11px; color:var(--text-dim);
-  }
-  .lb-rank{ font-weight:900; color:var(--gold); width:24px; }
-  .lb-name{ flex:1; font-weight:700; }
-  .lb-wins{ font-weight:900; color:var(--electric); }
-  .lb-col{
-    flex:0 0 34px; text-align:center; font-weight:700; font-variant-numeric:tabular-nums;
-  }
-  .lb-head .lb-col{ font-size:14px; }
-  .lb-legend{
-    margin-top:8px; text-align:center; font-size:11px; color:var(--text-dim);
-    line-height:1.5; letter-spacing:0.3px;
-  }
-
-  /* ---------- Score history log ---------- */
-  .history-log-list{
-    display:flex; flex-direction:column-reverse; gap:6px;
-    max-height:340px; overflow-y:auto;
-  }
-  .history-row{
-    display:flex; justify-content:space-between; align-items:center; gap:10px;
-    background:var(--card-bg); border:1px solid var(--card-border);
-    border-radius:8px; padding:8px 12px; font-size:13px;
-  }
-  .history-row.is-undo{ border-color:rgba(232,147,90,0.5); background:rgba(232,147,90,0.08); }
-  .history-row .h-text{ font-weight:700; }
-  .history-row.is-undo .h-text{ color:var(--hot-pink); }
-  .history-row .h-time{ font-size:10px; color:var(--text-dim); white-space:nowrap; }
-  .history-empty{ text-align:center; color:var(--text-dim); font-size:13px; padding:16px; }
-
-  /* ---------- Winner screen ---------- */
-  .winner-screen{ text-align:center; padding:30px 10px; }
-  .trophy{ font-size:64px; }
-  .winner-name{
-    font-size:clamp(26px,8vw,40px); font-weight:900; color:var(--gold);
-    text-transform:uppercase; letter-spacing:1px; margin:10px 0 4px;
-  }
-  .winner-total{ font-size:20px; color:var(--text-dim); font-weight:700;}
-
-  /* ---------- Toast ---------- */
-  .toast{
-    position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
-    background:#1a0e2b; border:1px solid var(--card-border);
-    padding:12px 20px; border-radius:12px; font-size:13px; font-weight:700;
-    z-index:100; opacity:0; pointer-events:none; transition:opacity .3s ease;
-  }
-  .toast.show{ opacity:1; }
-
-  /* ---------- Admin modal ---------- */
-  .modal-overlay{
-    position:fixed; inset:0; background:rgba(0,0,0,0.75);
-    display:flex; align-items:center; justify-content:center; z-index:200;
-    padding:16px;
-  }
-  .modal{
-    background:var(--bg-1); border:1px solid var(--card-border); border-radius:18px;
-    width:100%; max-width:520px; max-height:88vh; overflow-y:auto; padding:20px;
-  }
-  .modal-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;}
-  .modal-close{ width:36px; height:36px; border-radius:50%; background:var(--card-bg); font-size:18px; color:var(--text);}
-  .setup-note{ font-size:12.5px; line-height:1.5; color:var(--text-dim); margin-top:12px; background:var(--card-bg); border:1px solid var(--card-border); border-radius:12px; padding:10px 12px; }
-  .setup-note strong{ color:var(--text); }
-  .setup-note em{ color:var(--electric); font-style:normal; }
-  .rules-body{ font-size:13.5px; line-height:1.55; color:var(--text-dim); }
-  .rules-body h4{ color:var(--gold); margin:16px 0 6px; font-size:14px; letter-spacing:1px; text-transform:uppercase; }
-  .rules-body h4:first-child{ margin-top:0; }
-  .rules-body p{ margin:6px 0; }
-  .rules-body ol{ margin:6px 0 6px 18px; padding:0; }
-  .rules-body li{ margin:4px 0; }
-  .rules-table{ width:100%; border-collapse:collapse; margin:8px 0; font-size:13px; }
-  .rules-table td{ padding:5px 8px; border:1px solid var(--card-border); }
-  .rules-table td:nth-child(odd){ color:var(--text); font-weight:600; width:22%; }
-  .rules-table td:nth-child(even){ color:var(--gold); width:14%; }
-  .rules-small{ font-size:12px; opacity:0.85; }
-  .rules-callout{ background:rgba(232,147,90,0.12); border:1px solid var(--hot-pink); border-radius:12px; padding:10px 12px; color:var(--text); margin-top:8px; }
-  .admin-pw-input{
-    width:100%; padding:14px; border-radius:12px; border:2px solid var(--card-border);
-    background:#1a0e2b; color:var(--text); font-size:16px; margin-bottom:12px;
-  }
-  .admin-tabs{ display:flex; gap:6px; margin-bottom:16px; }
-  .admin-tab{
-    flex:1; padding:10px; border-radius:10px; background:var(--card-bg);
-    color:var(--text-dim); font-weight:700; font-size:13px; border:1px solid var(--card-border);
-  }
-  .admin-tab.active{ background:var(--gold); color:#fff5ee; border-color:var(--gold); }
-  .admin-row{
-    display:flex; gap:6px; align-items:center; background:var(--card-bg);
-    border:1px solid var(--card-border); border-radius:10px; padding:8px 10px; margin-bottom:8px;
-  }
-  .admin-row .aname{ flex:1; font-weight:700; font-size:14px; word-break:break-word;}
-  .admin-row input[type=text],.admin-row input[type=number]{
-    width:64px; padding:8px; border-radius:8px; border:1px solid var(--card-border);
-    background:#1a0e2b; color:var(--text); font-size:13px; text-align:center;
-  }
-  .admin-row input.stat-input{ width:52px; }
-  .admin-mini-btn{
-    padding:8px 10px; border-radius:8px; font-size:11px; font-weight:800; text-transform:uppercase;
-  }
-  .admin-add-row{ display:flex; gap:8px; margin-bottom:16px; }
-  .admin-add-row input{ flex:1; padding:12px; border-radius:10px; border:2px solid var(--card-border); background:#1a0e2b; color:var(--text); }
-  .stat-labels{ display:flex; gap:4px; font-size:9px; color:var(--text-dim); text-align:center; margin-left:auto; }
-  .stat-col{ width:52px; }
-  .sync-dot{ display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; }
-  .sync-dot.on{ background:var(--green); box-shadow:0 0 6px var(--green); }
-  .sync-dot.off{ background:var(--text-dim); }
-  .status-line{ font-size:11px; color:var(--text-dim); text-align:center; margin-top:6px; }
-
-  .hidden{ display:none !important; }
-  .section-title{ font-size:13px; text-transform:uppercase; letter-spacing:2px; color:var(--text-dim); margin:14px 0 8px;}
-
-  /* ---------- DICE TRAY (hybrid roll, manual selection) ---------- */
+  /* ---------- Dice tray ---------- */
   .dice-tray{ display:flex; flex-wrap:wrap; gap:12px; margin-bottom:18px; align-items:stretch; }
   .dice-main{ flex:1 1 300px; min-width:260px; }
   .dice-side{ flex:0 0 170px; min-width:150px; background:rgba(143,174,92,0.08); border:1px dashed rgba(192,82,42,0.4); border-radius:14px; padding:12px; display:flex; flex-direction:column; }
@@ -521,8 +327,82 @@
   }
   .dice-controls{ display:flex; gap:10px; flex:1 1 100%; }
   .dice-controls .btn{ flex:1; }
-  .btn-sm{ padding:8px 12px; font-size:12px; margin-top:8px; width:100%; }
   .dice-hint{ text-align:center; font-size:12px; color:var(--text-dim); margin-top:8px; min-height:16px; }
+
+  /* ---------- Action row ---------- */
+  .action-row{ display:flex; gap:10px; margin-top:8px; }
+  .action-row .btn{ flex:1; }
+
+  /* ---------- Winner screen ---------- */
+  .winner-screen{ text-align:center; padding:30px 10px; }
+  .trophy{ font-size:64px; }
+  .winner-name{
+    font-size:clamp(26px,8vw,40px); font-weight:900; color:var(--gold);
+    text-transform:uppercase; letter-spacing:1px; margin:10px 0 4px;
+  }
+  .winner-total{ font-size:20px; color:var(--text-dim); font-weight:700;}
+
+  /* ---------- Toast ---------- */
+  .toast{
+    position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+    background:#1a0e2b; border:1px solid var(--card-border);
+    padding:12px 20px; border-radius:12px; font-size:13px; font-weight:700;
+    z-index:100; opacity:0; pointer-events:none; transition:opacity .3s ease;
+  }
+  .toast.show{ opacity:1; }
+
+  /* ---------- Rules modal ---------- */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,0.75);
+    display:flex; align-items:center; justify-content:center; z-index:200;
+    padding:16px;
+  }
+  .modal{
+    background:var(--bg-1); border:1px solid var(--card-border); border-radius:18px;
+    width:100%; max-width:520px; max-height:88vh; overflow-y:auto; padding:20px;
+  }
+  .modal-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;}
+  .modal-close{ width:36px; height:36px; border-radius:50%; background:var(--card-bg); font-size:18px; color:var(--text);}
+  .rules-body{ font-size:13.5px; line-height:1.55; color:var(--text-dim); }
+  .rules-body h4{ color:var(--gold); margin:16px 0 6px; font-size:14px; letter-spacing:1px; text-transform:uppercase; }
+  .rules-body h4:first-child{ margin-top:0; }
+  .rules-body p{ margin:6px 0; }
+  .rules-body ol{ margin:6px 0 6px 18px; padding:0; }
+  .rules-body li{ margin:4px 0; }
+  .rules-table{ width:100%; border-collapse:collapse; margin:8px 0; font-size:13px; }
+  .rules-table td{ padding:5px 8px; border:1px solid var(--card-border); }
+  .rules-table td:nth-child(odd){ color:var(--text); font-weight:600; width:22%; }
+  .rules-table td:nth-child(even){ color:var(--gold); width:14%; }
+  .rules-small{ font-size:12px; opacity:0.85; }
+  .rules-callout{ background:rgba(232,147,90,0.12); border:1px solid var(--hot-pink); border-radius:12px; padding:10px 12px; color:var(--text); margin-top:8px; }
+
+  .hidden{ display:none !important; }
+  .section-title{ font-size:13px; text-transform:uppercase; letter-spacing:2px; color:var(--text-dim); margin:14px 0 8px;}
+
+  /* Current roll score display in Set Aside column */
+  .side-score{
+    background:rgba(192,82,42,0.15);
+    border:1px solid rgba(192,82,42,0.4);
+    border-radius:8px;
+    padding:8px 12px;
+    margin-bottom:8px;
+    text-align:center;
+    font-size:14px;
+    font-weight:800;
+    color:var(--gold);
+    letter-spacing:1px;
+  }
+  .side-score #currentRollScoreVal{
+    font-size:20px;
+    font-variant-numeric:tabular-nums;
+  }
+
+  @media (max-width:560px){
+    .dice-tray{ flex-direction:column; }
+    .dice-main{ min-width:0; width:100%; }
+    .dice-side{ flex:1 1 auto; width:100%; min-width:0; }
+    .score-guide .sg-legend{ justify-content:flex-start; }
+  }
 </style>
 </head>
 <body>
@@ -530,7 +410,7 @@
 <!-- Add-to-Home-Screen prompt (mobile only, not when already standalone) -->
 <div class="a2hs-overlay a2hs-hide" id="a2hsOverlay">
   <div class="a2hs-card">
-    <h3>📲 Add $GREED to your Home Screen</h3>
+    <h3>📲 Add $GREED Dice to your Home Screen</h3>
     <p id="a2hsIntro">For a full-screen, app-like experience with no browser bars, save this page to your home screen.</p>
     <ol class="a2hs-steps" id="a2hsSteps"></ol>
     <div class="a2hs-actions">
@@ -540,16 +420,15 @@
   </div>
 </div>
 
-<div class="admin-gear" id="adminGear" onclick="openAdmin()">⚙</div>
+<a href="index4.html" class="back-link" title="Back to main menu">←</a>
 <div class="toast" id="toast"></div>
 
 <div class="wrap">
   <div class="app-header">
     <div class="title">$GREED</div>
-    <div class="subtitle">ROSE ISLAND EDITION - HOUSE RULES APPLY</div>
+    <div class="subtitle">VIRTUAL DICE GAME — LOCAL ONLY</div>
   </div>
 
-  <!-- ================= SETUP SCREEN ================= -->
   <!-- ================= RESUME GAME (shown only if a cached game is found) ================= -->
   <div id="resumePanel" class="panel hidden" style="margin-bottom:16px; border-color:var(--electric);">
     <h3 style="text-align:center; color:var(--electric); margin-bottom:8px;">⏸ Unfinished Game Found</h3>
@@ -560,6 +439,7 @@
     </div>
   </div>
 
+  <!-- ================= SETUP SCREEN ================= -->
   <div id="setupScreen" class="panel">
     <h2 style="text-align:center; margin-bottom:16px; letter-spacing:1px;">New Game</h2>
     <div id="playerRows"></div>
@@ -567,24 +447,21 @@
       <button class="btn btn-secondary" style="flex:1;" id="addRowBtn" onclick="addPlayerRow()">+ Add Player</button>
     </div>
 
-    <div class="chips-label">Saved Players <span class="sync-dot" id="setupSyncDot"></span></div>
+    <div class="chips-label">Saved Players</div>
     <div class="chips" id="savedChips"></div>
 
     <div class="setup-error" id="setupError"></div>
 
-    <button class="btn btn-cyan btn-block" style="margin-top:14px; padding:16px;" onclick="startGame('score')">📝 Start Scoring Game</button>
-    <button class="btn btn-primary btn-block" style="margin-top:10px; padding:18px;" onclick="window.location.href='greed-dice.html'">🎲 Start Virtual Dice Game</button>
+    <button class="btn btn-primary btn-block" style="margin-top:14px; padding:18px;" onclick="startGame()">🎲 Start Virtual Dice Game</button>
 
     <p class="setup-note">
       <strong>Single-player?</strong> Add your name as Player 1, then add 1–3 <em>Ai Opponent</em> seats (flip the slider on each) to play against. The AI rolls and banks automatically.
     </p>
+    <p class="setup-note" style="color:var(--hot-pink); font-size:12px; margin-top:8px;">
+      ⚠ Each player must bank <strong>≥500 points on their first scoring turn</strong> — bonuses ($GREED/6-kind) exempt.
+    </p>
     <div style="display:flex; gap:10px; margin-top:4px;">
       <button class="btn btn-ghost btn-block" style="flex:1;" onclick="openRules()">📖 How to Play / Rules</button>
-    </div>
-
-    <div class="lb-section">
-      <div class="lb-title">🏆 IN VENUE LIVE LEADERBOARD</div>
-      <div class="lb-list" id="leaderboardList"></div>
     </div>
   </div>
 
@@ -608,21 +485,11 @@
         </div>
         <div class="dice-side">
           <div class="side-label">Set Aside</div>
+          <div id="currentRollScore" class="side-score" style="display:none;">This Roll: <span id="currentRollScoreVal">0</span></div>
           <div class="dice-row side" id="bankedRow"></div>
           <button class="btn btn-ghost btn-sm hidden" id="clearBtn" onclick="clearSelection()">↩ Move back</button>
           <div class="score-guide" id="scoreGuide"></div>
         </div>
-      </div>
-      <div class="manual-entry" style="margin-top:0;">
-        <input type="number" id="manualScoreInput" min="0" step="50" placeholder="Enter score" inputmode="numeric">
-        <button class="btn btn-primary" onclick="submitManualScore()">+ Add</button>
-      </div>
-
-      <div class="quick-grid" id="quickGrid"></div>
-
-      <div class="bonus-grid">
-        <button class="btn btn-pink bonus-btn" onclick="handleBonus('greed')">💲 $GREED<br><span style="font-size:11px; opacity:0.85;">+1000, keep turn</span></button>
-        <button class="btn btn-cyan bonus-btn" onclick="handleBonus('six')">6️⃣ 6 OF A KIND<br><span style="font-size:11px; opacity:0.85;">+5000, keep turn</span></button>
       </div>
 
       <div class="action-row">
@@ -655,6 +522,12 @@
   </div>
 </div>
 
+<!-- Version footer -->
+<div style="text-align:center; margin-top:16px; padding:8px; color:var(--text-dim); font-size:11px; opacity:0.7;">
+  $GREED Dice v1.3.9 — Local Only
+</div>
+</div>
+
 <!-- ================= RULES MODAL ================= -->
 <div id="rulesOverlay" class="modal-overlay hidden">
   <div class="modal">
@@ -666,15 +539,15 @@
       <h4>Goal</h4>
       <p>Be the first player to reach <strong>5000 points</strong>. Roll six dice, bank scoring combos, and push your luck — but if a roll scores nothing, you <strong>GREED OUT</strong> and lose everything banked that turn.</p>
 
-      <h4>Scoring &amp; Combos</h4>
+      <h4>Scoring & Combos</h4>
       <table class="rules-table">
-        <tr><td>1× G</td><td>50</td><td>3× G</td><td>500</td></tr>
-        <tr><td>1× D</td><td>100</td><td>3× R</td><td>400</td></tr>
-        <tr><td>3× $</td><td>600</td><td>3× E</td><td>300</td></tr>
+        <tr><td>1× G</td><td>50</td><td>3× G</td><td>500 + 50/G extra</td></tr>
+        <tr><td>1× D</td><td>100</td><td>3× R</td><td>400 (fixed)</td></tr>
+        <tr><td>3× $</td><td>600 (fixed)</td><td>3× E</td><td>300 (fixed)</td></tr>
         <tr><td>4× D</td><td>1000</td><td>$GREED / Full set</td><td>1000</td></tr>
-        <tr><td>6 of a kind</td><td>5000</td><td colspan="2">extra matching die +50 / +100</td></tr>
+        <tr><td>6 of a kind (any)</td><td>5000</td><td colspan="2">—</td></tr>
       </table>
-      <p class="rules-small"><strong>Dice:</strong> <span style="color:#7bb661;font-weight:700;">E light green</span>, <span style="color:#5a9bd4;font-weight:700;">E blue</span>, G yellow, R red, <span style="color:#3fbf7f;font-weight:700;">$ dark green</span>, D black. Only G and D score as <em>single</em> dice. Every other symbol needs 3+ to score. A 4-of-a-kind pays the trio value plus any extra single (e.g. 4× G = 500 + 50 = 550).</p>
+      <p class="rules-small"><strong>Dice:</strong> <span style="color:#7bb661;font-weight:700;">E light green</span>, <span style="color:#5a9bd4;font-weight:700;">E blue</span>, G yellow, R red, <span style="color:#3fbf7f;font-weight:700;">$ dark green</span>, D black. Only G and D score as <em>single</em> dice. Every other symbol needs 3+ to score. <strong>G is the only symbol where extras beyond 3 count</strong> (+50 each). $/R/E/D 3-of-a-kind pay fixed only — 4th/5th/6th add nothing. 4× D is special: pays 1000 flat. <strong>6 of a kind of ANY symbol (including D) = 5000.</strong></p>
       <p class="rules-callout"><strong>$GREED (Full set) needs both coloured E's.</strong> To earn the 1000-point full set you must have one of every symbol in a single roll — including <em>both</em> the light-green E and the blue E. Two E's of the same colour do not complete the set. Note: the two E colours are separate entities — a 3-of-a-kind must be <em>3× light-green E</em> or <em>3× blue E</em>, never a mix of colours.</p>
 
       <h4>How a Turn Works</h4>
@@ -696,69 +569,17 @@
   </div>
 </div>
 
-<!-- ================= ADMIN MODAL ================= -->
-<div id="adminOverlay" class="modal-overlay hidden">
-  <div class="modal">
-    <div class="modal-header">
-      <h3>Admin</h3>
-      <button class="modal-close" onclick="closeAdmin()">✕</button>
-    </div>
-
-    <div id="adminLoginView">
-      <input type="password" id="adminPwInput" class="admin-pw-input" placeholder="Password">
-      <button class="btn btn-primary btn-block" onclick="tryAdminUnlock()">Unlock</button>
-      <div class="setup-error" id="adminPwError"></div>
-    </div>
-
-    <div id="adminPanelView" class="hidden">
-      <div class="admin-tabs">
-        <button class="admin-tab active" id="tabBtn-players" onclick="switchAdminTab('players')">Players</button>
-        <button class="admin-tab" id="tabBtn-wins" onclick="switchAdminTab('wins')">Wins</button>
-        <button class="admin-tab" id="tabBtn-stats" onclick="switchAdminTab('stats')">Stats</button>
-      </div>
-
-      <div id="adminTab-players">
-        <div class="admin-add-row">
-          <input type="text" id="newAdminName" placeholder="New player name">
-          <button class="btn btn-primary" style="padding:10px 16px;" onclick="adminAddPlayer()">Add</button>
-        </div>
-        <div id="adminPlayersList"></div>
-      </div>
-
-      <div id="adminTab-wins" class="hidden">
-        <div id="adminWinsList"></div>
-      </div>
-
-      <div id="adminTab-stats" class="hidden">
-        <div class="stat-labels" style="margin-bottom:6px; padding-right:8px;">
-          <div class="stat-col">Big</div><div class="stat-col">Gms</div><div class="stat-col">Back</div><div class="stat-col">$G</div><div class="stat-col">6ofK</div>
-        </div>
-        <div id="adminStatsList"></div>
-      </div>
-
-      <div class="status-line" id="adminSyncStatus"></div>
-    </div>
-  </div>
-</div>
-
 <script>
 /* =========================================================================
-   $GREED — full rebuild per GREED-mechanics.md spec
+   $GREED — Virtual Dice Game (local only, no cloud)
    ========================================================================= */
 
-// ---------------- Cloud config ----------------
-const SUPABASE_URL = "https://acejxcdqdxscewmqoucp.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_wnfbHEAZLhLVFVGIxoEF1g_54hKjn7G";
-const SB = (SUPABASE_URL && SUPABASE_ANON_KEY) ? { url: SUPABASE_URL, key: SUPABASE_ANON_KEY } : null;
-
-const QUICK_ADDS = [50, 100, 250, 300, 350, 450, 500, 750, 1000];
-const ADMIN_PASSWORD = "roseisland";
-const LS_SAVED_PLAYERS = "greed-saved-players-v1";
-const LS_LEADERBOARD = "greed-leaderboard-v1";
-const LS_ACTIVE_GAME = "greed-active-game-v1";
+// ---------------- LocalStorage keys ----------------
+const LS_SAVED_PLAYERS = "greed-dice-saved-players-v1";
+const LS_ACTIVE_GAME = "greed-dice-active-game-v1";
 
 // ---------------- In-memory game state ----------------
-let players = [];              // {name, total, last}
+let players = [];              // {name, total, last, cpu}
 let current = 0;
 let history = [];              // {player, score, bonus}
 let gameRunning = false;
@@ -766,22 +587,17 @@ let endMode = false;
 let endModeTriggerIdx = -1;
 let endTurnsRemaining = [];    // {remaining}
 let winnerDeclared = false;
-let bannerFlash = null;        // {text, className, expiresAt} — temporary override (bonus celebration, final round announce)
+let bannerFlash = null;        // {text, className, expiresAt} — temporary override
 let bannerFlashTimer = null;
-let scoreLog = [];             // {text, ts} — human-readable event log (scores, bonuses, passes, undos)
+let scoreLog = [];             // {text, ts} — human-readable event log
 
-let setupNames = ["", ""];     // setup screen rows
-let setupCpu = [false, false]; // parallel to setupNames: is this slot a CPU player?
-let gameMode = "dice";         // "dice" | "score"
+let setupNames = ["", ""];
+let setupCpu = [false, false];
 let session = { unlocked: false };
-let adminActiveTab = "players";
-let localStats = {};           // fallback cache {name: {biggest,games,comeback,greed,six}}
+let sessionStats = { streak: 0 };  // +N = player winning streak, -N = player losing streak
 
 // =========================================================================
-// HYBRID DICE ROLL — generates the suggested score from a real GREED roll.
-// Engine adapted from greed-dice-game.html; scoring per GREED-mechanics.md.
-// Dice feed the existing addScore() path, so manual entry / quick-adds /
-// bonus buttons remain as a fallback.
+// DICE ENGINE — scoring per GREED-mechanics.md
 // =========================================================================
 let turnDice = [];      // not-yet-scored dice this turn: {sym,cls,color}
 let bankedDice = [];    // flat view of rollGroups (display only)
@@ -810,9 +626,8 @@ function rollDie() {
 
 // Score a set of dice -> { score, kept:[indices] }
 function evalRoll(dice) {
-  // 6 of a kind = 5000 (matches the 6-OF-A-KIND bonus). Must be SIX IDENTICAL
-  // dice: same symbol AND same colour. The two E's are different colours, so a
-  // mix (e.g. 5 green E + 1 blue E) is NOT six-of-a-kind — key on sym+colour.
+  // 6 of a kind = 5000. Must be SIX IDENTICAL dice: same symbol AND same colour.
+  // The two E's are different colours, so a mix (e.g. 5 green E + 1 blue E) is NOT six-of-a-kind.
   if (dice.length === 6 && new Set(dice.map(d => d.sym + (d.color || ""))).size === 1) {
     return { score: 5000, kept: [0,1,2,3,4,5] };
   }
@@ -847,30 +662,27 @@ function evalRoll(dice) {
     idx["D"].forEach(i => kept.add(i));
   }
 
-  // 3 $ (600) + any extra single $ (100 each)
+  // 3 $ (600) — FIXED, no extras for additional dice
   if (idx["$"].length >= 3) {
     score += 600;
     for (let k = 0; k < 3; k++) kept.add(idx["$"][k]);
-    for (let k = 3; k < idx["$"].length; k++) { score += 100; kept.add(idx["$"][k]); }
   }
-  // 3 G (500) + any extra single G (50 each)
+  // 3 G (500) + extra G (50 each) — G scores as single so extras count
   if (idx["G"].length >= 3) {
     score += 500;
     for (let k = 0; k < 3; k++) kept.add(idx["G"][k]);
     for (let k = 3; k < idx["G"].length; k++) { score += 50; kept.add(idx["G"][k]); }
   } else if (idx["G"].length > 0) { score += idx["G"].length * 50; idx["G"].forEach(i => kept.add(i)); }
-  // 3 R (400) + any extra R beyond the trio (50 each). R is NEVER a single.
+  // 3 R (400) — FIXED, no extras for additional dice. R is NEVER a single.
   if (idx["R"].length >= 3) {
     score += 400;
     for (let k = 0; k < 3; k++) kept.add(idx["R"][k]);
-    for (let k = 3; k < idx["R"].length; k++) { score += 50; kept.add(idx["R"][k]); }
   }
-  // 3 E (300) or 4 E (350) — colours are independent entities: must be 3+ of ONE colour.
+  // 3 E (300) — FIXED, no extra for 4th. Colours are independent entities: must be 3+ of ONE colour.
   const eGreen = idx["E"].filter(i => dice[i].color === "green");
   const eBlue  = idx["E"].filter(i => dice[i].color === "blue");
   const scoreErun = (run) => {
-    if (run.length >= 4) { score += 350; run.slice(0, 4).forEach(i => kept.add(i)); }
-    else if (run.length >= 3) { score += 300; run.slice(0, 3).forEach(i => kept.add(i)); }
+    if (run.length >= 3) { score += 300; run.slice(0, 3).forEach(i => kept.add(i)); }
   };
   scoreErun(eGreen);
   scoreErun(eBlue);
@@ -879,12 +691,9 @@ function evalRoll(dice) {
 }
 
 function resetDice() {
-  clearTimeout(diceAnimTimer);
-  diceAnimTimer = null;
-  clearTimeout(diceSpinTimer);
-  diceSpinTimer = null;
-  clearTimeout(diceWatchdog);
-  diceWatchdog = null;
+  clearTimeout(diceAnimTimer); diceAnimTimer = null;
+  clearTimeout(diceSpinTimer); diceSpinTimer = null;
+  clearTimeout(diceWatchdog); diceWatchdog = null;
   pendingRoll = null;
   hotStreak = false;
   turnDice = [];
@@ -910,7 +719,7 @@ function resetDice() {
 
 function diceRoll() {
   if (winnerDeclared) return;
-  if (dicePhase === "rolling") return; // ignore clicks while a roll is animating (prevents lost timers)
+  if (dicePhase === "rolling") return; // ignore clicks while a roll is animating
   const fresh = dicePhase === "idle" || dicePhase === "greedOut";
   const canRoll = fresh || dicePhase === "select";
   if (!canRoll) return;
@@ -961,13 +770,11 @@ function diceRoll() {
     }
   }, 70);
   // Safety net: if for any reason the settle timer never fires, force a settle
-  // so the tray can never get stuck spinning forever.
   diceWatchdog = setTimeout(() => {
     if (dicePhase === "rolling") settleDice(finalDice, fresh);
   }, 2500);
 }
 
-// Score whatever dice you pass (one physical roll's set-aside dice).
 function scoreGroup(dice) {
   return evalRoll(dice).score;
 }
@@ -1107,6 +914,20 @@ function renderDiceControls() {
       ? `<div class="die ${d.cls} banked" onclick="unselectDie(${k})">${d.sym}</div>`
       : `<div class="die ${d.cls} banked">${d.sym}</div>`).join("")).join("");
 
+  // Show current roll score in the Set Aside column
+  const currentRollEl = document.getElementById("currentRollScore");
+  const currentRollValEl = document.getElementById("currentRollScoreVal");
+  if (currentRollEl && currentRollValEl) {
+    // Score of just the current roll's set-aside dice
+    const currentRollScore = rollGroups.length > 0 ? scoreGroup(rollGroups[lastIdx]) : 0;
+    if (currentRollScore > 0) {
+      currentRollValEl.textContent = currentRollScore;
+      currentRollEl.style.display = "block";
+    } else {
+      currentRollEl.style.display = "none";
+    }
+  }
+
   rollBtn.classList.add("hidden");
   bankBtn.classList.remove("hidden");
   // hotStreak (module flag) = last throw was all-6-scoring. The player must tap
@@ -1148,7 +969,7 @@ async function diceBank() {
   if (committed === false) {
     // First-score gate rejected the bank (under 500). Keep the turn intact so the
     // player can roll the remaining dice for more, or pass to try again next round.
-    if (players[current] && players[current].cpu && gameMode === "dice") {
+    if (players[current] && players[current].cpu) {
       cpuThinking = false;
       setTimeout(() => { if (dicePhase === "select") diceRoll(); }, 380); // AI keeps gambling
     }
@@ -1165,7 +986,6 @@ let cpuThinking = false;
 function maybeRunCpu() {
   if (!gameRunning || winnerDeclared) { cpuThinking = false; return; }
   if (!players[current] || !players[current].cpu) { cpuThinking = false; return; }
-  if (gameMode !== "dice") { cpuThinking = false; return; }
   if (cpuThinking) return;
   cpuThinking = true;
   setTimeout(cpuTakeTurn, 650);
@@ -1192,60 +1012,218 @@ function cpuDecide() {
     return;
   }
 
-  // ---- Risk model: bust probability by dice remaining (from simulation) ----
+  // ---- Risk model: bust probability by dice remaining (conservative) ----
   const nLeft = turnDice.length;
-  const BUST = {1:0.667, 2:0.444, 3:0.277, 4:0.157, 5:0.077};
-  const bust = BUST[nLeft] || 0.30;
-  // Threshold scales DOWN when few dice remain (risky) → bank sooner;
-  // scales UP when many dice remain (safe) → roll for more.
-  const riskMult = 0.35 + 1.1 * (1 - bust);   // ~0.72 at 1 die … ~1.37 at 5 dice
+  const BUST = {1:0.70, 2:0.50, 3:0.33, 4:0.20, 5:0.10};  // more conservative than true odds
+  const bust = BUST[nLeft] || 0.35;
+  // Risk multiplier: steeper curve — heavily penalizes few dice, modestly rewards many
+  const riskMult = 0.25 + 1.3 * (1 - bust);   // ~0.52 at 1 die, ~0.90 at 2, ~1.18 at 3, ~1.45 at 4, ~1.65 at 5
 
-  // ---- Positions ----
+  // ---- Opponent intelligence ----
   const me = players[current];
   const total = me.total;
   const projected = total + turnScore;
   const leaderTotal = Math.max(...players.map(p => p.total));
-  const oppMax = players.reduce((m, p, i) => i === current ? m : Math.max(m, p.total), 0);
   const leaderIsMe = total >= leaderTotal;
-  const oppClose = oppMax >= 5000 - 1000;     // an opponent within ~one big turn of 5000
-  const bankWin = projected >= 5000;          // banking would cross 5000 & trigger end mode
+
+  // Build opponent profiles
+  const opponents = players
+    .filter((p, i) => i !== current)
+    .map(p => ({
+      name: p.name,
+      total: p.total,
+      deficit: 5000 - p.total,           // points needed to win
+      turnsToWin: Math.ceil((5000 - p.total) / 800),  // est. turns at 800/turn avg
+      isThreat: p.total >= 4000,         // within striking distance
+      isCritical: p.total >= 4500        // one big turn from win
+    }))
+    .sort((a, b) => b.total - a.total);
+
+  const oppMax = opponents[0]?.total || 0;
+  const oppSecond = opponents[1]?.total || 0;
+  const criticalCount = opponents.filter(o => o.isCritical).length;
+  const threatCount = opponents.filter(o => o.isThreat).length;
+  const bankWin = projected >= 5000;
+
+  // How many opponents would get a final turn if we bank and trigger end mode?
+  const finalTurnRecipients = opponents.filter(o => o.total < 5000).length;
+
+  // Projected position after banking
+  const projectedLead = projected - oppMax;
+  const projectedLeadOverSecond = projected - oppSecond;
+
+  // ===== SESSION STREAK ADJUSTMENT =====
+  // streak: +1 to +5 = player winning streak → CPU plays more aggressively to catch up
+  // streak: -1 to -5 = player losing streak → CPU plays more conservatively to let player win
+  const streak = sessionStats.streak || 0;
+  let streakAdj = 0;
+  if (streak > 0) {
+    // Player winning: CPU takes more risks (lower thresholds, more randomness)
+    streakAdj = -streak * 100;  // -100 to -500
+  } else if (streak < 0) {
+    // Player losing: CPU plays safer (higher thresholds, less randomness)
+    streakAdj = -streak * 150;  // +150 to +750
+  }
 
   let bank;
+
   if (endMode) {
-    // Final-turn play: maximise the final total, protect a lead.
+    // ===== FINAL ROUND =====
     if (bankWin) {
-      bank = true;                                   // bank the win outright
+      bank = true;  // bank the win outright
     } else if (leaderIsMe && turnScore > 0) {
-      bank = true;                                   // already leading → lock it
+      bank = true;  // already leading → lock it
     } else if (turnScore > 0 && projected > oppMax) {
-      bank = true;                                   // just took the lead over best opp → bank
+      bank = true;  // just took the lead → bank
     } else {
-      // Behind in final turn → gamble, but the risk model keeps it sane.
-      const thr = 1200 * riskMult;
-      bank = turnScore >= thr || (Math.random() < 0.30 * (1 - bust));
+      // Behind: need a big score, but don't be reckless with few dice
+      const thr = Math.max(1500, 1800 * riskMult);  // higher floor in end mode
+      bank = turnScore >= thr || (Math.random() < 0.20 * (1 - bust));
     }
   } else if (bankWin) {
-    // Banking would trigger the final round.
-    if (!oppClose) {
-      bank = true;                                   // no one close → safe to end it
+    // ===== BANKING WOULD TRIGGER FINAL ROUND =====
+    // DENY-THE-LEADER: if any opponent is critical (≥4500), need substantial margin
+    if (criticalCount > 0) {
+      // Need to survive their final turn — require 1200+ margin over best opponent
+      bank = projectedLead >= 1200;
+    } else if (threatCount > 0) {
+      // Opponents at 4000-4499: need 800+ margin
+      bank = projectedLead >= 800;
+    } else if (finalTurnRecipients >= 3) {
+      // Many opponents get a final turn → be more cautious
+      bank = projectedLead >= 600;
     } else {
-      const margin = projected - oppMax;
-      // DENY-THE-LEADER: an opponent is poised to win on their turn. Only open the final
-      // round if the lead is large enough to likely survive their final turn (~1000);
-      // otherwise gamble (and accept a bust that DELAYS the final round) rather than hand
-      // them the final-turn cushion at a vulnerable score. A tie does NOT count as safe.
-      bank = margin >= 1000;
+      // No immediate threats, but still need some cushion
+      bank = projectedLead >= 400;
     }
   } else {
-    // Mid-game: aggression scales with position; risk model adjusts by dice left.
+    // ===== MID-GAME =====
     const behind = leaderTotal - total;
+
+    // Opponent-aware base threshold
     let base;
-    if (behind > 1200)   base = 1500;   // far behind → high target, gamble hard
-    else if (leaderIsMe) base = 800;    // leading → bank a bit sooner
-    else                 base = 1000;   // neutral
+    // Check if this is the opening roll for a player with 0 total (needs to clear 500 gate)
+    const isOpeningRoll = me.total === 0 && (me.last === null || me.last === 0) && rollGroups.length === 1;
+    
+    if (isOpeningRoll) {
+      // ===== OPENING ROLL STRATEGY =====
+      // Ultra-conservative: target exactly 500+, bank immediately, no gambling
+      if (turnScore >= 500) {
+        // Already have 500+ - bank it immediately
+        base = 0;  // Will force bank below
+      } else if (turnScore >= 300) {
+        // 300-499: bank if safe, only roll if very low risk
+        base = 300;
+      } else if (turnScore >= 200) {
+        // 200-299: cautious, bank if 3+ dice left
+        base = 200;
+      } else {
+        // <200: roll for more but with strict limits
+        base = 150;
+      }
+    } else if (behind > 1500) {
+      base = 1800;  // far behind → need big score, but not suicidal
+    } else if (behind > 800) {
+      base = 1300;  // moderately behind
+    } else if (leaderIsMe) {
+      // Leading: protect the lead, scale with opponent pressure
+      if (threatCount > 0) base = 900;       // threats nearby → bank sooner
+      else if (criticalCount > 0) base = 700; // critical opp → very conservative
+      else base = 600;                        // comfortable lead
+    } else {
+      // Neutral / slight deficit
+      if (criticalCount > 0) base = 1200;     // opponent near win → push harder
+      else if (threatCount > 0) base = 1000;
+      else base = 800;
+    }
+
+    // First-score gate awareness: if we have 0 banked this game, be more aggressive to clear 500
+    const hasBankedBefore = me.total > 0 || (me.last !== null && me.last > 0);
+    if (!hasBankedBefore && turnScore > 0 && turnScore < 500 && !isOpeningRoll) {
+      // Haven't cleared 500 yet — lean toward rolling unless very risky
+      // (isOpeningRoll handled above with stricter logic)
+      base = Math.min(base, 600);
+    }
+
+    // Post-gate conservative mode: once we've cleared 500, protect the banked total
+    // Don't gamble away a secured position just because we can
+    const postGate = hasBankedBefore && me.total >= 500;
+    if (postGate) {
+      // After clearing the gate, raise thresholds significantly to protect gains
+      if (leaderIsMe) {
+        base = Math.max(base, 900);  // leading → very conservative
+      } else if (behind > 800) {
+        base = Math.max(base, 1500); // behind but not desperate → still cautious
+      } else {
+        base = Math.max(base, 1100); // neutral → lock in decent scores
+      }
+    }
+
+    // Apply session streak adjustment
+    base += streakAdj;
+    // Clamp base to reasonable bounds
+    base = Math.max(300, Math.min(base, 3000));
+
     const thr = base * riskMult;
-    const rnd = (behind > 1200) ? 0.25 : (leaderIsMe ? 0.60 : 0.45);
-    bank = turnScore >= thr || (Math.random() < rnd * (1 - bust));
+
+    // Randomness factor: lower = more deterministic/conservative
+    let rnd;
+    if (behind > 1500)       rnd = 0.20;  // desperate but not wild
+    else if (leaderIsMe)     rnd = 0.35;  // leading → quite conservative
+    else if (criticalCount > 0) rnd = 0.30; // opponent critical → calculated risks
+    else                     rnd = 0.25;  // neutral → slight caution
+
+    // ===== OPENING ROLL OVERRIDES =====
+    // Ultra-conservative on first roll when needing 500 gate
+    if (isOpeningRoll) {
+      // Force bank if we have 500+
+      if (turnScore >= 500) {
+        bank = true;
+        // Skip all other logic
+        if (bank) {
+          setTimeout(() => { cpuThinking = false; diceBank(); }, 380);
+        } else {
+          setTimeout(() => { if (dicePhase === "select") diceRoll(); }, 380);
+        }
+        return;
+      }
+      // Very low randomness - almost deterministic
+      rnd = 0.05;
+      // Much stricter hard guards
+      hardGuard1 = Math.max(500, base * 0.6);  // Need 500+ to roll 1 die
+      hardGuard2 = Math.max(600, base * 0.7);  // Need 600+ to roll 2 dice
+    } else {
+      // Apply session streak to randomness
+      // Player winning (streak > 0) → CPU more random/wild
+      // Player losing (streak < 0) → CPU more deterministic/conservative
+      if (streak > 0) {
+        rnd = Math.min(0.50, rnd + streak * 0.04);  // up to +0.20 at streak 5
+      } else if (streak < 0) {
+        rnd = Math.max(0.10, rnd + streak * 0.03);  // down to -0.15 at streak -5
+      }
+
+      // Additional safety: never roll with 1 die unless desperate
+      // Adjust hard guards based on streak
+      let hardGuard1 = Math.max(800, base * 0.6);  // Need 800+ to roll 1 die (was 300)
+      let hardGuard2 = Math.max(600, base * 0.5);  // Need 600+ to roll 2 dice (was 400)
+      if (streak > 0) {
+        // Player winning → CPU slightly more willing to roll 1-2 dice
+        hardGuard1 *= 0.9;
+        hardGuard2 *= 0.9;
+      } else if (streak < 0) {
+        // Player losing → CPU even less willing to roll 1-2 dice
+        hardGuard1 *= 1.3;
+        hardGuard2 *= 1.3;
+      }
+    }
+
+    if (nLeft === 1 && turnScore >= hardGuard1) {
+      bank = true;  // 70% bust with 1 die — bank unless we're truly desperate
+    } else if (nLeft === 2 && turnScore >= hardGuard2) {
+      bank = true;  // 50% bust with 2 dice — bank at moderate scores
+    } else {
+      bank = turnScore >= thr || (Math.random() < rnd * (1 - bust));
+    }
   }
 
   if (bank) {
@@ -1266,7 +1244,6 @@ function saveGameState() {
     const snapshot = {
       players, current, history, gameRunning, endMode,
       endModeTriggerIdx, endTurnsRemaining, winnerDeclared, scoreLog,
-      gameMode,
       savedAt: Date.now()
     };
     localStorage.setItem(LS_ACTIVE_GAME, JSON.stringify(snapshot));
@@ -1295,7 +1272,6 @@ function restoreGameState(snapshot) {
   endTurnsRemaining = snapshot.endTurnsRemaining;
   winnerDeclared = snapshot.winnerDeclared;
   scoreLog = snapshot.scoreLog || [];
-  gameMode = snapshot.gameMode || "dice";
 
   document.getElementById("setupScreen").classList.add("hidden");
   document.getElementById("winnerScreen").classList.add("hidden");
@@ -1336,64 +1312,7 @@ function discardCachedGame() {
 }
 
 // =========================================================================
-// SUPABASE HELPERS (best-effort, non-blocking)
-// =========================================================================
-function sbHeaders(extra) {
-  return Object.assign({
-    "apikey": SB.key,
-    "Authorization": "Bearer " + SB.key,
-    "Content-Type": "application/json"
-  }, extra || {});
-}
-
-async function sbGet(table, query) {
-  if (!SB) return null;
-  try {
-    const res = await fetch(`${SB.url}/rest/v1/${table}?${query}`, { headers: sbHeaders() });
-    if (!res.ok) return null;
-    return await res.json();
-  } catch (e) { console.warn("sbGet failed", table, e); return null; }
-}
-
-async function sbPost(table, body, extraHeaders) {
-  if (!SB) return null;
-  try {
-    const res = await fetch(`${SB.url}/rest/v1/${table}`, {
-      method: "POST",
-      headers: sbHeaders(Object.assign({ "Prefer": "return=representation" }, extraHeaders || {})),
-      body: JSON.stringify(body)
-    });
-    if (!res.ok) return null;
-    return await res.json();
-  } catch (e) { console.warn("sbPost failed", table, e); return null; }
-}
-
-async function sbPatch(table, query, body) {
-  if (!SB) return null;
-  try {
-    const res = await fetch(`${SB.url}/rest/v1/${table}?${query}`, {
-      method: "PATCH",
-      headers: sbHeaders({ "Prefer": "return=representation" }),
-      body: JSON.stringify(body)
-    });
-    if (!res.ok) return null;
-    return await res.json();
-  } catch (e) { console.warn("sbPatch failed", table, e); return null; }
-}
-
-async function sbDelete(table, query) {
-  if (!SB) return null;
-  try {
-    const res = await fetch(`${SB.url}/rest/v1/${table}?${query}`, {
-      method: "DELETE",
-      headers: sbHeaders()
-    });
-    return res.ok;
-  } catch (e) { console.warn("sbDelete failed", table, e); return false; }
-}
-
-// =========================================================================
-// PERSISTENCE — saved players
+// PERSISTENCE — saved players (localStorage only)
 // =========================================================================
 function getLocalSavedPlayers() {
   try { return JSON.parse(localStorage.getItem(LS_SAVED_PLAYERS) || "[]"); }
@@ -1403,18 +1322,7 @@ function setLocalSavedPlayers(arr) {
   localStorage.setItem(LS_SAVED_PLAYERS, JSON.stringify(arr));
 }
 
-async function getSavedPlayers() {
-  const local = getLocalSavedPlayers();
-  if (!SB) return local;
-  const cloud = await sbGet("greed_players", "select=name");
-  if (!cloud) return local;
-  const cloudNames = cloud.map(r => r.name);
-  return Array.from(new Set([...local, ...cloudNames]));
-}
-
-// Names the system auto-generates and must NEVER persist to the saved-players
-// list or leaderboard: AI opponents (Claude/Gwen/Gemma) and the default
-// "Player N" / "CPU N" placeholders used when a setup seat is left blank.
+// Names the system auto-generates and must NEVER persist to the saved-players list.
 function isReservedName(n) {
   const AI_NAMES = ["Claude", "Gwen", "Gemma"];
   if (AI_NAMES.includes(n)) return true;
@@ -1423,106 +1331,12 @@ function isReservedName(n) {
   return false;
 }
 
-async function mergeAndSaveNames(newNames) {
-  // Never persist auto-assigned / default names (Claude / Gwen / Gemma,
-  // Player 1/2…, CPU 1…).
+function mergeAndSaveNames(newNames) {
+  // Never persist auto-assigned / default names (Claude / Gwen / Gemma, Player 1/2…, CPU 1…).
   const humanNames = newNames.filter(n => !isReservedName(n));
   const existing = getLocalSavedPlayers();
   const merged = Array.from(new Set([...existing, ...humanNames]));
   setLocalSavedPlayers(merged);
-  if (SB) {
-    for (const name of humanNames) {
-      sbPost("greed_players", { name }, { "Prefer": "resolution=ignore-duplicates,return=minimal" });
-    }
-  }
-}
-
-// =========================================================================
-// PERSISTENCE — leaderboard
-// =========================================================================
-function getLocalLeaderboard() {
-  try { return JSON.parse(localStorage.getItem(LS_LEADERBOARD) || "[]"); }
-  catch (e) { return []; }
-}
-function setLocalLeaderboard(arr) {
-  arr.sort((a, b) => b.wins - a.wins);
-  localStorage.setItem(LS_LEADERBOARD, JSON.stringify(arr.slice(0, 50)));
-}
-
-async function getLeaderboard() {
-  if (SB) {
-    const cloud = await sbGet("greed_leaderboard", "select=name,wins&order=wins.desc&limit=20");
-    if (cloud) return cloud;
-  }
-  return getLocalLeaderboard().slice(0, 20);
-}
-
-async function recordWin(name) {
-  // local
-  const local = getLocalLeaderboard();
-  const existingLocal = local.find(r => r.name === name);
-  if (existingLocal) existingLocal.wins += 1;
-  else local.push({ name, wins: 1 });
-  setLocalLeaderboard(local);
-
-  // cloud
-  if (SB) {
-    const existing = await sbGet("greed_leaderboard", `select=name,wins&name=eq.${encodeURIComponent(name)}`);
-    if (existing && existing.length > 0) {
-      await sbPatch("greed_leaderboard", `name=eq.${encodeURIComponent(name)}`, { wins: existing[0].wins + 1 });
-    } else {
-      await sbPost("greed_leaderboard", { name, wins: 1 });
-    }
-  }
-}
-
-// =========================================================================
-// PERSISTENCE — stats (biggest max, games/greed/six sum, comeback max)
-// =========================================================================
-async function saveStatCloud(name, patch) {
-  // local cache merge
-  const cur = localStats[name] || { biggest: 0, games: 0, comeback: 0, greed: 0, six: 0 };
-  if (patch.biggest !== undefined) cur.biggest = Math.max(cur.biggest, patch.biggest);
-  if (patch.comeback !== undefined) cur.comeback = Math.max(cur.comeback, patch.comeback);
-  if (patch.games !== undefined) cur.games = (cur.games || 0) + patch.games;
-  if (patch.greed !== undefined) cur.greed = (cur.greed || 0) + patch.greed;
-  if (patch.six !== undefined) cur.six = (cur.six || 0) + patch.six;
-  localStats[name] = cur;
-
-  if (!SB) return;
-  const existing = await sbGet("greed_stats", `select=*&name=eq.${encodeURIComponent(name)}`);
-  if (existing && existing.length > 0) {
-    const row = existing[0];
-    const merged = {
-      biggest: Math.max(row.biggest || 0, patch.biggest !== undefined ? patch.biggest : 0),
-      comeback: Math.max(row.comeback || 0, patch.comeback !== undefined ? patch.comeback : 0),
-      games: (row.games || 0) + (patch.games || 0),
-      greed: (row.greed || 0) + (patch.greed || 0),
-      six: (row.six || 0) + (patch.six || 0),
-    };
-    await sbPatch("greed_stats", `name=eq.${encodeURIComponent(name)}`, merged);
-  } else {
-    await sbPost("greed_stats", {
-      name,
-      biggest: patch.biggest || 0,
-      comeback: patch.comeback || 0,
-      games: patch.games || 0,
-      greed: patch.greed || 0,
-      six: patch.six || 0
-    });
-  }
-}
-
-async function getAllStats() {
-  if (SB) {
-    const cloud = await sbGet("greed_stats", "select=name,biggest,games,comeback,greed,six");
-    if (cloud) {
-      const map = {};
-      cloud.forEach(r => map[r.name] = r);
-      return map;
-    }
-  }
-  return localStats;
 }
 
 // =========================================================================
@@ -1602,8 +1416,7 @@ function escapeHtml(str) {
 
 async function renderSavedChips() {
   const chipsEl = document.getElementById("savedChips");
-  const saved = await getSavedPlayers();
-  document.getElementById("setupSyncDot").className = "sync-dot " + (SB ? "on" : "off");
+  const saved = getLocalSavedPlayers();
   chipsEl.innerHTML = "";
   if (saved.length === 0) {
     chipsEl.innerHTML = `<span style="font-size:12px; color:var(--text-dim);">No saved players yet</span>`;
@@ -1627,46 +1440,7 @@ async function renderSavedChips() {
   });
 }
 
-async function renderLeaderboardUI() {
-  const lb = await getLeaderboard();   // [{name, wins}]
-  const stats = await getAllStats();   // {name: {biggest,games,comeback,greed,six}}
-  const el = document.getElementById("leaderboardList");
-  if (lb.length === 0) {
-    el.innerHTML = `<div style="text-align:center; font-size:13px; color:var(--text-dim);">No games recorded yet</div>`;
-    return;
-  }
-  const statsFor = (name) => stats[name] || { biggest: 0, games: 0, comeback: 0, greed: 0, six: 0 };
-  el.innerHTML = `
-    <div class="lb-head">
-      <div class="lb-rank">#</div>
-      <div class="lb-name">Player</div>
-      <div class="lb-col" title="Wins">🏆</div>
-      <div class="lb-col" title="Biggest single score">📈</div>
-      <div class="lb-col" title="Games played">🎲</div>
-      <div class="lb-col" title="Biggest comeback">🔥</div>
-      <div class="lb-col" title="$GREED rolled">💲</div>
-      <div class="lb-col" title="Six of a kind">6️⃣</div>
-    </div>` + lb.map((r, i) => {
-      const s = statsFor(r.name);
-      return `
-      <div class="lb-row">
-        <div class="lb-rank">${i + 1}</div>
-        <div class="lb-name">${escapeHtml(r.name)}</div>
-        <div class="lb-col">${r.wins}</div>
-        <div class="lb-col">${s.biggest || 0}</div>
-        <div class="lb-col">${s.games || 0}</div>
-        <div class="lb-col">${s.comeback || 0}</div>
-        <div class="lb-col">${s.greed || 0}</div>
-        <div class="lb-col">${s.six || 0}</div>
-      </div>`;
-    }).join("") + `
-    <div class="lb-legend">
-      🏆 Wins &nbsp;·&nbsp; 📈 Biggest &nbsp;·&nbsp; 🎲 Games &nbsp;·&nbsp; 🔥 Comeback &nbsp;·&nbsp; 💲 $GREED &nbsp;·&nbsp; 6️⃣ Six-of-a-kind
-    </div>`;
-}
-
-async function startGame(mode) {
-  gameMode = (mode === "score") ? "score" : "dice";
+function startGame() {
   const errEl = document.getElementById("setupError");
   errEl.textContent = "";
   const names = setupNames.map((n, i) => {
@@ -1688,7 +1462,7 @@ async function startGame(mode) {
   winnerDeclared = false;
   scoreLog = [];
 
-  await mergeAndSaveNames(names);
+  mergeAndSaveNames(names);
 
   document.getElementById("setupScreen").classList.add("hidden");
   document.getElementById("winnerScreen").classList.add("hidden");
@@ -1745,10 +1519,6 @@ async function addScore(rawScore, bonus) {
 
   players[i].last = score;
   players[i].total += score;
-
-  if (score > 0) saveStatCloud(name, { biggest: score });
-  if (bonus === "greed") saveStatCloud(name, { greed: 1 });
-  if (bonus === "six") saveStatCloud(name, { six: 1 });
 
   history.push({ player: name, score, bonus });
 
@@ -1815,28 +1585,19 @@ async function declareWinner() {
   const topScore = Math.max(...players.map(p => p.total));
   const winners = players.filter(p => p.total === topScore);
 
-  // Virtual dice games are friendly only — they never touch the leaderboard or stats.
-  if (gameMode === "dice") {
-    winnerDeclared = true;
-    return;
-  }
-
-  // games +1 for everyone
-  for (const p of players) {
-    saveStatCloud(p.name, { games: 1 });
-  }
-
-  // comeback stat
-  players.forEach((p, idx) => {
-    if (winners.includes(p) && idx !== endModeTriggerIdx && p.last > 0) {
-      saveStatCloud(p.name, { comeback: p.last });
+  // Track session streak for CPU difficulty adjustment
+  // Find human player (non-CPU)
+  const humanIdx = players.findIndex(p => !p.cpu);
+  if (humanIdx !== -1) {
+    const humanWon = winners.some(w => w.name === players[humanIdx].name);
+    if (humanWon) {
+      sessionStats.streak = Math.min(sessionStats.streak + 1, 5);
+    } else {
+      sessionStats.streak = Math.max(sessionStats.streak - 1, -5);
     }
-  });
-
-  if (winners.length === 1) {
-    await recordWin(winners[0].name);
   }
 
+  // Virtual dice games are friendly only — they never touch any leaderboard.
   winnerDeclared = true;
 }
 
@@ -1844,14 +1605,6 @@ function handleBonus(type) {
   if (winnerDeclared) return;
   const score = type === "greed" ? 1000 : 5000;
   addScore(score, type);
-}
-
-async function submitManualScore() {
-  if (winnerDeclared) return;
-  const input = document.getElementById("manualScoreInput");
-  const val = input.value;
-  const committed = await addScore(val, undefined);
-  if (committed !== false) input.value = "";
 }
 
 function handleNoScore() {
@@ -1931,13 +1684,6 @@ function newGame() {
 // =========================================================================
 // RENDER
 // =========================================================================
-function renderQuickGrid() {
-  const grid = document.getElementById("quickGrid");
-  grid.innerHTML = QUICK_ADDS.map(v =>
-    `<button class="quick-btn" onclick="addScore(${v})">+${v}</button>`
-  ).join("");
-}
-
 function setBannerFlash(text, className, durationMs) {
   bannerFlash = { text, className, expiresAt: Date.now() + durationMs, persistent: false };
   clearTimeout(bannerFlashTimer);
@@ -2012,12 +1758,42 @@ function currentZeroStreak(name) {
   return streak;
 }
 
+// Checks if any player still needs their initial 500-point gate clearance
+function anyPlayerNeedsInitial500() {
+  return players.some(p => {
+    // Has this player banked >=500 in a single turn yet?
+    // Check history for a non-bonus score >=500 by this player
+    const hasClearedGate = history.some(h => 
+      h.player === p.name && !h.bonus && h.score >= 500
+    );
+    // Also check if they have 500+ total from non-bonus scores (cumulative)
+    const nonBonusTotal = history
+      .filter(h => h.player === p.name && !h.bonus)
+      .reduce((sum, h) => sum + h.score, 0);
+    return !hasClearedGate && nonBonusTotal < 500;
+  });
+}
+
 // Builds the live game-info string that overrides the static banner text
 // (FIRST TO 5000 / WE ARE IN THE END TIMES) once there's something to say.
 // Prioritizes the most notable fact: an active zero-streak (2+) beats
 // leader-margin, since a streak is the more "in the moment" event.
 function getGameInfoText() {
   if (players.length === 0) return "";
+
+  // Show 500-point gate reminder until all players have cleared it
+  if (anyPlayerNeedsInitial500()) {
+    const needing = players
+      .filter(p => {
+        const nonBonusTotal = history
+          .filter(h => h.player === p.name && !h.bonus)
+          .reduce((sum, h) => sum + h.score, 0);
+        return nonBonusTotal < 500;
+      })
+      .map(p => escapeHtml(p.name))
+      .join(", ");
+    return `⚠ <span class="stat-hot">${needing}</span> need <strong>≥500 first score</strong> to open their account`;
+  }
 
   const streaks = players
     .map(p => ({ name: p.name, streak: currentZeroStreak(p.name) }))
@@ -2045,7 +1821,7 @@ function getGameInfoText() {
 }
 
 // Counts this-game $GREED and 6-of-a-kind hits per player from history
-// (live, in-memory — distinct from the cross-game cloud/local stats).
+// (live, in-memory — distinct from any cross-game stats).
 function gameAchievements(name) {
   let greed = 0, six = 0;
   for (const h of history) {
@@ -2099,14 +1875,10 @@ function renderGame() {
   resetDice();
   bannerState();
   renderPlayerCards("cardsGrid");
-  renderQuickGrid();
   renderHistoryLog();
 
   const entryPanel = document.getElementById("entryPanel");
   const diceTray = document.querySelector(".dice-tray");
-  const manualEntry = document.querySelector(".manual-entry");
-  const quickGrid = document.getElementById("quickGrid");
-  const bonusGrid = document.querySelector(".bonus-grid");
   if (winnerDeclared) {
     entryPanel.classList.add("hidden");
     showWinnerScreen();
@@ -2114,18 +1886,7 @@ function renderGame() {
     entryPanel.classList.remove("hidden");
     document.getElementById("gameScreen").classList.remove("hidden");
     document.getElementById("winnerScreen").classList.add("hidden");
-    // Mode separation: dice mode hides manual score entry; score mode hides the dice tray.
-    if (gameMode === "score") {
-      if (diceTray) diceTray.classList.add("hidden");
-      if (manualEntry) manualEntry.classList.remove("hidden");
-      if (quickGrid) quickGrid.classList.remove("hidden");
-      if (bonusGrid) bonusGrid.classList.remove("hidden");
-    } else {
-      if (diceTray) diceTray.classList.remove("hidden");
-      if (manualEntry) manualEntry.classList.add("hidden");
-      if (quickGrid) quickGrid.classList.add("hidden");
-      if (bonusGrid) bonusGrid.classList.add("hidden");
-    }
+    if (diceTray) diceTray.classList.remove("hidden");
   }
   maybeRunCpu();
 }
@@ -2170,7 +1931,6 @@ function showWinnerScreen() {
     document.getElementById("winnerTotalDisplay").textContent = `${topScore} points`;
   }
   renderPlayerCards("finalCardsGrid");
-  renderLeaderboardUI();
 }
 
 function openRules() {
@@ -2187,300 +1947,8 @@ document.addEventListener("click", (e) => {
 function renderSetup() {
   renderSetupRows();
   renderSavedChips();
-  renderLeaderboardUI();
   checkForCachedGame();
 }
-
-// =========================================================================
-// ADMIN
-// =========================================================================
-function openAdmin() {
-  document.getElementById("adminOverlay").classList.remove("hidden");
-  if (session.unlocked) {
-    showAdminPanel();
-  } else {
-    document.getElementById("adminLoginView").classList.remove("hidden");
-    document.getElementById("adminPanelView").classList.add("hidden");
-    document.getElementById("adminPwInput").value = "";
-    document.getElementById("adminPwError").textContent = "";
-  }
-}
-function closeAdmin() {
-  document.getElementById("adminOverlay").classList.add("hidden");
-  if (!session.unlocked) return; // re-lock happens naturally since unlocked persists only if true
-}
-function tryAdminUnlock() {
-  const val = document.getElementById("adminPwInput").value;
-  if (val === ADMIN_PASSWORD) {
-    session.unlocked = true;
-    showAdminPanel();
-  } else {
-    document.getElementById("adminPwError").textContent = "Incorrect password";
-  }
-}
-function showAdminPanel() {
-  document.getElementById("adminLoginView").classList.add("hidden");
-  document.getElementById("adminPanelView").classList.remove("hidden");
-  document.getElementById("adminSyncStatus").innerHTML =
-    `<span class="sync-dot ${SB ? "on" : "off"}"></span>${SB ? "Cloud sync active" : "Local only (no cloud configured)"}`;
-  switchAdminTab(adminActiveTab);
-}
-function switchAdminTab(tab) {
-  adminActiveTab = tab;
-  ["players", "wins", "stats"].forEach(t => {
-    document.getElementById(`tabBtn-${t}`).classList.toggle("active", t === tab);
-    document.getElementById(`adminTab-${t}`).classList.toggle("hidden", t !== tab);
-  });
-  if (tab === "players") renderAdminPlayers();
-  if (tab === "wins") renderAdminWins();
-  if (tab === "stats") renderAdminStats();
-}
-
-async function renderAdminPlayers() {
-  const saved = await getSavedPlayers();
-  const el = document.getElementById("adminPlayersList");
-  if (saved.length === 0) {
-    el.innerHTML = `<div style="text-align:center; color:var(--text-dim); font-size:13px;">No players saved</div>`;
-    return;
-  }
-  el.innerHTML = saved.sort((a, b) => a.localeCompare(b)).map(name => `
-    <div class="admin-row">
-      <input type="text" class="rename-input" style="width:110px;" value="${escapeHtml(name)}" data-orig="${escapeHtml(name)}">
-      <button class="admin-mini-btn btn-cyan" onclick="adminRenamePlayer('${escapeAttr(name)}', this)">Rename</button>
-      <button class="admin-mini-btn btn-pink" onclick="adminDeletePlayer('${escapeAttr(name)}')">Delete</button>
-    </div>
-  `).join("");
-}
-
-function escapeAttr(str) {
-  return str.replace(/'/g, "\\'");
-}
-
-async function adminAddPlayer() {
-  const input = document.getElementById("newAdminName");
-  const name = input.value.trim();
-  if (!name) return;
-  await mergeAndSaveNames([name]);
-  input.value = "";
-  toast(`Added ${name}`);
-  renderAdminPlayers();
-}
-
-async function adminRenamePlayer(oldName, btnEl) {
-  const row = btnEl.closest(".admin-row");
-  const newName = row.querySelector(".rename-input").value.trim();
-  if (!newName || newName === oldName) return;
-  if (!confirm(`Rename "${oldName}" to "${newName}"? Their stats and wins will transfer.`)) return;
-
-  // add new name
-  await mergeAndSaveNames([newName]);
-
-  // transfer leaderboard wins
-  if (SB) {
-    const lbRows = await sbGet("greed_leaderboard", `select=*&name=eq.${encodeURIComponent(oldName)}`);
-    if (lbRows && lbRows.length > 0) {
-      const existingNew = await sbGet("greed_leaderboard", `select=*&name=eq.${encodeURIComponent(newName)}`);
-      const newWins = (existingNew && existingNew.length > 0 ? existingNew[0].wins : 0) + lbRows[0].wins;
-      if (existingNew && existingNew.length > 0) {
-        await sbPatch("greed_leaderboard", `name=eq.${encodeURIComponent(newName)}`, { wins: newWins });
-      } else {
-        await sbPost("greed_leaderboard", { name: newName, wins: newWins });
-      }
-      await sbDelete("greed_leaderboard", `name=eq.${encodeURIComponent(oldName)}`);
-    }
-    // transfer stats
-    const statRows = await sbGet("greed_stats", `select=*&name=eq.${encodeURIComponent(oldName)}`);
-    if (statRows && statRows.length > 0) {
-      const s = statRows[0];
-      const existingNewStat = await sbGet("greed_stats", `select=*&name=eq.${encodeURIComponent(newName)}`);
-      const merged = existingNewStat && existingNewStat.length > 0 ? {
-        biggest: Math.max(existingNewStat[0].biggest || 0, s.biggest || 0),
-        comeback: Math.max(existingNewStat[0].comeback || 0, s.comeback || 0),
-        games: (existingNewStat[0].games || 0) + (s.games || 0),
-        greed: (existingNewStat[0].greed || 0) + (s.greed || 0),
-        six: (existingNewStat[0].six || 0) + (s.six || 0),
-      } : { biggest: s.biggest, comeback: s.comeback, games: s.games, greed: s.greed, six: s.six };
-
-      if (existingNewStat && existingNewStat.length > 0) {
-        await sbPatch("greed_stats", `name=eq.${encodeURIComponent(newName)}`, merged);
-      } else {
-        await sbPost("greed_stats", Object.assign({ name: newName }, merged));
-      }
-      await sbDelete("greed_stats", `name=eq.${encodeURIComponent(oldName)}`);
-    }
-    await sbDelete("greed_players", `name=eq.${encodeURIComponent(oldName)}`);
-  }
-
-  // local cascade
-  let localSaved = getLocalSavedPlayers().filter(n => n !== oldName);
-  if (!localSaved.includes(newName)) localSaved.push(newName);
-  setLocalSavedPlayers(localSaved);
-
-  let localLb = getLocalLeaderboard();
-  const oldLb = localLb.find(r => r.name === oldName);
-  if (oldLb) {
-    const newLb = localLb.find(r => r.name === newName);
-    if (newLb) newLb.wins += oldLb.wins;
-    else localLb.push({ name: newName, wins: oldLb.wins });
-    localLb = localLb.filter(r => r.name !== oldName);
-    setLocalLeaderboard(localLb);
-  }
-  if (localStats[oldName]) {
-    localStats[newName] = localStats[newName] || { biggest: 0, games: 0, comeback: 0, greed: 0, six: 0 };
-    const os = localStats[oldName];
-    localStats[newName].biggest = Math.max(localStats[newName].biggest, os.biggest || 0);
-    localStats[newName].comeback = Math.max(localStats[newName].comeback, os.comeback || 0);
-    localStats[newName].games += os.games || 0;
-    localStats[newName].greed += os.greed || 0;
-    localStats[newName].six += os.six || 0;
-    delete localStats[oldName];
-  }
-
-  toast(`Renamed to ${newName}`);
-  renderAdminPlayers();
-}
-
-async function adminDeletePlayer(name) {
-  if (!confirm(`Delete "${name}"? This removes their saved name, wins, and stats.`)) return;
-  setLocalSavedPlayers(getLocalSavedPlayers().filter(n => n !== name));
-  setLocalLeaderboard(getLocalLeaderboard().filter(r => r.name !== name));
-  delete localStats[name];
-  if (SB) {
-    await sbDelete("greed_players", `name=eq.${encodeURIComponent(name)}`);
-    await sbDelete("greed_leaderboard", `name=eq.${encodeURIComponent(name)}`);
-    await sbDelete("greed_stats", `name=eq.${encodeURIComponent(name)}`);
-  }
-  toast(`Deleted ${name}`);
-  renderAdminPlayers();
-}
-
-async function renderAdminWins() {
-  const saved = await getSavedPlayers();
-  const lb = await getLeaderboard();
-  const winsMap = {};
-  lb.forEach(r => winsMap[r.name] = r.wins);
-  const el = document.getElementById("adminWinsList");
-  if (saved.length === 0) {
-    el.innerHTML = `<div style="text-align:center; color:var(--text-dim); font-size:13px;">No players saved</div>`;
-    return;
-  }
-  el.innerHTML = saved.sort((a, b) => a.localeCompare(b)).map(name => `
-    <div class="admin-row">
-      <div class="aname">${escapeHtml(name)}</div>
-      <input type="number" class="win-input" value="${winsMap[name] || 0}" min="0">
-      <button class="admin-mini-btn btn-cyan" onclick="adminSaveWins('${escapeAttr(name)}', this)">Save</button>
-      <button class="admin-mini-btn btn-pink" onclick="adminDeleteWins('${escapeAttr(name)}')">Del</button>
-    </div>
-  `).join("");
-}
-
-async function adminSaveWins(name, btnEl) {
-  const row = btnEl.closest(".admin-row");
-  const wins = Math.max(0, parseInt(row.querySelector(".win-input").value) || 0);
-
-  let local = getLocalLeaderboard();
-  const existingLocal = local.find(r => r.name === name);
-  if (existingLocal) existingLocal.wins = wins;
-  else local.push({ name, wins });
-  setLocalLeaderboard(local);
-
-  if (SB) {
-    const existing = await sbGet("greed_leaderboard", `select=name&name=eq.${encodeURIComponent(name)}`);
-    if (existing && existing.length > 0) {
-      await sbPatch("greed_leaderboard", `name=eq.${encodeURIComponent(name)}`, { wins });
-    } else {
-      await sbPost("greed_leaderboard", { name, wins });
-    }
-  }
-  toast(`Saved wins for ${name}`);
-}
-
-async function adminDeleteWins(name) {
-  setLocalLeaderboard(getLocalLeaderboard().filter(r => r.name !== name));
-  if (SB) await sbDelete("greed_leaderboard", `name=eq.${encodeURIComponent(name)}`);
-  toast(`Removed ${name} from leaderboard`);
-  renderAdminWins();
-}
-
-async function renderAdminStats() {
-  const saved = await getSavedPlayers();
-  const stats = await getAllStats();
-  const el = document.getElementById("adminStatsList");
-  if (saved.length === 0) {
-    el.innerHTML = `<div style="text-align:center; color:var(--text-dim); font-size:13px;">No players saved</div>`;
-    return;
-  }
-  el.innerHTML = saved.sort((a, b) => a.localeCompare(b)).map(name => {
-    const s = stats[name] || { biggest: 0, games: 0, comeback: 0, greed: 0, six: 0 };
-    return `
-      <div class="admin-row">
-        <div class="aname" style="flex:0 0 70px;">${escapeHtml(name)}</div>
-        <input type="number" class="stat-input" data-field="biggest" value="${s.biggest || 0}">
-        <input type="number" class="stat-input" data-field="games" value="${s.games || 0}">
-        <input type="number" class="stat-input" data-field="comeback" value="${s.comeback || 0}">
-        <input type="number" class="stat-input" data-field="greed" value="${s.greed || 0}">
-        <input type="number" class="stat-input" data-field="six" value="${s.six || 0}">
-        <button class="admin-mini-btn btn-cyan" onclick="adminSaveStats('${escapeAttr(name)}', this)">Save</button>
-        <button class="admin-mini-btn btn-pink" onclick="adminDeleteStats('${escapeAttr(name)}')">Del</button>
-      </div>
-    `;
-  }).join("");
-}
-
-async function adminSaveStats(name, btnEl) {
-  const row = btnEl.closest(".admin-row");
-  const inputs = row.querySelectorAll(".stat-input");
-  const patch = {};
-  inputs.forEach(inp => { patch[inp.dataset.field] = Math.max(0, parseInt(inp.value) || 0); });
-
-  localStats[name] = patch;
-  if (SB) {
-    const existing = await sbGet("greed_stats", `select=name&name=eq.${encodeURIComponent(name)}`);
-    if (existing && existing.length > 0) {
-      await sbPatch("greed_stats", `name=eq.${encodeURIComponent(name)}`, patch);
-    } else {
-      await sbPost("greed_stats", Object.assign({ name }, patch));
-    }
-  }
-  toast(`Saved stats for ${name}`);
-}
-
-async function adminDeleteStats(name) {
-  delete localStats[name];
-  if (SB) await sbDelete("greed_stats", `name=eq.${encodeURIComponent(name)}`);
-  toast(`Cleared stats for ${name}`);
-  renderAdminStats();
-}
-
-// =========================================================================
-// LIVE POLLING (when SB configured)
-// =========================================================================
-if (SB) {
-  setInterval(() => {
-    if (document.getElementById("setupScreen") && !document.getElementById("setupScreen").classList.contains("hidden")) {
-      renderLeaderboardUI();
-    }
-    if (document.getElementById("winnerScreen") && !document.getElementById("winnerScreen").classList.contains("hidden")) {
-      renderLeaderboardUI();
-    }
-  }, 10000);
-  setInterval(() => {
-    if (document.getElementById("setupScreen") && !document.getElementById("setupScreen").classList.contains("hidden")) {
-      renderSavedChips();
-    }
-  }, 15000);
-}
-
-// Enter key submits manual score
-document.addEventListener("DOMContentLoaded", () => {
-  const input = document.getElementById("manualScoreInput");
-  input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") submitManualScore();
-  });
-  renderScoreGuide();
-  renderSetup();
-  initA2HS();
-});
 
 // =========================================================================
 // ADD-TO-HOME-SCREEN PROMPT + FULL-SCREEN STANDALONE SUPPORT
@@ -2497,97 +1965,67 @@ function isMobile() {
   return /Android|iPhone|iPod|iPad|Mobile|Windows Phone/i.test(navigator.userAgent)
     || (window.matchMedia && window.matchMedia("(max-width:560px)").matches && "ontouchstart" in window);
 }
-function isStandalone() {
-  return (window.navigator.standalone === true)        // iOS
-      || (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches); // Android/Chrome
-}
 
 function initA2HS() {
-  if (isStandalone()) return;            // already installed → no nag
-  if (!isMobile()) return;               // desktop → no nag
-  if (sessionStorage.getItem("a2hsDismissed") === "1") return; // already dismissed this visit
+  // Only show on mobile, not already standalone, not dismissed, and install prompt available
+  const standalone = window.matchMedia("(display-mode: standalone)").matches
+    || window.navigator.standalone === true;
+  const dismissed = localStorage.getItem("a2hs-dismissed") === "1";
+  if (!isMobile() || standalone || dismissed) return;
 
-  const isIOS = /iPhone|iPod|iPad/i.test(navigator.userAgent);
-  const stepsEl = document.getElementById("a2hsSteps");
-
-  if (isIOS) {
-    document.getElementById("a2hsIntro").textContent =
-      "For a full-screen $GREED app with no browser bars, add this page to your Home Screen:";
-    stepsEl.innerHTML = `
-      <li><span class="ico">📤</span><span>Tap the <b>Share</b> button at the bottom of the screen.</span></li>
-      <li><span class="ico">➕</span><span>Scroll and tap <b>“Add to Home Screen”</b>.</span></li>
-      <li><span class="ico">✅</span><span>Tap <b>Add</b> — then open $GREED from your Home Screen.</span></li>`;
-  } else if (deferredInstallPrompt) {
-    document.getElementById("a2hsIntro").textContent =
-      "For a full-screen $GREED app with no browser bars, install it:";
-    stepsEl.innerHTML = `
-      <li><span class="ico">📲</span><span>Tap <b>Install</b> below (or the menu ⋮ → “Install app”).</span></li>
-      <li><span class="ico">✅</span><span>$GREED opens full-screen from your Home Screen.</span></li>`;
-    const primary = document.getElementById("a2hsPrimary");
-    primary.textContent = "Install";
-    primary.onclick = installFromPrompt;
-  } else {
-    // Android without a captured install prompt (e.g. Firefox): generic menu hint.
-    document.getElementById("a2hsIntro").textContent =
-      "For a full-screen $GREED app, add this page to your Home Screen from your browser menu:";
-    stepsEl.innerHTML = `
-      <li><span class="ico">⋮</span><span>Open the browser menu (top-right).</span></li>
-      <li><span class="ico">➕</span><span>Tap <b>“Add to Home Screen” / “Install”</b>.</span></li>
-      <li><span class="ico">✅</span><span>Open $GREED from your Home Screen.</span></li>`;
+  // iOS Safari: no beforeinstallprompt, but we can still show a generic card
+  if (deferredInstallPrompt || /iPhone|iPad|iPod/.test(navigator.userAgent)) {
+    setTimeout(() => {
+      document.getElementById("a2hsOverlay").classList.remove("a2hs-hide");
+    }, 1200);
   }
-
-  // Show after a short beat so the game UI is visible first.
-  setTimeout(() => {
-    const ov = document.getElementById("a2hsOverlay");
-    if (ov) ov.classList.remove("a2hs-hide");
-  }, 900);
-}
-
-async function installFromPrompt() {
-  if (!deferredInstallPrompt) return dismissA2HS();
-  deferredInstallPrompt.prompt();
-  try { await deferredInstallPrompt.userChoice; } catch (e) {}
-  deferredInstallPrompt = null;
-  dismissA2HS();
 }
 
 function dismissA2HS() {
-  const ov = document.getElementById("a2hsOverlay");
-  if (ov) ov.classList.add("a2hs-hide");
-  sessionStorage.setItem("a2hsDismissed", "1"); // don't nag again this session
+  document.getElementById("a2hsOverlay").classList.add("a2hs-hide");
+  localStorage.setItem("a2hs-dismissed", "1");
 }
 
-const SCORE_GUIDE = [
-  ["1× G", "50"],
-  ["1× D", "100"],
-  ["3× $", "600"],
-  ["3× G", "500"],
-  ["3× R", "400"],
-  ["3× E", "300"],
-  ["4× D", "1000"],
-  ["Full set", "1000"],
-  ["6 of a kind", "5000"],
-  ["extra matching", "+50 / +100"],
-];
-
+// Render score guide (dice side panel legend)
 function renderScoreGuide() {
   const el = document.getElementById("scoreGuide");
   if (!el) return;
   el.innerHTML = `
-    <h4>Scoring Possibilities</h4>
-    <ul>${SCORE_GUIDE.map(([k, v]) => `<li><span class="sg-k">${k}</span><span class="sg-v">${v}</span></li>`).join("")}</ul>
+    <h4>Score Possibilities</h4>
+    <ul>
+      <li><span class="sg-k">1× <span class="dot g"></span> G</span><span class="sg-v">50</span></li>
+      <li><span class="sg-k">1× <span class="dot d"></span> D</span><span class="sg-v">100</span></li>
+      <li><span class="sg-k">3× <span class="dot dollar"></span> $</span><span class="sg-v">600 (fixed)</span></li>
+      <li><span class="sg-k">4× <span class="dot d"></span> D</span><span class="sg-v">1000</span></li>
+      <li><span class="sg-k">3× <span class="dot g"></span> G</span><span class="sg-v">500 + 50/extra G</span></li>
+      <li><span class="sg-k">3× <span class="dot r"></span> R</span><span class="sg-v">400 (fixed)</span></li>
+      <li><span class="sg-k">3× <span class="dot e-green"></span> E / 3× <span class="dot e-blue"></span> E</span><span class="sg-v">300 (fixed)</span></li>
+      <li><span class="sg-k">$GREED (1 of each, both E colours)</span><span class="sg-v">1000</span></li>
+      <li><span class="sg-k">6 of a kind (any symbol + colour)</span><span class="sg-v">5000</span></li>
+    </ul>
+    <p class="sg-note">Only G adds extras beyond 3 (+50 each). $/R/E/D 3-of-a-kind pay fixed only. 4× D = 1000 flat. 6 of ANY kind = 5000.</p>
+    <p class="sg-note sg-warn">⚠ Two E colours are separate — 3-of-a-kind must be ONE colour only</p>
     <div class="sg-legend">
-      <span><i class="dot dollar"></i>$ dark green</span>
-      <span><i class="dot g"></i>G yellow</span>
-      <span><i class="dot r"></i>R red</span>
-      <span><i class="dot e-green"></i>E light green</span>
-      <span><i class="dot e-blue"></i>E blue</span>
-      <span><i class="dot d"></i>D black</span>
+      <span><span class="dot dollar"></span>$</span>
+      <span><span class="dot g"></span>G</span>
+      <span><span class="dot r"></span>R</span>
+      <span><span class="dot e-green"></span>E green</span>
+      <span><span class="dot e-blue"></span>E blue</span>
+      <span><span class="dot d"></span>D</span>
     </div>
-    <div class="sg-note">3+ of a kind counts the combo PLUS any extra matching die (e.g. 4×G = 500 + 50).</div>
-    <div class="sg-note sg-warn">$GREED (Full set, +1000) requires one of each symbol <strong>including both coloured E's</strong> (light green + blue).</div>
   `;
 }
+
+// Boot
+document.addEventListener("DOMContentLoaded", () => {
+  renderScoreGuide();
+  renderSetup();
+  initA2HS();
+});
+
+// Version display
+const APP_VERSION = "1.3.9";
+console.log(`$GREED Dice v${APP_VERSION} loaded`);
 </script>
 </body>
 </html>
