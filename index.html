@@ -272,6 +272,61 @@
   .p-card.winner-card{ border-color:var(--gold); box-shadow:0 0 0 4px rgba(192,82,42,0.4), 0 0 30px rgba(192,82,42,0.4); animation:winner-glow 1.6s ease-in-out infinite; }
   @keyframes winner-glow{ 0%,100%{box-shadow:0 0 0 4px rgba(192,82,42,0.4), 0 0 30px rgba(192,82,42,0.4);} 50%{box-shadow:0 0 0 4px rgba(192,82,42,0.65), 0 0 45px rgba(192,82,42,0.7);} }
 
+  /* Endgame-zone tint: cards in the danger zone (>= 4500) get a hot-pink glow
+     that intensifies as they approach 5000. Driven by --zone (0..1) set inline. */
+  .p-card.zone-endgame{ border-color:rgba(232,147,90,calc(0.55 + 0.45 * var(--zone, 0))); }
+  .p-card.zone-endgame.leader{ border-color:rgba(232,147,90,calc(0.85 + 0.15 * var(--zone, 0))); }
+  @keyframes endgame-pulse{
+    0%,100%{ box-shadow:0 0 0 0 rgba(232,147,90,0); }
+    50%    { box-shadow:0 0 18px 2px rgba(232,147,90,calc(0.4 + 0.4 * var(--zone, 0))); }
+  }
+  .p-card.zone-endgame.pulse{ animation:endgame-pulse 1.6s ease-in-out infinite; }
+
+  /* Live turn-progress meter — thin bar across the top of each card showing
+     total/5000 as a percentage. Colour shifts: gold under 1000, hot-pink
+     1000–4000, electric teal 4000+ (entering the danger zone). */
+  .p-meter{
+    position:absolute;
+    top:0; left:8px; right:8px;
+    height:4px;
+    border-radius:0 0 6px 6px;
+    background:rgba(255,255,255,0.06);
+    overflow:hidden;
+  }
+  .p-meter-fill{
+    height:100%; width:0%;
+    background:var(--gold);
+    border-radius:0 0 6px 6px;
+    transition:width .6s cubic-bezier(.18,.7,.32,1), background .4s ease;
+    box-shadow:0 0 6px rgba(217,114,74,0.5);
+  }
+  .p-meter-fill.mid  { background:var(--hot-pink); box-shadow:0 0 6px rgba(232,147,90,0.6); }
+  .p-meter-fill.high { background:var(--electric); box-shadow:0 0 6px rgba(42,157,143,0.7); }
+  /* When total >= 5000: full bar in gold + a subtle shimmer. */
+  .p-meter-fill.win  { background:linear-gradient(90deg,var(--gold),var(--hot-pink),var(--gold));
+    background-size:200% 100%; animation:meter-shimmer 2s linear infinite; }
+  @keyframes meter-shimmer{ to{ background-position:200% 0; } }
+
+  /* Score-entry shake on gate rejection (manual input or quick-add). */
+  @keyframes reject-shake{
+    0%,100%{ transform:translateX(0); }
+    20%   { transform:translateX(-7px); }
+    40%   { transform:translateX(6px);  }
+    60%   { transform:translateX(-4px); }
+    80%   { transform:translateX(3px);  }
+  }
+  .reject-shake{ animation:reject-shake 320ms cubic-bezier(.36,.07,.19,.97); }
+  .reject-shake-bordered{
+    /* For elements with an existing border (the input). Combine shake with
+       a red border flash so the rejection is unmissable. */
+    animation:reject-shake 320ms cubic-bezier(.36,.07,.19,.97),
+               reject-border-flash 600ms ease-out;
+  }
+  @keyframes reject-border-flash{
+    0%   { border-color:#c0392b; box-shadow:0 0 0 3px rgba(192,57,43,0.55); }
+    100% { border-color:var(--card-border); box-shadow:0 0 0 0 rgba(192,57,43,0); }
+  }
+
   .p-card .badge{
     position:absolute; top:-9px; left:50%; transform:translateX(-50%);
     font-size:9px; font-weight:900; letter-spacing:1.5px;
@@ -321,16 +376,117 @@
     .score-guide .sg-legend{ justify-content:flex-start; }
   }
 
-  .quick-grid{
-    display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:14px;
+  /* Three-tier preset grid, ordered by in-game frequency (CORE most-used → biggest):
+     Row 1 CORE   150–450 (7 buttons, gold accent, large)
+     Row 2 EDGE    50, 100, 500, 550, 600 (5 buttons, neutral, medium)
+     Row 3 SWING   700, 800, 900, 1000 (4 buttons, hot-pink accent, smallest)
+     Mobile: each row stacks label-above-btns; CORE keeps a wide row of 7, EDGE
+     uses a 5-col grid, SWING uses a 2x2 grid. */
+  .quick-grid{ display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
+  .quick-row{ display:flex; align-items:stretch; gap:10px; }
+  .quick-row-label{
+    flex:0 0 92px;
+    font-size:10px; font-weight:800; letter-spacing:1px; text-transform:uppercase;
+    color:var(--text-dim);
+    display:flex; align-items:center; justify-content:center;
+    text-align:center; line-height:1.2;
+    padding:6px 4px;
+    border-left:3px solid var(--gold);
   }
+  .quick-row-btns{
+    flex:1; display:grid; gap:6px;
+    grid-template-columns:repeat(7,1fr);  /* 7 fits CORE row naturally */
+  }
+
+  /* 4-row preset grid, no dividers, no row labels — colour gradient alone
+     communicates the score range. Visual arc:
+       row-1 (50, 100, 150, 200)   muted brown   "safe"
+       row-2 (250..400)            warm gold     "building"
+       row-3 (450..600)            hot-pink      "danger"
+       row-4 (700..1000)           electric teal "winning"
+     All buttons share the SAME text size (per spec) — only the gradient changes. */
+  .quick-grid{ display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+  .quick-row{ display:flex; align-items:stretch; gap:0; }
+  .quick-row-btns{
+    flex:1; display:grid; gap:6px;
+    grid-template-columns:repeat(4,1fr);  /* 4 buttons per row */
+  }
+
+  /* ---- Base .quick-btn (shared text size, default muted brown) ---- */
   .quick-btn{
-    padding:16px 8px; border-radius:12px;
+    padding:14px 4px;
+    border-radius:10px;
     background:linear-gradient(135deg,#3a251a,#291810);
     border:1px solid var(--card-border);
-    color:var(--text); font-weight:800; font-size:16px;
+    color:var(--text); font-weight:800; font-size:15px;
+    font-variant-numeric:tabular-nums;
+    transition:transform .08s ease, background .12s ease, box-shadow .12s ease;
+    min-width:0;  /* allow grid to shrink buttons below content width */
   }
-  .quick-btn:active{ background:linear-gradient(135deg,var(--gold),var(--gold-2)); color:#fff5ee; transform:scale(0.94);}
+  .quick-btn:hover{
+    background:linear-gradient(135deg,#4a3225,#382218);
+    box-shadow:0 2px 0 rgba(0,0,0,0.4), 0 0 0 2px rgba(217,114,74,0.25);
+  }
+  .quick-btn:active{
+    background:linear-gradient(135deg,var(--gold),var(--gold-2));
+    color:#fff5ee;
+    transform:scale(0.94);
+  }
+
+  /* ---- Per-row gradients (text size stays the same; only colour changes) ---- */
+
+  /* Row 1 (50, 100, 150, 200) — muted brown, "safe" range. Subtle, low-key. */
+  .quick-btn.row-1{
+    background:linear-gradient(135deg,#2e1c14,#1f130d);
+    border-color:rgba(74,48,33,0.6);
+    color:#c2a58f;
+  }
+  .quick-btn.row-1:hover{
+    background:linear-gradient(135deg,#3d2719,#2a1a12);
+    box-shadow:0 2px 0 rgba(0,0,0,0.4), 0 0 0 2px rgba(217,114,74,0.3);
+  }
+
+  /* Row 2 (250, 300, 350, 400) — warm gold, "building" range. The visual
+     centre of the grid; safe but heading toward danger. */
+  .quick-btn.row-2{
+    background:linear-gradient(135deg,#5a3a26,#48281a);
+    border-color:rgba(217,114,74,0.5);
+    color:#f7ede4;
+  }
+  .quick-btn.row-2:hover{
+    background:linear-gradient(135deg,#6e4a30,#56301c);
+    box-shadow:0 2px 0 rgba(0,0,0,0.45), 0 0 0 2px rgba(217,114,74,0.55);
+  }
+
+  /* Row 3 (450, 500, 550, 600) — hot-pink, "danger" range. Approaching the
+     end-game threshold; warm and urgent. */
+  .quick-btn.row-3{
+    background:linear-gradient(135deg,#7a3926,#5e2818);
+    border-color:rgba(232,147,90,0.6);
+    color:#fff5ee;
+  }
+  .quick-btn.row-3:hover{
+    background:linear-gradient(135deg,#9a4a32,#7a3520);
+    box-shadow:0 2px 0 rgba(0,0,0,0.45), 0 0 0 2px rgba(232,147,90,0.6);
+  }
+
+  /* Row 4 (700, 800, 900, 1000) — electric teal, "winning" range. The end
+     game; cool and decisive against the warm tones above. */
+  .quick-btn.row-4{
+    background:linear-gradient(135deg,#1f5d52,#143f37);
+    border-color:rgba(42,157,143,0.7);
+    color:#f1fbf9;
+  }
+  .quick-btn.row-4:hover{
+    background:linear-gradient(135deg,#26756a,#194a42);
+    box-shadow:0 2px 0 rgba(0,0,0,0.5), 0 0 0 2px rgba(42,157,143,0.6);
+  }
+
+  @media (max-width:560px){
+    /* 4 buttons per row × 4 rows is a comfortable 4-col grid on phones. */
+    .quick-row{ gap:0; }
+    .quick-btn{ padding:10px 2px; font-size:13px; }
+  }
 
   .bonus-grid{
     display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;
@@ -746,7 +902,7 @@
 
 <!-- Version footer -->
 <div style="text-align:center; margin-top:16px; padding:8px; color:var(--text-dim); font-size:11px; opacity:0.7;">
-  $GREED Scoreboard v1.4.0 — Cloud sync via Supabase
+  $GREED Scoreboard v1.4.4 — Cloud sync via Supabase
 </div>
 
 <!-- ================= RULES MODAL ================= -->
@@ -845,7 +1001,24 @@ const SUPABASE_URL = "https://acejxcdqdxscewmqoucp.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_wnfbHEAZLhLVFVGIxoEF1g_54hKjn7G";
 const SB = (SUPABASE_URL && SUPABASE_ANON_KEY) ? { url: SUPABASE_URL, key: SUPABASE_ANON_KEY } : null;
 
-const QUICK_ADDS = [50, 100, 250, 300, 350, 450, 500, 750, 1000];
+// 16 preset scores in 4 rows of 4, strict numerical order, increments of 50
+// (with the standard 100-step jumps for 700-1000).
+// Each button carries a "row" tag (1..4) for gradient styling. The visual arc
+// runs muted-brown → warm-gold → hot-pink → electric-teal so the colour
+// telegraphs the score range at a glance.
+//
+//   Row 1 (50, 100, 150, 200)         — low,   "safe"        muted brown
+//   Row 2 (250, 300, 350, 400)         — mid-lo, "building"   warm gold
+//   Row 3 (450, 500, 550, 600)         — mid-hi, "danger"     hot-pink
+//   Row 4 (700, 800, 900, 1000)        — high,  "winning"    electric teal
+const QUICK_ADDS = [
+  { v:  50, row: 1 }, { v: 100, row: 1 }, { v: 150, row: 1 }, { v: 200, row: 1 },
+  { v: 250, row: 2 }, { v: 300, row: 2 }, { v: 350, row: 2 }, { v: 400, row: 2 },
+  { v: 450, row: 3 }, { v: 500, row: 3 }, { v: 550, row: 3 }, { v: 600, row: 3 },
+  { v: 700, row: 4 }, { v: 800, row: 4 }, { v: 900, row: 4 }, { v:1000, row: 4 }
+];
+// Number of rows (4) — used by renderQuickGrid to split into row groups.
+const QUICK_ADDS_ROWS = 4;
 const ADMIN_PASSWORD = "roseisland";
 const LS_SAVED_PLAYERS = "greed-saved-players-v1";
 const LS_LEADERBOARD = "greed-leaderboard-v1";
@@ -2070,12 +2243,15 @@ function cardClasses(i) {
   }
   if (!endMode) {
     if (i === current) classes.push("active");
+    // Endgame-zone tint: cards at >= 4500 glow pink before the final round.
+    if (players[i] && players[i].total >= 4500) classes.push("zone-endgame");
     return classes;
   }
   // endMode
   if (i === highest) classes.push("leader");
   if (i === current) classes.push("active");
   if (endTurnsRemaining[i] && endTurnsRemaining[i].remaining === 0) classes.push("eliminated");
+  if (players[i] && players[i].total >= 4500) classes.push("zone-endgame");
   return classes;
 }
 
@@ -2211,7 +2387,19 @@ async function submitManualScore() {
   const input = document.getElementById("manualScoreInput");
   const val = input.value;
   const committed = await addScore(val, undefined);
-  if (committed !== false) input.value = "";
+  if (committed === false) {
+    // Gate rejected the bank — shake the input so the player gets immediate
+    // visual feedback (toast alone can be missed on a busy mobile screen).
+    input.classList.remove("reject-shake-bordered");
+    void input.offsetWidth;  // restart the animation if already applied
+    input.classList.add("reject-shake-bordered");
+    input.addEventListener("animationend", function onEnd() {
+      input.classList.remove("reject-shake-bordered");
+      input.removeEventListener("animationend", onEnd);
+    }, { once: true });
+    return;
+  }
+  input.value = "";
 }
 
 function handleNoScore() {
@@ -2297,9 +2485,38 @@ function newGame() {
 // =========================================================================
 function renderQuickGrid() {
   const grid = document.getElementById("quickGrid");
-  grid.innerHTML = QUICK_ADDS.map(v =>
-    `<button class="quick-btn" onclick="addScore(${v})">+${v}</button>`
-  ).join("");
+  // 4 rows of 4 buttons each, in strict numerical order. No row labels, no
+  // dividers — colour gradient alone communicates the score range.
+  // Each button gets `row-N` so CSS can apply the appropriate gradient.
+  const renderRow = (items) => `
+    <div class="quick-row">
+      <div class="quick-row-btns">
+        ${items.map(b => `<button class="quick-btn row-${b.row}" onclick="quickAdd(${b.v}, this)">+${b.v}</button>`).join("")}
+      </div>
+    </div>`;
+  const perRow = QUICK_ADDS.length / QUICK_ADDS_ROWS;     // 16 / 4 = 4
+  const rows = [];
+  for (let i = 0; i < QUICK_ADDS_ROWS; i++) {
+    rows.push(renderRow(QUICK_ADDS.slice(i * perRow, (i + 1) * perRow)));
+  }
+  grid.innerHTML = rows.join("");
+}
+
+// Wrapper for quick-add buttons. addScore is async; on a gate-reject we
+// shake the row so the player sees the rejection immediately (toast can be
+// missed on busy mobile). `this` is the clicked button (passed inline).
+async function quickAdd(value, btn) {
+  const row = btn && btn.closest ? btn.closest(".quick-row") : null;
+  const committed = await addScore(value, undefined);
+  if (committed === false && row) {
+    row.classList.remove("reject-shake");
+    void row.offsetWidth;  // restart animation
+    row.classList.add("reject-shake");
+    row.addEventListener("animationend", function onEnd() {
+      row.classList.remove("reject-shake");
+      row.removeEventListener("animationend", onEnd);
+    }, { once: true });
+  }
 }
 
 function setBannerFlash(text, className, durationMs) {
@@ -2427,6 +2644,19 @@ function renderPlayerCards(targetGridId) {
 
   grid.innerHTML = players.map((p, i) => {
     const classes = cardClasses(i).join(" ");
+    // Live turn-progress meter: percentage of 5000 plus a tier-class so the
+    // fill colour shifts from gold → hot-pink → electric teal → shimmer when
+    // the player crosses the 5000 mark. The "win" tier always wins over the
+    // other tiers even if total dips below 5000 due to undo (rare).
+    const meterPct = Math.max(0, Math.min(100, (p.total / 5000) * 100));
+    let meterClass = "";
+    if (p.total >= 5000) meterClass = "win";
+    else if (p.total >= 4000) meterClass = "high";
+    else if (p.total >= 1000) meterClass = "mid";
+    // Endgame-zone tint: cards with total >= 4500 get a hot-pink border that
+    // intensifies as total approaches 5000. We compute --zone inline (0..1).
+    const zone = Math.max(0, Math.min(1, (p.total - 4500) / 500));
+    const zoneStyle = zone > 0 ? `--zone:${zone.toFixed(3)}` : "";
     let badge = "";
     if (winnerDeclared) {
       if (i === highest) badge = `<div class="badge leader-badge">🏆 Winner</div>`;
@@ -2447,8 +2677,9 @@ function renderPlayerCards(targetGridId) {
     const achvHtml = achvPills.length > 0 ? `<div class="p-achievements">${achvPills.join("")}</div>` : "";
 
     return `
-      <div class="p-card ${classes} ${winnerDeclared && i === highest ? "winner-card" : ""}">
+      <div class="p-card ${classes} ${winnerDeclared && i === highest ? "winner-card" : ""}" style="${zoneStyle}">
         ${badge}
+        <div class="p-meter" aria-hidden="true"><div class="p-meter-fill ${meterClass}" style="width:${meterPct}%"></div></div>
         <div class="p-name">${escapeHtml(p.name)}${p.cpu ? '<span class="cpu-tag">🤖</span>' : ''}</div>
         <div class="p-total">${p.total}</div>
         ${lastHtml}
@@ -2980,7 +3211,7 @@ function renderScoreGuide() {
 }
 
 // Version display
-const APP_VERSION = "1.4.0";
+const APP_VERSION = "1.4.4";
 console.log(`$GREED Scoreboard v${APP_VERSION} loaded`);
 </script>
 </body>
