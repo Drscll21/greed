@@ -526,6 +526,89 @@
   .dice-controls .btn{ flex:1; }
   .btn-sm{ padding:8px 12px; font-size:12px; margin-top:8px; width:100%; }
   .dice-hint{ text-align:center; font-size:12px; color:var(--text-dim); margin-top:8px; min-height:16px; }
+
+  /* ================= VISUAL IMPROVEMENTS (v1.4.0) ================= */
+  .p-total.tweening{ color:var(--gold-2); }
+  .p-total.bonus-flash{ animation:bonus-flash-pulse 0.9s ease-out; }
+  @keyframes bonus-flash-pulse{
+    0%   { transform:scale(1);   text-shadow:0 0 0 rgba(232,147,90,0); }
+    35%  { transform:scale(1.25);text-shadow:0 0 16px rgba(232,147,90,0.85); }
+    100% { transform:scale(1);   text-shadow:0 0 0 rgba(232,147,90,0); }
+  }
+  .score-float{
+    position:absolute; left:50%; top:14px; transform:translateX(-50%);
+    pointer-events:none; font-weight:900; font-size:18px; color:var(--gold);
+    text-shadow:0 0 8px rgba(217,114,74,0.7), 0 2px 4px rgba(0,0,0,0.6);
+    animation:score-float-up 950ms cubic-bezier(.18,.7,.32,1) forwards;
+    z-index:5; white-space:nowrap;
+  }
+  .score-float.bonus{
+    font-size:15px; color:var(--electric);
+    text-shadow:0 0 8px rgba(42,157,143,0.7), 0 2px 4px rgba(0,0,0,0.6);
+    letter-spacing:1px;
+  }
+  @keyframes score-float-up{
+    0%   { opacity:0; transform:translate(-50%, 6px)  scale(0.85); }
+    20%  { opacity:1; transform:translate(-50%, -6px) scale(1.15); }
+    100% { opacity:0; transform:translate(-50%, -38px) scale(1); }
+  }
+  .wrap.shake{ animation:screen-shake 420ms cubic-bezier(.36,.07,.19,.97); }
+  @keyframes screen-shake{
+    0%   { transform:translate(0,0)    rotate(0); }
+    15%  { transform:translate(-6px,2px) rotate(-0.4deg); }
+    30%  { transform:translate(7px,-3px) rotate(0.4deg); }
+    45%  { transform:translate(-5px,3px) rotate(-0.3deg); }
+    60%  { transform:translate(4px,-2px) rotate(0.2deg); }
+    75%  { transform:translate(-2px,1px) rotate(-0.1deg); }
+    100% { transform:translate(0,0)    rotate(0); }
+  }
+  .panel.fading-out{ animation:panel-out 220ms ease-out forwards; }
+  .panel.fading-in { animation:panel-in  260ms ease-out  forwards; }
+  @keyframes panel-out{
+    0%   { opacity:1; transform:translateY(0)    scale(1); }
+    100% { opacity:0; transform:translateY(-8px) scale(0.98); }
+  }
+  @keyframes panel-in{
+    0%   { opacity:0; transform:translateY(8px)  scale(0.98); }
+    100% { opacity:1; transform:translateY(0)    scale(1); }
+  }
+  .confetti-piece{
+    position:fixed; top:-12vh; width:10px; height:14px;
+    pointer-events:none; z-index:90; will-change:transform, opacity;
+    animation:confetti-fall linear forwards;
+  }
+  @keyframes confetti-fall{
+    0%   { transform:translateY(0)    rotate(0); opacity:1; }
+    90%  { opacity:1; }
+    100% { transform:translateY(115vh) rotate(720deg); opacity:0.4; }
+  }
+  .bg-particles{ position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+  .bg-particles .mote{
+    position:absolute; width:4px; height:4px; border-radius:50%;
+    background:var(--gold); opacity:0.18;
+    animation:bg-drift linear infinite;
+  }
+  .bg-particles .mote.teal{ background:var(--electric); }
+  @keyframes bg-drift{
+    0%   { transform:translate(0,0)    rotate(0); }
+    50%  { transform:translate(8px,-26px) rotate(180deg); }
+    100% { transform:translate(0,0)    rotate(360deg); }
+  }
+  .wrap{ position:relative; z-index:1; }
+  .die.tuck-clone{
+    position:fixed !important; z-index:60; margin:0 !important;
+    pointer-events:none;
+    transition:transform 320ms cubic-bezier(.18,.7,.32,1), opacity 320ms ease-out;
+  }
+  @media (prefers-reduced-motion: reduce){
+    .score-float, .wrap.shake, .panel.fading-out, .panel.fading-in,
+    .confetti-piece, .bg-particles .mote, .die.tuck-clone, .p-total.bonus-flash{
+      animation:none !important; transition:none !important;
+    }
+    .die.tuck-clone{ display:none !important; }
+    .bg-particles{ display:none !important; }
+    .confetti-piece{ display:none !important; }
+  }
 </style>
 </head>
 <body>
@@ -663,7 +746,7 @@
 
 <!-- Version footer -->
 <div style="text-align:center; margin-top:16px; padding:8px; color:var(--text-dim); font-size:11px; opacity:0.7;">
-  $GREED Scoreboard v1.3.12 — Cloud sync via Supabase
+  $GREED Scoreboard v1.4.0 — Cloud sync via Supabase
 </div>
 
 <!-- ================= RULES MODAL ================= -->
@@ -813,6 +896,166 @@ const DICE_SYMS = [
   { sym: "E", cls: "e-blue", color: "blue" },
   { sym: "D", cls: "d" }
 ];
+
+// =========================================================================
+// VISUAL IMPROVEMENTS (v1.4.0) — pure cosmetic helpers; no scoring impact.
+// =========================================================================
+
+// User prefers reduced motion? Cache the check once. Honored by every helper.
+const prefersReducedMotion = (typeof window !== "undefined"
+  && window.matchMedia
+  && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+// Tracks each player's previous total so we can tween (count up) on change.
+let prevTotals = [];
+
+// ---------- Score count-up tween ----------
+function tweenScoreTo(el, from, to, duration = 600) {
+  if (!el) return;
+  if (prefersReducedMotion || from === to) { el.textContent = to; return; }
+  el.classList.add("tweening");
+  const start = performance.now();
+  function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+  function frame(now) {
+    const t = Math.min(1, (now - start) / duration);
+    const v = Math.round(from + (to - from) * easeOutCubic(t));
+    el.textContent = v;
+    if (t < 1) requestAnimationFrame(frame);
+    else { el.textContent = to; el.classList.remove("tweening"); }
+  }
+  requestAnimationFrame(frame);
+}
+
+// ---------- "+N" float-up above the card ----------
+function floatScore(playerIdx, score, bonus) {
+  if (prefersReducedMotion || !score) return;
+  const cards = document.querySelectorAll("#cardsGrid .p-card");
+  const card = cards[playerIdx];
+  if (!card) return;
+  const existing = card.querySelectorAll(":scope > .score-float");
+  if (existing.length >= 5) existing[0].remove();
+  const span = document.createElement("span");
+  span.className = "score-float" + (bonus ? " bonus" : "");
+  span.textContent = bonus === "greed" ? "💲 $GREED!"
+                       : bonus === "six" ? "6️⃣ SIX KIND!"
+                       : ("+" + score);
+  card.appendChild(span);
+  span.addEventListener("animationend", () => span.remove(), { once: true });
+}
+
+// Bonus entry: pulse the .p-total on the affected card.
+function pulseBonusTotal(playerIdx) {
+  const cards = document.querySelectorAll("#cardsGrid .p-card");
+  const total = cards[playerIdx] && cards[playerIdx].querySelector(".p-total");
+  if (!total) return;
+  total.classList.remove("bonus-flash");
+  void total.offsetWidth;
+  total.classList.add("bonus-flash");
+}
+
+// ---------- End-mode screen shake ----------
+function shakeScreen() {
+  if (prefersReducedMotion) return;
+  const wrap = document.querySelector(".wrap");
+  if (!wrap) return;
+  wrap.classList.remove("shake");
+  void wrap.offsetWidth;
+  wrap.classList.add("shake");
+  wrap.addEventListener("animationend", function onEnd(e) {
+    if (e.animationName !== "screen-shake") return;
+    wrap.classList.remove("shake");
+    wrap.removeEventListener("animationend", onEnd);
+  });
+}
+
+// ---------- Panel crossfade ----------
+function crossfadePanels(fromEl, toEl) {
+  if (!fromEl || !toEl) return;
+  if (prefersReducedMotion) { return; }
+  fromEl.classList.add("fading-out");
+  toEl.classList.add("fading-in");
+  setTimeout(() => {
+    fromEl.classList.remove("fading-out");
+    toEl.classList.remove("fading-in");
+  }, 300);
+}
+
+// ---------- Confetti (winner screen) ----------
+const CONFETTI_COLORS = ["#d9724a", "#e8935a", "#2a9d8f", "#8fae5c", "#ffd400", "#c0392b"];
+function spawnConfetti(count = 60) {
+  if (prefersReducedMotion) return;
+  const frag = document.createDocumentFragment();
+  const pieces = [];
+  for (let i = 0; i < count; i++) {
+    const p = document.createElement("div");
+    p.className = "confetti-piece";
+    p.style.left = (Math.random() * 100) + "vw";
+    p.style.background = CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)];
+    p.style.animationDuration = (2.4 + Math.random() * 1.6) + "s";
+    p.style.animationDelay = (Math.random() * 0.8) + "s";
+    p.style.transform = "rotate(" + (Math.random() * 360) + "deg)";
+    p.style.opacity = String(0.6 + Math.random() * 0.4);
+    frag.appendChild(p);
+    pieces.push(p);
+  }
+  document.body.appendChild(frag);
+  pieces.forEach(p => {
+    p.addEventListener("animationend", () => p.remove(), { once: true });
+    setTimeout(() => p.remove(), 6000);
+  });
+}
+
+// ---------- Background particles (slow drift) ----------
+function setupBackgroundParticles() {
+  if (prefersReducedMotion) return;
+  if (document.querySelector(".bg-particles")) return;
+  const layer = document.createElement("div");
+  layer.className = "bg-particles";
+  layer.setAttribute("aria-hidden", "true");
+  const frag = document.createDocumentFragment();
+  const N = 30;
+  for (let i = 0; i < N; i++) {
+    const m = document.createElement("div");
+    m.className = "mote" + (Math.random() < 0.35 ? " teal" : "");
+    m.style.left = (Math.random() * 100) + "vw";
+    m.style.top = (Math.random() * 100) + "vh";
+    m.style.animationDuration = (18 + Math.random() * 18) + "s";
+    m.style.animationDelay = (-Math.random() * 30) + "s";
+    m.style.transform = "scale(" + (0.6 + Math.random() * 1.4).toFixed(2) + ")";
+    frag.appendChild(m);
+  }
+  layer.appendChild(frag);
+  document.body.insertBefore(layer, document.body.firstChild);
+}
+
+// ---------- Dice tuck (FLIP technique) ----------
+function tuckDieTo(sourceEl, targetRect, cls) {
+  if (prefersReducedMotion || !sourceEl) return false;
+  const startRect = sourceEl.getBoundingClientRect();
+  const clone = sourceEl.cloneNode(true);
+  clone.classList.add("tuck-clone");
+  clone.style.left = startRect.left + "px";
+  clone.style.top  = startRect.top  + "px";
+  clone.style.width  = startRect.width  + "px";
+  clone.style.height = startRect.height + "px";
+  clone.style.transform = "translate(0,0) rotate(0) scale(1)";
+  document.body.appendChild(clone);
+  void clone.offsetWidth;
+  const dx = targetRect.left - startRect.left;
+  const dy = targetRect.top  - startRect.top;
+  const scale = Math.min(targetRect.width, targetRect.height) /
+                Math.max(startRect.width, startRect.height);
+  clone.style.transform = `translate(${dx}px, ${dy}px) rotate(${(Math.random()*60-30).toFixed(1)}deg) scale(${scale.toFixed(2)})`;
+  clone.style.opacity = "0.85";
+  clone.addEventListener("transitionend", () => clone.remove(), { once: true });
+  setTimeout(() => clone.remove(), 500);
+  return true;
+}
+
+// Track initial totals on first render of a game so the count-up has a baseline.
+function seedPrevTotals() {
+  prevTotals = players.map(p => p.total);
+}
 
 function rollDie() {
   const base = DICE_SYMS[Math.floor(Math.random() * DICE_SYMS.length)];
@@ -1044,21 +1287,37 @@ function settleDice(finalDice, fresh) {
 function toggleDie(index) {
   if (dicePhase !== "select") return;
   if (index < 0 || index >= turnDice.length) return;
+  // v1.4.0 visual: dice tuck
+  const sourceEl = document.querySelectorAll("#diceRow .die")[index];
   const d = turnDice.splice(index, 1)[0];
-  rollGroups[rollGroups.length - 1].push(d); // current roll's group only
+  rollGroups[rollGroups.length - 1].push(d);
   recomputeTurnScore();
   renderDiceControls();
+  if (sourceEl) {
+    const targetEl = document.querySelectorAll("#bankedRow .die");
+    const tEl = targetEl[targetEl.length - 1];
+    if (tEl) tuckDieTo(sourceEl, tEl.getBoundingClientRect(), d.cls);
+  }
 }
 
 function unselectDie(index) {
-  // Only the current roll's picks can be moved back (earlier rolls are locked).
   if (dicePhase !== "select") return;
   const g = rollGroups[rollGroups.length - 1];
   if (index < 0 || index >= g.length) return;
+  // v1.4.0 visual: reverse tuck
+  const bankedEls = document.querySelectorAll("#bankedRow .die");
+  let offset = 0;
+  for (let k = 0; k < rollGroups.length - 1; k++) offset += rollGroups[k].length;
+  const sourceEl = bankedEls[offset + index];
   const d = g.splice(index, 1)[0];
   turnDice.push(d);
   recomputeTurnScore();
   renderDiceControls();
+  if (sourceEl) {
+    const diceEls = document.querySelectorAll("#diceRow .die");
+    const targetEl = diceEls[diceEls.length - 1];
+    if (targetEl) tuckDieTo(sourceEl, targetEl.getBoundingClientRect(), d.cls);
+  }
 }
 
 function clearSelection() {
@@ -1777,6 +2036,7 @@ async function startGame(mode) {
   endTurnsRemaining = players.map(() => ({ remaining: 0 }));
   winnerDeclared = false;
   scoreLog = [];
+  seedPrevTotals(); // v1.4.0: baseline for count-up tween
 
   await mergeAndSaveNames(names);
 
@@ -1834,6 +2094,8 @@ async function addScore(rawScore, bonus) {
   }
 
   players[i].last = score;
+  // v1.4.0 visual: capture pre-bank total so renderPlayerCards can count-up tween.
+  const prevTotal = players[i].total;
   players[i].total += score;
 
   if (score > 0) saveStatCloud(name, { biggest: score });
@@ -1844,6 +2106,13 @@ async function addScore(rawScore, bonus) {
 
   const bonusLabel = bonus === "greed" ? " ($GREED)" : bonus === "six" ? " (6 OF A KIND)" : "";
   logEvent(`${name}: +${score}${bonusLabel}`);
+
+  // v1.4.0 visual: "+N" float-up above the banker's card (and pulse on bonus).
+  // Both helpers no-op on reduced-motion.
+  if (score > 0) {
+    floatScore(i, score, bonus);
+    if (bonus) pulseBonusTotal(i);
+  }
 
   // Cheerful flash for bonus plays — stays visible until the turn advances
   // (no timeout), shown even if this turn also triggers final round since
@@ -1861,6 +2130,7 @@ async function addScore(rawScore, bonus) {
     endTurnsRemaining = players.map((_, idx) => ({ remaining: idx === i ? 0 : 1 }));
     if (!bonus) {
       setBannerFlash("WE HAVE ENTERED THE FINAL ROUND", "final-round", 3500);
+      shakeScreen(); // v1.4.0: brief screen shake on final-round trigger
     }
   } else if (endMode && !bonus) {
     // End-mode completion path (only for non-bonus entries)
@@ -2009,6 +2279,7 @@ function newGame() {
   endTurnsRemaining = [];
   winnerDeclared = false;
   scoreLog = [];
+  prevTotals = []; // v1.4.0
   setupNames = ["", ""];
   playerOrder = null;
   // Reset the shuffle button text
@@ -2186,6 +2457,22 @@ function renderPlayerCards(targetGridId) {
       </div>
     `;
   }).join("");
+  // v1.4.0 visual: count-up tween for any player whose total just changed.
+  if (targetGridId === "cardsGrid") {
+    const cardEls = grid.querySelectorAll(".p-card");
+    players.forEach((p, i) => {
+      const prev = prevTotals[i];
+      if (prev === undefined) {
+        prevTotals[i] = p.total;
+        return;
+      }
+      if (prev !== p.total) {
+        const totalEl = cardEls[i] && cardEls[i].querySelector(".p-total");
+        if (totalEl) tweenScoreTo(totalEl, prev, p.total, 600);
+        prevTotals[i] = p.total;
+      }
+    });
+  }
 }
 
 function renderGame() {
@@ -2267,6 +2554,7 @@ function showWinnerScreen() {
     document.getElementById("trophyEmoji").textContent = "🏆";
     document.getElementById("winnerNameDisplay").textContent = winners[0].name;
     document.getElementById("winnerTotalDisplay").textContent = `${topScore} points`;
+    spawnConfetti(60); // v1.4.0: celebrate the solo winner
   }
   renderPlayerCards("finalCardsGrid");
   renderLeaderboardUI();
@@ -2579,6 +2867,7 @@ document.addEventListener("DOMContentLoaded", () => {
   renderScoreGuide();
   renderSetup();
   initA2HS();
+  setupBackgroundParticles(); // v1.4.0: slow-drifting motes
   // Show the post-it note about the virtual dice game moving
   setTimeout(showMoveNotice, 500);
 });
@@ -2691,7 +2980,7 @@ function renderScoreGuide() {
 }
 
 // Version display
-const APP_VERSION = "1.3.12";
+const APP_VERSION = "1.4.0";
 console.log(`$GREED Scoreboard v${APP_VERSION} loaded`);
 </script>
 </body>
