@@ -328,6 +328,12 @@
   .die-face.e-blue{ background:#3b6fb5; color:#fff; border-color:#2a527f; }
   .die-face.d{ background:#0a0a0a; color:#f5f5f5; border-color:#3a3a3a; }
   .die{ background:transparent; }
+  /* Settled look: only the outcome face is visible. When not tumbling we
+     flatten the cube and hide the other 5 faces so no edge slivers of the
+     adjacent faces peek through. The 3D tumble only plays while .rolling. */
+  .die:not(.rolling){ transform-style:flat; }
+  .die:not(.rolling) .die-face--front{ transform:none; }
+  .die:not(.rolling) .die-face:not(.die-face--front){ visibility:hidden; }
   .die.selectable{ cursor:pointer; transition:transform .1s ease, box-shadow .1s ease; }
   .die.selectable:hover{ transform:translateY(-3px) scale(1.05); box-shadow:0 0 0 3px rgba(192,82,42,0.55), 0 6px 14px rgba(0,0,0,0.4); }
   .die.banked{ outline:3px solid var(--green); outline-offset:1px; cursor:pointer; }
@@ -682,7 +688,7 @@
 
 <!-- Version footer -->
 <div style="text-align:center; margin-top:16px; padding:8px; color:var(--text-dim); font-size:11px; opacity:0.7;">
-  $GREED Dice v1.4.0 — Local Only
+  $GREED Dice v1.5.0 — Local Only
 </div>
 </div>
 
@@ -1365,16 +1371,22 @@ function renderDiceControls() {
   } else {
     bankBtn.disabled = turnScore <= 0;
     bankBtn.textContent = "💰 BANK +" + turnScore;
-    // Offer a reroll whenever there are leftover dice to throw AND something to protect.
-    const canReroll = turnScore > 0 && turnDice.length > 0;
+    // Rule: to roll the remaining dice the player MUST have set aside a
+    // playable (scoring) die from the CURRENT roll. RollGroup[lastIdx] is this
+    // roll's selection; it must form a scoring combo (scoreGroup > 0).
+    const curSel = rollGroups[lastIdx] || [];
+    const hasPlayableAside = curSel.length > 0 && scoreGroup(curSel) > 0;
+    const canReroll = hasPlayableAside && turnDice.length > 0;
     hotBtn.classList.toggle("hidden", !canReroll);
     if (canReroll) hotBtn.textContent = `🎲 ROLL REMAINING (${turnDice.length})`;
     clearBtn.classList.toggle("hidden", rollGroups[lastIdx].length === 0);
     hint.textContent = turnScore > 0
       ? (canReroll
           ? `Set aside from ${rollGroups.length} roll(s) = +${turnScore} — bank it or roll the rest`
-          : `Remaining dice don't score — BANK +${turnScore} or PASS`)
-      : "Tap dice to set them aside";
+          : (curSel.length > 0
+              ? `Set-aside dice don't score — set a scoring die aside to roll again, BANK +${turnScore}, or PASS`
+              : `Set a scoring die aside to roll the rest — BANK +${turnScore} or PASS`))
+      : "Set a scoring die aside to roll again";
   }
 }
 
@@ -2568,7 +2580,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // Version display
-const APP_VERSION = "1.4.0";
+const APP_VERSION = "1.5.0";
 console.log(`$GREED Dice v${APP_VERSION} loaded`);
 </script>
 </body>

@@ -902,7 +902,7 @@
 
 <!-- Version footer -->
 <div style="text-align:center; margin-top:16px; padding:8px; color:var(--text-dim); font-size:11px; opacity:0.7;">
-  $GREED Scoreboard v1.4.4 — Cloud sync via Supabase
+  $GREED Scoreboard v1.4.5 — Cloud sync via Supabase
 </div>
 
 <!-- ================= RULES MODAL ================= -->
@@ -2113,75 +2113,6 @@ function shuffleFirstPlayer() {
   renderSetupRows();
 }
 
-function showMoveNotice() {
-  if (document.getElementById("moveNoticeOverlay")) return; // already shown
-
-  // Position the note above the virtual dice game button
-  const btn = document.getElementById("virtualDiceBtn");
-  if (!btn) return;
-  const rect = btn.getBoundingClientRect();
-
-  const overlay = document.createElement("div");
-  overlay.id = "moveNoticeOverlay";
-  overlay.style.cssText = "position:fixed; top:0; left:0; width:100%; height:100%; z-index:1300; pointer-events:none; opacity:0; animation:fadeIn .3s forwards 0.1s;";
-
-  const note = document.createElement("div");
-  note.style.cssText = "position:absolute; background:#fff8dc; border:2px solid #d9724a; border-radius:8px; padding:14px; max-width:260px; font-family:'Segoe UI',system-ui,sans-serif; box-shadow:6px 6px 0 rgba(0,0,0,0.2); transform:rotate(3deg) scale(0.9); animation:bounceIn .3s forwards 0.1s; left:" + (rect.left + rect.width / 2 - 130) + "px; top:" + Math.max(20, rect.top - 140) + "px; pointer-events:auto;";
-  note.style.fontFamily = "'Segoe UI',system-ui,sans-serif";
-
-  // Post-it note arrow/tail pointing down
-  const tail = document.createElement("div");
-  tail.style.cssText = "position:absolute; top:100%; left:50%; transform:translateX(-50%) rotate(45deg); width:16px; height:16px; background:#fff8dc; border:2px solid #d9724a; border-left:none; border-top:none;";
-  note.appendChild(tail);
-
-  const title = document.createElement("h3");
-  title.textContent = "📌 Game Moved!";
-  title.style.cssText = "font-size:14px; color:#d9724a; margin:0 0 6px;";
-
-  const msg = document.createElement("p");
-  msg.style.cssText = "font-size:11px; line-height:1.4; color:#5a3a1a; margin:0 0 10px;";
-  // Build the popup message, noting if a player has been selected to go first
-  let msgText = "The Virtual Dice Game now has its own page. Player selection is now done on that page. Click below to go there.";
-  if (playerOrder) {
-    const firstPlayerName = setupNames[playerOrder[0]].trim() || "Player " + (playerOrder[0] + 1);
-    msgText += `<br><br><strong>🎲 ${firstPlayerName}</strong> is set to go first.`;
-  }
-  msg.innerHTML = msgText;
-
-  const navBtn = document.createElement("button");
-  navBtn.textContent = "Go to Virtual Dice Game";
-  navBtn.style.cssText = "background:#d9724a; color:#fff5ee; border:1px solid #c0522a; padding:5px 12px; border-radius:5px; font-weight:700; font-size:11px; cursor:pointer; transition:transform .1s ease, background .1s ease; width:100%; margin-bottom:5px;";
-  navBtn.onmouseenter = function() { this.style.transform = "scale(1.02)"; this.style.background = "#c0522a"; };
-  navBtn.onmouseleave = function() { this.style.transform = "scale(1)"; this.style.background = "#d9724a"; };
-  navBtn.onclick = function() {
-    document.body.removeChild(overlay);
-    window.location.href = 'greed-dice.html';
-  };
-
-  const closeBtn = document.createElement("button");
-  closeBtn.innerHTML = "✕ CLOSE";
-  closeBtn.style.cssText = "background:#d9724a; color:#fff5ee; border:1px solid #c0522a; padding:8px 16px; border-radius:6px; font-weight:700; font-size:12px; cursor:pointer; transition:all .1s ease; width:100%; margin-top:5px;";
-  closeBtn.onmouseenter = function() { this.style.transform = "scale(1.02)"; this.style.background = "#c0522a"; };
-  closeBtn.onmouseleave = function() { this.style.transform = "scale(1)"; this.style.background = "#d9724a"; };
-  closeBtn.onclick = function() {
-    document.body.removeChild(overlay);
-  };
-
-  note.appendChild(title);
-  note.appendChild(msg);
-  note.appendChild(navBtn);
-  note.appendChild(closeBtn);
-  overlay.appendChild(note);
-  document.body.appendChild(overlay);
-
-  // Click anywhere on overlay to close (except the buttons)
-  overlay.onclick = function(e) {
-    if (e.target === overlay) {
-      document.body.removeChild(overlay);
-    }
-  };
-}
-
 async function startGame(mode) {
   gameMode = (mode === "score") ? "score" : "dice";
   const errEl = document.getElementById("setupError");
@@ -3099,8 +3030,6 @@ document.addEventListener("DOMContentLoaded", () => {
   renderSetup();
   initA2HS();
   setupBackgroundParticles(); // v1.4.0: slow-drifting motes
-  // Show the post-it note about the virtual dice game moving
-  setTimeout(showMoveNotice, 500);
 });
 
 // =========================================================================
@@ -3211,7 +3140,7 @@ function renderScoreGuide() {
 }
 
 // Version display
-const APP_VERSION = "1.4.4";
+const APP_VERSION = "1.4.5";
 console.log(`$GREED Scoreboard v${APP_VERSION} loaded`);
 </script>
 </body>
