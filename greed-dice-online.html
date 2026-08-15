@@ -785,7 +785,6 @@
   <!-- ================= SETUP SCREEN ================= -->
   <div id="setupScreen" class="panel">
     <h2 style="text-align:center; margin-bottom:16px; letter-spacing:1px;">New Game</h2>
-    <button class="online-btn" id="playOnlineBtn" onclick="openOnline()">🎮 Play Online Multiplayer</button>
     <div id="playerRows"></div>
     <div style="display:flex; gap:10px; margin-top:6px;">
       <button class="btn btn-secondary" style="flex:1;" id="addRowBtn" onclick="addPlayerRow()">+ Add Player</button>
@@ -803,6 +802,10 @@
     <div class="setup-error" id="setupError"></div>
 
     <button class="btn btn-primary btn-block" style="margin-top:14px; padding:18px;" onclick="startGame()">🎲 Start Virtual Dice Game</button>
+
+    <div style="margin-top:10px;">
+      <button class="btn btn-pink btn-block" id="playOnlineBtn" onclick="openOnline()">🎮 Play Online Multiplayer</button>
+    </div>
 
     <div style="display:flex; gap:10px; margin-top:10px;">
       <button class="btn btn-secondary btn-block" style="flex:1;" onclick="openSettings()">⚙️ Game Settings</button>
