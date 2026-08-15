@@ -863,7 +863,7 @@
 
 <!-- Version footer -->
 <div style="text-align:center; margin-top:16px; padding:8px; color:var(--text-dim); font-size:11px; opacity:0.7;">
-  $GREED Dice v1.6.2 — Local Only
+  $GREED Dice v1.6.3 — Local Only
 </div>
 </div>
 
@@ -924,6 +924,13 @@
       <p class="rules-small" style="margin-top:8px;">
         Swap the symbols on the dice faces for a different letter set.
         Scoring is unchanged — this is purely cosmetic.
+      </p>
+
+      <div class="chips-label" style="margin-top:20px;">Dollar Symbol</div>
+      <div class="letter-toggle" id="coolSToggle"></div>
+      <p class="rules-small" style="margin-top:8px;">
+        Show the classic notebook <strong>Cool&nbsp;S</strong> instead of the <strong>$</strong> print symbol on dollar faces.
+        Scoring unaffected — cosmetic only.
       </p>
 
       <div class="chips-label" style="margin-top:20px;">🎨 Dice Animation</div>
@@ -1053,35 +1060,57 @@ const COOL_S_ART = [
   "     \\ /",
   "      v"
 ];
+// Build the cool-S glyph as CONNECTED LINE STROKES (round caps/joins) instead
+// of filled dots. Cells that touch orthogonally/diagonally are joined by line
+// segments, and the viewBox is centred on the glyph's real bounding box so the
+// S sits dead-centre on the face regardless of leading whitespace in the art.
 function buildCoolSvg() {
   const rows = COOL_S_ART;
-  const H = rows.length;
-  const W = Math.max(...rows.map(r => r.length));
-  let rects = "";
+  const cells = [];
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
   rows.forEach((line, y) => {
     [...line].forEach((ch, x) => {
       if (ch.trim() !== "") {
-        rects += `<rect x="${x}" y="${y}" width="0.92" height="0.92" rx="0.5"/>`;
+        cells.push([x, y]);
+        if (x < minX) minX = x; if (x > maxX) maxX = x;
+        if (y < minY) minY = y; if (y > maxY) maxY = y;
       }
     });
   });
-  return `<svg viewBox="-1 -1 ${W + 2} ${H + 2}" class="cool-s" ` +
+  const used = new Set(cells.map(p => p[0] + "," + p[1]));
+  const neighborDirs = [[1,0],[0,1],[1,1],[1,-1]];
+  const seen = new Set();
+  let d = "";
+  let segs = 0;
+  cells.forEach(([x, y]) => {
+    neighborDirs.forEach(([dx, dy]) => {
+      const nx = x + dx, ny = y + dy;
+      if (used.has(nx + "," + ny)) {
+        const key = (x < nx || (x === nx && y < ny)) ? x + "," + y + "-" + nx + "," + ny : nx + "," + ny + "-" + x + "," + y;
+        if (seen.has(key)) return;
+        seen.add(key);
+        d += `M${x} ${y}L${nx} ${ny}`;
+        segs++;
+      }
+    });
+  });
+  const pad = 1;
+  const w = maxX - minX + pad * 2;
+  const h = maxY - minY + pad * 2;
+  const ox = minX - pad, oy = minY - pad;
+  return `<svg viewBox="${ox} ${oy} ${w} ${h}" class="cool-s" ` +
     'xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">' +
-    `<g fill="currentColor">${rects}</g></svg>`;
+    `<path d="${d}" fill="none" stroke="currentColor" ` +
+    `stroke-width="1.05" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 }
 const COOL_S_SVG = buildCoolSvg();
 
-// Build the glyph node for a die face. The cool-S only replaces the "$" glyph
-// when an ALTERNATE setting is applied (a non-classic dice palette, or the
-// "imon" letter set). On the standard color/letter dice the plain "$" is kept.
-function hasAlternateSetting() {
-  if (typeof document === "undefined" || typeof letterMode === "undefined") return false;
-  if (letterMode !== "greed") return true;
-  return [...document.body.classList].some(c => c.indexOf("pal-") === 0);
-}
+// Build the glyph node for a die face. When the Cool S setting is ON, dollar
+// faces render the cool-S line-glyph instead of the "$" print symbol. When the
+// toggle is OFF (default) every face shows its normal print symbol.
 function glyphNode(cls) {
   const letter = displayLetter(cls);
-  if (letter === "$" && hasAlternateSetting()) {
+  if (letter === "$" && coolSOn === true) {
     const tpl = document.createElement("template");
     tpl.innerHTML = COOL_S_SVG;
     return tpl.content.firstChild;
@@ -3125,6 +3154,7 @@ const LS_DFX_MODE = "greed-dice-dfx-mode-v1";
 function openSettings() {
   renderPalettePicker();
   renderLetterToggle();
+  renderCoolSToggle();
   renderDfxChips();
   document.getElementById("settingsOverlay").classList.remove("hidden");
 }
@@ -3157,6 +3187,39 @@ function renderLetterToggle() {
   ];
   wrap.innerHTML = opts.map(o =>
     `<div class="letter-opt ${o.id === cur ? "active" : ""}" onclick="setLetterMode('${o.id}')">
+       <div class="lo-set">${o.setFace}</div>
+       <div class="lo-label">${o.label}</div>
+     </div>`
+  ).join("");
+}
+
+// =========================================================================
+// COOL S SUBSTITUTION — cosmetic only. When enabled, dollar faces show the
+// classic notebook "cool S" line-glyph instead of the "$" print symbol.
+// =========================================================================
+let coolSOn = false;
+const LS_COOL_S = "greed-dice-cool-s-v1";
+
+function setCoolS(on) {
+  coolSOn = !!on;
+  try { localStorage.setItem(LS_COOL_S, on ? "1" : "0"); } catch (e) {}
+  renderCoolSToggle();
+  // Re-render any visible dice so the glyph swap applies immediately.
+  renderDiceControls();
+  renderScoreGuide();
+}
+
+function renderCoolSToggle() {
+  const wrap = document.getElementById("coolSToggle");
+  if (!wrap) return;
+  let on = false;
+  try { on = localStorage.getItem(LS_COOL_S) === "1"; } catch (e) {}
+  const opts = [
+    { id: 0, setFace: "$", label: "Print $" },
+    { id: 1, setFace: "S", label: "Cool S" }
+  ];
+  wrap.innerHTML = opts.map(o =>
+    `<div class="letter-opt ${o.id === (on ? 1 : 0) ? "active" : ""}" onclick="setCoolS(${o.id === 1})">
        <div class="lo-set">${o.setFace}</div>
        <div class="lo-label">${o.label}</div>
      </div>`
@@ -3199,6 +3262,10 @@ document.addEventListener("DOMContentLoaded", () => {
   let savedLetters = "greed";
   try { savedLetters = localStorage.getItem("greedLetters") || "greed"; } catch (e) {}
   letterMode = savedLetters === "imon" ? "imon" : "greed";
+  // Restore saved Cool S substitution state.
+  let savedCoolS = false;
+  try { savedCoolS = localStorage.getItem(LS_COOL_S) === "1"; } catch (e) {}
+  coolSOn = savedCoolS;
   // Restore saved psychedelic effect mode.
   let savedDfx = "none";
   try { savedDfx = localStorage.getItem(LS_DFX_MODE) || "none"; } catch (e) {}
@@ -3216,7 +3283,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // Version display
-const APP_VERSION = "1.6.2";
+const APP_VERSION = "1.6.3";
 console.log(`$GREED Dice v${APP_VERSION} loaded`);
 </script>
 </body>
