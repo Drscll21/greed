@@ -1414,24 +1414,25 @@ function buildOnlineSnapshot() {
   };
 }
 
-// ---- Commit: acting player publishes a snapshot guarded by turn_no ----
+// ---- Commit: acting player publishes a snapshot. Only the acting player
+// writes during their turn (all actions are gated by onlineMyTurn), so we write
+// unconditionally by room id — no turn_no equality guard, which previously lost
+// writes when two in-flight pushes raced and deadlocked the game. turn_no is
+// still bumped monotonically so watchers know there's a fresh snapshot.
+let writeQueue = Promise.resolve();   // serialize writes so they never interleave
+function queueWrite(fn) {
+  writeQueue = writeQueue.then(fn).catch(e => console.warn("queueWrite", e));
+  return writeQueue;
+}
 async function pushSnapshot() {
   if (!ONLINE || !myRoom || pushingSnapshot) return;
   pushingSnapshot = true;
   try {
     const st = buildOnlineSnapshot();
-    const r = await sbPatch("greed_games", "id=eq." + myRoom + "&turn_no=eq." + seenTurnNo, { state: st, turn_no: seenTurnNo + 1 });
-    if (r && r.length) { seenTurnNo = r[0].turn_no; }
-    else { await freshRowForGuard(st); }
+    await queueWrite(() => sbPatch("greed_games", "id=eq." + myRoom, { state: st, turn_no: seenTurnNo + 1 }));
+    seenTurnNo += 1;
   } catch (e) { console.warn("pushSnapshot", e); }
   pushingSnapshot = false;
-}
-async function freshRowForGuard(st) {
-  const g = await sbGet("greed_games", "select=turn_no&id=eq." + myRoom);
-  if (g && g.length && mySeat !== undefined) {
-    if (g[0].turn_no !== seenTurnNo) seenTurnNo = g[0].turn_no;
-    await sbPatch("greed_games", "id=eq." + myRoom + "&turn_no=eq." + seenTurnNo, { state: st, turn_no: seenTurnNo + 1 });
-  }
 }
 
 // ---- Live board push: acting player publishes a mid-turn snapshot (rolls & set-aside dice)
@@ -1443,15 +1444,13 @@ function pushLiveBoard() {
   if (boardPushTimer) clearTimeout(boardPushTimer);
   boardPushTimer = setTimeout(() => {
     boardPushTimer = null;
-    syncOnlineOnce().then(() => {   // refresh turn_no guard before writing
-      if (pushingSnapshot) return;
-      pushingSnapshot = true;
-      const st = buildOnlineSnapshot();
-      sbPatch("greed_games", "id=eq." + myRoom + "&turn_no=eq." + seenTurnNo, { state: st, turn_no: seenTurnNo + 1 })
-        .then(r => { if (r && r.length) seenTurnNo = r[0].turn_no; })
-        .catch(e => console.warn("pushLiveBoard", e))
-        .finally(() => { pushingSnapshot = false; });
-    });
+    if (pushingSnapshot) return;
+    pushingSnapshot = true;
+    const st = buildOnlineSnapshot();
+    queueWrite(() => sbPatch("greed_games", "id=eq." + myRoom, { state: st, turn_no: seenTurnNo + 1 }))
+      .then(() => { seenTurnNo += 1; })
+      .catch(e => console.warn("pushLiveBoard", e))
+      .finally(() => { pushingSnapshot = false; });
   }, 250);
 }
 
