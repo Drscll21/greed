@@ -1113,16 +1113,24 @@ function showOnline(msg) { const t = document.getElementById("onlineStatus"); if
 // -------------------------------------------------------------------------
 let heartbeatTimer = null;
 let connTimer = null;
+let connTimeCol = true;   // becomes false if last_seen column is absent (degrades to connected-only)
 function startHeartbeat() {
   clearInterval(heartbeatTimer);
   heartbeatTimer = setInterval(sendHeartbeat, 4000);
   sendHeartbeat();
 }
-function sendHeartbeat() {
+async function sendHeartbeat() {
   if (!ONLINE || !myRoom || mySeat === null) return;
   const now = new Date().toISOString();
-  sbPatch("greed_lobby_players", `lobby_id=eq.${myRoom}&seat=eq.${mySeat}`,
-    { connected: true, last_seen: now }).catch(() => {});
+  const body = connTimeCol ? { connected: true, last_seen: now } : { connected: true };
+  try {
+    const r = await sbPatch("greed_lobby_players", `lobby_id=eq.${myRoom}&seat=eq.${mySeat}`, body);
+    if (!r && connTimeCol) {
+      // last_seen column likely missing → drop it and retry so the heartbeat still lands.
+      connTimeCol = false;
+      await sbPatch("greed_lobby_players", `lobby_id=eq.${myRoom}&seat=eq.${mySeat}`, { connected: true });
+    }
+  } catch (e) {}
 }
 function startConnWatch() {
   clearInterval(connTimer);
@@ -1135,7 +1143,15 @@ async function renderConnectionStatus() {
   if (!bar || !label) return;
   if (!ONLINE || !myRoom) { bar.style.display = "none"; return; }
   bar.style.display = "block";
-  const rows = await sbGet("greed_lobby_players", `select=name,seat,connected,last_seen&lobby_id=eq.${myRoom}&order=seat.asc`);
+  const cols = connTimeCol ? "name,seat,connected,last_seen" : "name,seat,connected";
+  let rows = await sbGet("greed_lobby_players", `select=${cols}&lobby_id=eq.${myRoom}&order=seat.asc`);
+  if (!rows) {
+    // possibly column missing on read → drop the column reference and retry
+    if (connTimeCol) {
+      connTimeCol = false;
+      rows = await sbGet("greed_lobby_players", `select=name,seat,connected&lobby_id=eq.${myRoom}&order=seat.asc`);
+    }
+  }
   if (!rows) {
     label.innerHTML = "⚠ <span style='color:var(--hot-pink)'>Connection check failed — retrying…</span>";
     return;
@@ -1143,11 +1159,15 @@ async function renderConnectionStatus() {
   const now = Date.now();
   const parts = rows.map(r => {
     let dot = "🔴";
-    if (r.connected && r.last_seen) {
-      const age = now - new Date(r.last_seen).getTime();
-      if (age < 9000) dot = "🟢";
-      else if (age < 20000) dot = "🟡";
-      else dot = "🔴";
+    if (r.connected) {
+      if (connTimeCol && r.last_seen) {
+        const age = now - new Date(r.last_seen).getTime();
+        if (age < 9000) dot = "🟢";
+        else if (age < 20000) dot = "🟡";
+        else dot = "🔴";
+      } else {
+        dot = "🟢";  // no timestamp available → trust the connected flag
+      }
     }
     const you = (r.seat === mySeat) ? " (you)" : "";
     return `<span style="white-space:nowrap;">${dot} ${escapeHtml(r.name || ("Seat " + r.seat))}${you}</span>`;
