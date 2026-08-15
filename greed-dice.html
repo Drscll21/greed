@@ -433,8 +433,48 @@
      flatten the cube and hide the other 5 faces so no edge slivers of the
      adjacent faces peek through. The 3D tumble only plays while .rolling. */
   .die:not(.rolling){ transform-style:flat; }
-  .die:not(.rolling) .die-face--front{ transform:none; }
+  .die:not(.rolling) .die-face--front{ transform:none; position:relative; }
   .die:not(.rolling) .die-face:not(.die-face--front){ visibility:hidden; }
+  /* ===== Psychedelic dice effect (Chromatic) =====
+     A running, pulsating rainbow ring snakes around the die and a soft
+     chromatic glow engulfs it. The die face colour stays readable. */
+  body.dfx-chromatic .die:not(.rolling) .die-face--front{
+    animation:textPulse 2.8s ease-in-out infinite;
+    overflow:hidden;
+  }
+  /* Moving chromatic sheen sweeping across the solid face colour */
+  body.dfx-chromatic .die:not(.rolling) .die-face--front::after{
+    content:""; position:absolute; inset:0; border-radius:10px; z-index:1; pointer-events:none;
+    background:linear-gradient(115deg,
+      rgba(255,255,255,0) 0%,
+      rgba(255,255,255,0.45) 45%,
+      rgba(255,255,255,0.05) 52%,
+      rgba(255,255,255,0) 62%);
+    background-size:200% 100%; background-position:200% 0;
+    mix-blend-mode:screen;
+    animation:faceSheen 2.4s linear infinite;
+  }
+  @keyframes faceSheen{ to{ background-position:-100% 0; } }
+  body.dfx-chromatic .die:not(.rolling) .die-face--front::before{
+    content:""; position:absolute; inset:-4px; border-radius:13px; z-index:-1;
+    background:conic-gradient(#ff2a2a,#ff8c00,#eaff00,#0dff9f,#00c3ff,#ea00ff,#ff2a2a);
+    -webkit-mask:radial-gradient(farthest-side, transparent 60%, #000 62%);
+            mask:radial-gradient(farthest-side, transparent 60%, #000 62%);
+    animation:snakeSpin 1.2s linear infinite, ringPulse 1.2s ease-in-out infinite;
+  }
+  @keyframes snakeSpin{ to{ filter:hue-rotate(360deg); } }
+  @keyframes ringPulse{
+    0%,100%{ opacity:0.7; transform:scale(1); }
+    50%{ opacity:1; transform:scale(1.05); }
+  }
+  @keyframes textPulse{
+    0%,100%{ text-shadow:0 0 10px rgba(255,42,42,0.9), 0 0 24px rgba(255,42,42,0.4), 0 0 40px rgba(255,42,42,0.2); }
+    17%{    text-shadow:0 0 10px rgba(255,140,0,0.9), 0 0 24px rgba(255,140,0,0.4), 0 0 40px rgba(255,140,0,0.2); }
+    33%{    text-shadow:0 0 10px rgba(234,255,0,0.9), 0 0 24px rgba(234,255,0,0.4), 0 0 40px rgba(234,255,0,0.2); }
+    50%{    text-shadow:0 0 10px rgba(0,255,159,0.9), 0 0 24px rgba(0,255,159,0.4), 0 0 40px rgba(0,255,159,0.2); }
+    67%{    text-shadow:0 0 10px rgba(0,195,255,0.9), 0 0 24px rgba(0,195,255,0.4), 0 0 40px rgba(0,195,255,0.2); }
+    83%{    text-shadow:0 0 10px rgba(234,0,255,0.9), 0 0 24px rgba(234,0,255,0.4), 0 0 40px rgba(234,0,255,0.2); }
+  }
   .die.selectable{ cursor:pointer; transition:transform .1s ease, box-shadow .1s ease; }
   .die.selectable:hover{ transform:translateY(-3px) scale(1.05); box-shadow:0 0 0 3px rgba(192,82,42,0.55), 0 6px 14px rgba(0,0,0,0.4); }
   .die.banked{ outline:3px solid var(--green); outline-offset:1px; cursor:pointer; }
@@ -520,6 +560,14 @@
   .letter-opt .lo-set{ font-size:17px; font-weight:900; letter-spacing:1px; color:var(--text); }
   .letter-opt .lo-label{ font-size:11px; color:var(--text-dim); margin-top:3px; }
   .letter-opt.active{ border-color:var(--electric); box-shadow:0 0 0 2px rgba(52,152,219,0.3); transform:translateY(-1px); }
+  /* ---------- Dice animation effect chips ---------- */
+  .dfx-chips{ display:flex; flex-wrap:wrap; gap:6px; }
+  .dfx-chip{
+    flex:1; min-width:44px; padding:10px 4px; border-radius:10px; border:2px solid var(--card-border);
+    background:var(--bg-2); cursor:pointer; text-align:center; font-size:12px; font-weight:700;
+    color:var(--text-dim); transition:border-color .12s ease, transform .12s ease;
+  }
+  .dfx-chip.active{ border-color:var(--hot-pink); box-shadow:0 0 0 2px rgba(232,147,90,0.3); transform:translateY(-1px); color:var(--text); }
   .rules-body h4{ color:var(--gold); margin:16px 0 6px; font-size:14px; letter-spacing:1px; text-transform:uppercase; }
   .rules-body h4:first-child{ margin-top:0; }
   .rules-body p{ margin:6px 0; }
@@ -812,7 +860,7 @@
 
 <!-- Version footer -->
 <div style="text-align:center; margin-top:16px; padding:8px; color:var(--text-dim); font-size:11px; opacity:0.7;">
-  $GREED Dice v1.6.0 — Local Only
+  $GREED Dice v1.6.1 — Local Only
 </div>
 </div>
 
@@ -873,6 +921,12 @@
       <p class="rules-small" style="margin-top:8px;">
         Swap the symbols on the dice faces for a different letter set.
         Scoring is unchanged — this is purely cosmetic.
+      </p>
+
+      <div class="chips-label" style="margin-top:20px;">🎨 Dice Animation</div>
+      <div class="dfx-chips" id="dfxChips"></div>
+      <p class="rules-small" style="margin-top:6px;">
+        🔥 <strong>Chromatic</strong> — a rainbow snake-border runs around each die and a full-body glow engulfs it. The die colour stays readable.
       </p>
     </div>
   </div>
@@ -3007,11 +3061,15 @@ function renderPalettePicker() {
 }
 
 // =========================================================================
-// GAME SETTINGS MODAL — palette picker + letter set toggle.
+// GAME SETTINGS MODAL — palette picker + letter set toggle + effect toggle.
 // =========================================================================
+let dfxMode = "none"; // "none" | "breathe" | "float" | "rainbow" | "chromatic"
+const LS_DFX_MODE = "greed-dice-dfx-mode-v1";
+
 function openSettings() {
   renderPalettePicker();
   renderLetterToggle();
+  renderDfxChips();
   document.getElementById("settingsOverlay").classList.remove("hidden");
 }
 function closeSettings() {
@@ -3049,6 +3107,35 @@ function renderLetterToggle() {
   ).join("");
 }
 
+// =========================================================================
+// PSYCHEDELIC DICE EFFECTS — visual only, colour stays readable.
+// =========================================================================
+function setDfxMode(mode) {
+  const valid = ["none","chromatic"];
+  if (!valid.includes(mode)) mode = "none";
+  dfxMode = mode;
+  // Remove any previous dfx class from body, then add the active one.
+  valid.forEach(v => document.body.classList.remove("dfx-" + v));
+  if (mode !== "none") document.body.classList.add("dfx-" + mode);
+  try { localStorage.setItem(LS_DFX_MODE, mode); } catch (e) {}
+  renderDfxChips();
+}
+function renderDfxChips() {
+  const wrap = document.getElementById("dfxChips");
+  if (!wrap) return;
+  let cur = "none";
+  try { cur = localStorage.getItem(LS_DFX_MODE) || "none"; } catch (e) {}
+  const opts = [
+    { id: "none",     ico: "◻️",  label: "Off" },
+    { id: "chromatic",ico: "✨",  label: "Chromatic" }
+  ];
+  wrap.innerHTML = opts.map(o =>
+    `<div class="dfx-chip ${o.id === cur ? "active" : ""}" onclick="setDfxMode('${o.id}')">
+       ${o.ico}<br><span style="font-size:10px;">${o.label}</span>
+     </div>`
+  ).join("");
+}
+
 // Boot
 document.addEventListener("DOMContentLoaded", () => {
   // Restore saved dice letter set before rendering the score guide (its
@@ -3056,6 +3143,13 @@ document.addEventListener("DOMContentLoaded", () => {
   let savedLetters = "greed";
   try { savedLetters = localStorage.getItem("greedLetters") || "greed"; } catch (e) {}
   letterMode = savedLetters === "imon" ? "imon" : "greed";
+  // Restore saved psychedelic effect mode.
+  let savedDfx = "none";
+  try { savedDfx = localStorage.getItem(LS_DFX_MODE) || "none"; } catch (e) {}
+  if (savedDfx !== "none") {
+    document.body.classList.add("dfx-" + savedDfx);
+    dfxMode = savedDfx;
+  }
   renderPalettePicker();
   renderLetterToggle();
   renderScoreGuide();
@@ -3066,7 +3160,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // Version display
-const APP_VERSION = "1.6.0";
+const APP_VERSION = "1.6.1";
 console.log(`$GREED Dice v${APP_VERSION} loaded`);
 </script>
 </body>
