@@ -1,0 +1,3771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7050031595729088"
+     crossorigin="anonymous"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>$GREED — Virtual Dice Game</title>
+
+<!-- ===== PWA / Add-to-Home-Screen (full-screen standalone) ===== -->
+<meta name="theme-color" content="#140c09">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="$GREED Dice">
+<!-- Inline manifest (no external file needed) -->
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%20%22%24GREED%20Dice%22%2C%20%22short_name%22%3A%20%22%24GREED%20Dice%22%2C%20%22start_url%22%3A%20%22.%22%2C%20%22display%22%3A%20%22standalone%22%2C%20%22display_override%22%3A%20%5B%22standalone%22%5D%2C%20%22background_color%22%3A%20%22%23140c09%22%2C%20%22theme_color%22%3A%20%22%23140c09%22%2C%20%22orientation%22%3A%20%22portrait%22%2C%20%22icons%22%3A%20%5B%7B%22src%22%3A%20%22data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgZmlsbD0iIzE0MGMwOSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTYlIiBmb250LXNpemU9IjIwMCIgZmlsbD0iI2Q5NzI0YSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IkFyaWFsLEhlbHZldGljYSxzYW5zLXNlcmlmIj4kR1JFRUQ8L3RleHQ%2BPC9zdmc%2B%22%2C%20%22sizes%22%3A%20%22512x512%22%2C%20%22type%22%3A%20%22image%2Fsvg%2Bxml%22%7D%5D%7D">
+<style>
+  :root{
+    --bg-1:#241610;
+    --bg-2:#140c09;
+    --gold:#d9724a;
+    --gold-2:#c0522a;
+    --hot-pink:#e8935a;
+    --electric:#2a9d8f;
+    --green:#8fae5c;
+    --card-bg:#2e1c14;
+    --card-border:#4a3021;
+    --text:#f7ede4;
+    --text-dim:#c2a58f;
+    --e-green:#7bb661;
+    --e-blue:#3b6fb5;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(192,82,42,0.3), transparent 45%),
+      radial-gradient(circle at 85% 90%, rgba(42,157,143,0.2), transparent 45%),
+      linear-gradient(160deg,var(--bg-1),var(--bg-2));
+    color:var(--text);
+    font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+    padding:16px;
+    padding-bottom:40px;
+  }
+  h1,h2,h3{margin:0;}
+  button{font-family:inherit; cursor:pointer; border:none; -webkit-tap-highlight-color:transparent;}
+  input{font-family:inherit;}
+  ::selection{background:var(--gold); color:#000;}
+
+  /* ---------- Full-screen standalone (added to home screen) ---------- */
+  body{
+    padding-top: max(16px, env(safe-area-inset-top));
+    padding-bottom: max(40px, env(safe-area-inset-bottom));
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+  }
+
+  .wrap{max-width:900px; margin:0 auto;}
+
+  /* ---------- Header ---------- */
+  .app-header{
+    text-align:center;
+    padding:18px 10px 22px;
+  }
+  .app-header .title{
+    font-size:clamp(28px,7vw,44px);
+    font-weight:900;
+    letter-spacing:2px;
+    background:linear-gradient(90deg,var(--gold),var(--hot-pink),var(--electric));
+    background-size:200% auto;
+    -webkit-background-clip:text;
+    background-clip:text;
+    -webkit-text-fill-color:transparent;
+    animation:shine 6s linear infinite;
+    text-transform:uppercase;
+  }
+  @keyframes shine{ to{ background-position:200% center; } }
+  .app-header .subtitle{
+    font-size:12px;
+    letter-spacing:4px;
+    color:var(--text-dim);
+    text-transform:uppercase;
+    margin-top:4px;
+  }
+
+  .back-link{
+    position:fixed; top:14px; left:14px; z-index:50;
+    width:44px; height:44px; border-radius:50%;
+    background:var(--card-bg); border:2px solid var(--card-border);
+    display:flex; align-items:center; justify-content:center;
+    font-size:20px; color:var(--text); text-decoration:none;
+  }
+  .back-link:active{ transform:scale(0.92); }
+
+  /* ---------- Card shell ---------- */
+  .panel{
+    background:rgba(36,18,56,0.7);
+    border:1px solid var(--card-border);
+    border-radius:16px;
+    padding:20px;
+    backdrop-filter:blur(6px);
+  }
+
+  /* ---------- Buttons ---------- */
+  .btn{
+    border-radius:14px;
+    padding:14px 18px;
+    font-weight:800;
+    font-size:15px;
+    letter-spacing:0.5px;
+    text-transform:uppercase;
+    transition:transform .1s ease, filter .15s ease;
+    color:#0f0620;
+  }
+  .btn:active{ transform:scale(0.95); }
+  .btn-primary{ background:linear-gradient(135deg,var(--gold),var(--gold-2)); box-shadow:0 4px 0 #7a3117,0 8px 18px rgba(192,82,42,0.35); color:#fff5ee;}
+  .btn-primary:active{ box-shadow:0 1px 0 #7a3117; }
+  .btn-secondary{ background:linear-gradient(135deg,#4a3021,#331f15); color:var(--text); border:1px solid var(--card-border);}
+  .btn-pink{ background:linear-gradient(135deg,var(--hot-pink),#c46a35); color:#fff5ee; box-shadow:0 4px 0 #8f4a1f,0 8px 18px rgba(232,147,90,0.3);}
+  .btn-pink:active{ box-shadow:0 1px 0 #8f4a1f; }
+  .btn-cyan{ background:linear-gradient(135deg,var(--electric),#1f766b); color:#f1fbf9; box-shadow:0 4px 0 #14504a,0 8px 18px rgba(42,157,143,0.3);}
+  .btn-cyan:active{ box-shadow:0 1px 0 #14504a; }
+  .btn-ghost{ background:transparent; color:var(--text-dim); border:1px dashed var(--card-border);}
+  .btn:disabled{ opacity:0.35; cursor:not-allowed; transform:none !important; filter:grayscale(0.4);}
+  .btn-block{ width:100%; }
+  .btn-sm{ padding:8px 12px; font-size:12px; margin-top:8px; width:100%; }
+
+  /* ---------- SETUP SCREEN ---------- */
+  .setup-row{
+    display:flex; gap:8px; align-items:center; margin-bottom:10px;
+  }
+  .setup-row input[type=text]{
+    flex:1;
+    padding:14px 16px;
+    border-radius:12px;
+    border:2px solid var(--card-border);
+    background:#1a0e2b;
+    color:var(--text);
+    font-size:16px;
+    font-weight:600;
+  }
+  .setup-row input[type=text]:focus{ outline:none; border-color:var(--gold); }
+  .row-cpu{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; flex-shrink:0; width:84px; }
+  .row-cpu .ai-label{ font-size:9px; letter-spacing:1px; text-transform:uppercase; color:var(--text-dim); text-align:center; line-height:1.1; }
+  .row-cpu .switch{ position:relative; display:inline-block; width:42px; height:22px; }
+  .row-cpu .switch input{ opacity:0; width:0; height:0; }
+  .row-cpu .slider{ position:absolute; cursor:pointer; inset:0; background:#3a2a4d; border-radius:22px; transition:.2s; }
+  .row-cpu .slider:before{ content:""; position:absolute; height:16px; width:16px; left:3px; top:3px; background:#c9b8dd; border-radius:50%; transition:.2s; }
+  .row-cpu .switch input:checked + .slider{ background:var(--electric); }
+  .row-cpu .switch input:checked + .slider:before{ transform:translateX(20px); background:#fff; }
+  .row-remove{
+    width:42px; height:42px; flex-shrink:0;
+    border-radius:10px;
+    background:rgba(232,147,90,0.15);
+    color:var(--hot-pink);
+    font-size:20px; font-weight:900;
+    display:flex; align-items:center; justify-content:center;
+    border:1px solid rgba(232,147,90,0.3);
+  }
+  .row-remove:disabled{ opacity:0.2; }
+
+  .chips-label{
+    font-size:12px; text-transform:uppercase; letter-spacing:2px; color:var(--text-dim);
+    margin:18px 0 8px;
+  }
+  .chips{ display:flex; flex-wrap:wrap; gap:8px; }
+  /* ---------- Dice colour palette picker ---------- */
+  .palette-picker{ flex:1 1 100%; }
+  .palette-chips{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; }
+  .palette-chip{
+    display:flex; flex-direction:column; align-items:center; gap:6px; cursor:pointer;
+    padding:8px 10px 6px; border-radius:12px; border:2px solid var(--card-border);
+    background:var(--bg-2); transition:border-color .12s ease, transform .12s ease;
+  }
+  .palette-chip .pc-name{ font-size:11px; font-weight:700; color:var(--text-dim); white-space:nowrap; }
+  .palette-chip.active{ border-color:var(--green); box-shadow:0 0 0 2px rgba(42,157,143,0.3); transform:translateY(-1px); }
+  .palette-swatches{ display:flex; gap:3px; }
+  .palette-swatches i{
+    width:13px; height:13px; border-radius:4px; border:1px solid rgba(0,0,0,0.25); display:block;
+  }
+  .chip{
+    padding:9px 14px;
+    border-radius:20px;
+    background:rgba(42,157,143,0.15);
+    border:1px solid rgba(42,157,143,0.4);
+    color:var(--electric);
+    font-size:14px; font-weight:700;
+  }
+  .chip.added{ background:rgba(247,237,228,0.05); border-color:var(--card-border); color:var(--text-dim); }
+  .chip:active{ transform:scale(0.94); }
+  /* Saved player chip with add/edit/delete controls */
+  .saved-chip{ display:inline-flex; align-items:center; gap:2px; padding:4px 6px 4px 12px; cursor:default; }
+  .saved-chip .sc-add{ background:none; border:none; color:inherit; font:inherit; font-weight:700; cursor:pointer; padding:2px 4px; }
+  .saved-chip .sc-edit,
+  .saved-chip .sc-del{
+    width:24px; height:24px; border-radius:50%; border:none; cursor:pointer; font-size:12px;
+    display:inline-flex; align-items:center; justify-content:center; line-height:1;
+  }
+  .saved-chip .sc-edit{ background:rgba(42,157,143,0.2); color:var(--electric); }
+  .saved-chip .sc-del{ background:rgba(192,82,42,0.25); color:#ff8f70; }
+  /* ---------- Local player tallies table ---------- */
+  .stats-table{ display:flex; flex-direction:column; gap:2px; }
+  .st-row{
+    display:grid; grid-template-columns:1.6fr .7fr .7fr 1fr 1fr; gap:6px;
+    padding:6px 8px; border-radius:8px; font-size:12px; align-items:center;
+  }
+  .st-row span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .st-head{ background:rgba(42,157,143,0.15); color:var(--electric); font-weight:800; text-transform:uppercase; letter-spacing:.5px; font-size:10px; }
+  .st-row:not(.st-head):nth-child(odd){ background:rgba(247,237,228,0.04); }
+
+  .setup-error{
+    color:var(--hot-pink); font-weight:700; font-size:14px;
+    text-align:center; margin-top:10px; min-height:20px;
+  }
+
+  /* ---------- Banner ---------- */
+  .banner{
+    text-align:center;
+    padding:14px;
+    border-radius:14px;
+    margin-bottom:16px;
+    font-weight:900;
+    font-size:clamp(16px,5vw,24px);
+    letter-spacing:2px;
+    text-transform:uppercase;
+    border:1px solid var(--card-border);
+  }
+  .banner.first-to{ background:rgba(192,82,42,0.14); color:var(--gold); border-color:rgba(192,82,42,0.4);}
+  .banner.end-times{
+    background:rgba(232,147,90,0.2); color:var(--hot-pink); border-color:rgba(232,147,90,0.55);
+    animation:pulse-banner 1.4s ease-in-out infinite;
+  }
+  .banner.winner{ background:rgba(143,174,92,0.18); color:var(--green); border-color:rgba(143,174,92,0.5); font-size:clamp(20px,6vw,30px);}
+  .banner.tie{ background:rgba(255,255,255,0.08); color:var(--text); }
+  .banner.final-round{
+    background:rgba(143,174,92,0.28); color:var(--green); border-color:rgba(143,174,92,0.7);
+    animation:pulse-banner 1.4s ease-in-out infinite;
+  }
+  .banner.bonus-flash{
+    background:rgba(232,147,90,0.3); color:var(--gold); border-color:rgba(232,147,90,0.7);
+    animation:flash-pop 0.5s ease-out;
+  }
+  @keyframes flash-pop{ 0%{ transform:scale(0.96); opacity:0.5; } 60%{ transform:scale(1.02); } 100%{ transform:scale(1); opacity:1; } }
+  @keyframes pulse-banner{ 0%,100%{opacity:1;} 50%{opacity:0.6;} }
+
+  .banner-stats{
+    text-align:center;
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:0.5px;
+    text-transform:none;
+    color:var(--text-dim);
+    margin-top:-8px;
+    margin-bottom:16px;
+    min-height:16px;
+  }
+  .banner-stats .stat-sep{ opacity:0.4; margin:0 8px; }
+  .banner .stat-hot, .banner-stats .stat-hot{ color:var(--hot-pink); }
+  .banner .stat-cold, .banner-stats .stat-cold{ color:var(--electric); }
+
+  /* ---------- Player cards ---------- */
+  .cards-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    gap:12px;
+    margin-bottom:18px;
+  }
+  .p-card{
+    position:relative;
+    background:var(--card-bg);
+    border:2px solid var(--card-border);
+    border-radius:16px;
+    padding:14px 12px;
+    text-align:center;
+    transition:all .2s ease;
+  }
+  .p-card.active{
+    border-color:var(--gold);
+    box-shadow:0 0 0 3px rgba(192,82,42,0.3), 0 8px 20px rgba(192,82,42,0.18);
+    transform:translateY(-2px);
+  }
+  .p-card.leader{ border-color:var(--green); box-shadow:0 0 0 3px rgba(143,174,92,0.25);}
+  .p-card.eliminated{ opacity:0.4; filter:grayscale(0.6); }
+  .p-card.winner-card{ border-color:var(--gold); box-shadow:0 0 0 4px rgba(192,82,42,0.4), 0 0 30px rgba(192,82,42,0.4); animation:winner-glow 1.6s ease-in-out infinite; }
+  @keyframes winner-glow{ 0%,100%{box-shadow:0 0 0 4px rgba(192,82,42,0.4), 0 0 30px rgba(192,82,42,0.4);} 50%{box-shadow:0 0 0 4px rgba(192,82,42,0.65), 0 0 45px rgba(192,82,42,0.7);} }
+
+  .p-card .badge{
+    position:absolute; top:-9px; left:50%; transform:translateX(-50%);
+    font-size:9px; font-weight:900; letter-spacing:1.5px;
+    padding:3px 10px; border-radius:10px;
+    text-transform:uppercase; white-space:nowrap;
+  }
+  .badge.your-turn{ background:var(--gold); color:#241610; }
+  .badge.leader-badge{ background:var(--green); color:#1c2712; }
+  .badge.out-badge{ background:var(--card-border); color:var(--text-dim); }
+
+  .p-name .cpu-tag{ font-size:10px; color:var(--electric); margin-left:4px; vertical-align:middle; }
+  .p-total{ font-size:28px; font-weight:900; color:var(--gold); margin-top:4px; font-variant-numeric:tabular-nums;}
+  .p-card.active .p-total{ color:var(--gold); }
+  .p-last{ font-size:11px; color:var(--text-dim); margin-top:2px; }
+  .p-needs{ font-size:11px; color:var(--hot-pink); font-weight:700; margin-top:4px;}
+  .p-achievements{ display:flex; justify-content:center; gap:6px; margin-top:6px; flex-wrap:wrap; }
+  .achv-pill{
+    font-size:11px; font-weight:800;
+    padding:2px 7px; border-radius:9px;
+    display:inline-flex; align-items:center; gap:3px;
+  }
+  .achv-pill.greed{ background:rgba(232,147,90,0.18); color:var(--hot-pink); }
+  .achv-pill.six{ background:rgba(42,157,143,0.18); color:var(--electric); }
+
+  /* ---------- Dice tray ---------- */
+  .dice-tray{ display:flex; flex-wrap:wrap; gap:12px; margin-bottom:18px; align-items:stretch; }
+  .dice-main{ flex:1 1 300px; min-width:260px; }
+  .dice-side{ flex:0 0 170px; min-width:150px; background:rgba(143,174,92,0.08); border:1px dashed rgba(192,82,42,0.4); border-radius:14px; padding:12px; display:flex; flex-direction:column; }
+  .side-label{ font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--text-dim); text-align:center; margin-bottom:6px; }
+  .score-guide{ margin-top:12px; padding-top:10px; border-top:1px solid var(--card-border); font-size:11px; color:var(--text-dim); }
+  .score-guide h4{ font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--gold); margin:0 0 6px; text-align:center; }
+  .score-guide ul{ list-style:none; margin:0; padding:0; }
+  .score-guide li{ display:flex; justify-content:space-between; gap:8px; padding:1px 0; }
+  .score-guide .sg-k{ white-space:nowrap; }
+  .score-guide .sg-v{ color:var(--green); font-weight:800; font-variant-numeric:tabular-nums; }
+  .score-guide .sg-note{ font-size:10px; opacity:0.7; margin-top:6px; text-align:center; line-height:1.3; }
+  .score-guide .sg-note.sg-warn{ opacity:0.95; color:var(--gold); border-top:1px dashed var(--card-border); padding-top:6px; }
+  .score-guide .sg-legend{ display:flex; flex-wrap:wrap; gap:4px 10px; justify-content:center; margin-top:8px; font-size:10px; color:var(--text-dim); }
+  .score-guide .sg-legend span{ display:inline-flex; align-items:center; gap:4px; }
+  .score-guide .sg-legend .dot{ width:11px; height:11px; border-radius:3px; display:inline-block; border:1px solid rgba(255,255,255,0.2); }
+  .score-guide .sg-legend .dot.dollar{ background:#1e7a4d; }
+  .score-guide .sg-legend .dot.g{ background:#ffd400; }
+  .score-guide .sg-legend .dot.r{ background:#c0392b; }
+  .score-guide .sg-legend .dot.e-green{ background:#7bb661; }
+  .score-guide .sg-legend .dot.e-blue{ background:#3b6fb5; }
+  .score-guide .sg-legend .dot.d{ background:#0a0a0a; }
+  .dice-row{ display:flex; flex-wrap:wrap; gap:16px; justify-content:center; min-height:72px; align-items:center; perspective:700px; }
+  .dice-row.side{ min-height:64px; justify-content:flex-start; align-content:flex-start; }
+  .dice-prompt{ color:var(--text-dim); font-size:14px; text-align:center; }
+  /* 3D cube die structure */
+  .die{ width:62px; height:62px; position:relative; transform-style:preserve-3d; }
+  .die-face{
+    position:absolute; width:62px; height:62px;
+    border:2px solid rgba(255,255,255,0.15);
+    border-radius:10px;
+    font-size:30px; font-weight:900;
+    line-height:58px; text-align:center;
+    display:flex; align-items:center; justify-content:center;
+    backface-visibility:hidden;
+    user-select:none;
+    box-shadow:0 4px 8px rgba(0,0,0,0.35);
+    transition:background .2s, color .2s, border-color .2s;
+  }
+  .die-face .cool-s{ width:44px; height:44px; display:block; overflow:visible; }
+  .die-face--front  { transform: translateZ(31px); }
+  .die-face--back   { transform: rotateY(180deg) translateZ(31px); }
+  .die-face--right  { transform: rotateY(90deg) translateZ(31px); }
+  .die-face--left   { transform: rotateY(-90deg) translateZ(31px); }
+  .die-face--top    { transform: rotateX(90deg) translateZ(31px); }
+  .die-face--bottom { transform: rotateX(-90deg) translateZ(31px); }
+  /* Symbol color classes (same as existing) */
+  .die-face.dollar{ background:#1e7a4d; color:#eafff0; border-color:#0f5130; }
+  .die-face.g{ background:#ffd400; color:#1a1a1a; border-color:#e6b800; }
+  .die-face.r{ background:#c0392b; color:#fff5ee; border-color:#8c1f15; }
+  .die-face.e-green{ background:#7bb661; color:#10240c; border-color:#5a9447; }
+  .die-face.e-blue{ background:#3b6fb5; color:#fff; border-color:#2a527f; }
+  .die-face.d{ background:#0a0a0a; color:#f5f5f5; border-color:#3a3a3a; }
+  /* ============ DICE COLOUR PALETTES — visual only ============
+     body.pal-* applies an alternate colour set to die faces + legend.
+     'classic' is the default (no body class). Letters & physics unchanged. */
+  /* Fluorescent (neon) */
+  body.pal-fluoro .die-face.dollar{ background:#39ff14; color:#001f00; border-color:#0f9d0f; }
+  body.pal-fluoro .die-face.g{ background:#ff8c00; color:#2a0a00; border-color:#b36400; }
+  body.pal-fluoro .die-face.r{ background:#ff2a2a; color:#fff; border-color:#a00000; }
+  body.pal-fluoro .die-face.e-green{ background:#0dff9f; color:#003322; border-color:#00915c; }
+  body.pal-fluoro .die-face.e-blue{ background:#00c3ff; color:#00121a; border-color:#007099; }
+  body.pal-fluoro .die-face.d{ background:#ea00ff; color:#fff; border-color:#9a00ad; }
+  body.pal-fluoro .score-guide .sg-legend .dot.dollar{ background:#39ff14; }
+  body.pal-fluoro .score-guide .sg-legend .dot.g{ background:#ff8c00; }
+  body.pal-fluoro .score-guide .sg-legend .dot.r{ background:#ff2a2a; }
+  body.pal-fluoro .score-guide .sg-legend .dot.e-green{ background:#0dff9f; }
+  body.pal-fluoro .score-guide .sg-legend .dot.e-blue{ background:#00c3ff; }
+  body.pal-fluoro .score-guide .sg-legend .dot.d{ background:#ea00ff; }
+  /* Pastel */
+  body.pal-pastel .die-face.dollar{ background:#a8e6cf; color:#123; border-color:#6fbf9a; }
+  body.pal-pastel .die-face.g{ background:#ffb6a3; color:#501; border-color:#d98a72; }
+  body.pal-pastel .die-face.r{ background:#ffd3b6; color:#622; border-color:#e59a6f; }
+  body.pal-pastel .die-face.e-green{ background:#c4e8a3; color:#241; border-color:#8fbe64; }
+  body.pal-pastel .die-face.e-blue{ background:#a0e0ff; color:#123; border-color:#6fb6de; }
+  body.pal-pastel .die-face.d{ background:#dcd6f7; color:#332; border-color:#a99cd6; }
+  body.pal-pastel .score-guide .sg-legend .dot.dollar{ background:#a8e6cf; }
+  body.pal-pastel .score-guide .sg-legend .dot.g{ background:#ffb6a3; }
+  body.pal-pastel .score-guide .sg-legend .dot.r{ background:#ffd3b6; }
+  body.pal-pastel .score-guide .sg-legend .dot.e-green{ background:#c4e8a3; }
+  body.pal-pastel .score-guide .sg-legend .dot.e-blue{ background:#a0e0ff; }
+  body.pal-pastel .score-guide .sg-legend .dot.d{ background:#dcd6f7; }
+  /* Ocean */
+  body.pal-ocean .die-face.dollar{ background:#009688; color:#eafff8; border-color:#00695c; }
+  body.pal-ocean .die-face.g{ background:#ff7043; color:#2a0a00; border-color:#c25030; }
+  body.pal-ocean .die-face.r{ background:#e53935; color:#fff; border-color:#a92f2b; }
+  body.pal-ocean .die-face.e-green{ background:#26c6da; color:#00212a; border-color:#1a8ea0; }
+  body.pal-ocean .die-face.e-blue{ background:#1e88e5; color:#fff; border-color:#155fa6; }
+  body.pal-ocean .die-face.d{ background:#283593; color:#eef0ff; border-color:#1a2369; }
+  body.pal-ocean .score-guide .sg-legend .dot.dollar{ background:#009688; }
+  body.pal-ocean .score-guide .sg-legend .dot.g{ background:#ff7043; }
+  body.pal-ocean .score-guide .sg-legend .dot.r{ background:#e53935; }
+  body.pal-ocean .score-guide .sg-legend .dot.e-green{ background:#26c6da; }
+  body.pal-ocean .score-guide .sg-legend .dot.e-blue{ background:#1e88e5; }
+  body.pal-ocean .score-guide .sg-legend .dot.d{ background:#283593; }
+  /* Candy */
+  body.pal-candy .die-face.dollar{ background:#f48fb1; color:#3a0a1e; border-color:#c26284; }
+  body.pal-candy .die-face.g{ background:#ffab73; color:#3a1200; border-color:#c9803f; }
+  body.pal-candy .die-face.r{ background:#ff8a65; color:#3a1003; border-color:#c26040; }
+  body.pal-candy .die-face.e-green{ background:#a5d6a7; color:#102; border-color:#74a576; }
+  body.pal-candy .die-face.e-blue{ background:#90caf9; color:#0a1a2a; border-color:#608ec4; }
+  body.pal-candy .die-face.d{ background:#b39ddb; color:#120; border-color:#826fa8; }
+  body.pal-candy .score-guide .sg-legend .dot.dollar{ background:#f48fb1; }
+  body.pal-candy .score-guide .sg-legend .dot.g{ background:#ffab73; }
+  body.pal-candy .score-guide .sg-legend .dot.r{ background:#ff8a65; }
+  body.pal-candy .score-guide .sg-legend .dot.e-green{ background:#a5d6a7; }
+  body.pal-candy .score-guide .sg-legend .dot.e-blue{ background:#90caf9; }
+  body.pal-candy .score-guide .sg-legend .dot.d{ background:#b39ddb; }
+  /* Gold */
+  body.pal-gold .die-face.dollar{ background:#c9a227; color:#fff8e0; border-color:#8a6d14; }
+  body.pal-gold .die-face.g{ background:#b87333; color:#fff6e0; border-color:#8a5420; }
+  body.pal-gold .die-face.r{ background:#c2572b; color:#fff5ec; border-color:#8a3a17; }
+  body.pal-gold .die-face.e-green{ background:#7da453; color:#0f1803; border-color:#557536; }
+  body.pal-gold .die-face.e-blue{ background:#4c6fa8; color:#eef4ff; border-color:#34507d; }
+  body.pal-gold .die-face.d{ background:#3b3b3b; color:#fff0cc; border-color:#141414; }
+  body.pal-gold .score-guide .sg-legend .dot.dollar{ background:#c9a227; }
+  body.pal-gold .score-guide .sg-legend .dot.g{ background:#b87333; }
+  body.pal-gold .score-guide .sg-legend .dot.r{ background:#c2572b; }
+  body.pal-gold .score-guide .sg-legend .dot.e-green{ background:#7da453; }
+  body.pal-gold .score-guide .sg-legend .dot.e-blue{ background:#4c6fa8; }
+  body.pal-gold .score-guide .sg-legend .dot.d{ background:#3b3b3b; }
+  .die{ background:transparent; }
+  /* Settled look: only the outcome face is visible. When not tumbling we
+     flatten the cube and hide the other 5 faces so no edge slivers of the
+     adjacent faces peek through. The 3D tumble only plays while .rolling. */
+  .die:not(.rolling){ transform-style:flat; }
+  .die:not(.rolling) .die-face--front{ transform:none; position:relative; }
+  .die:not(.rolling) .die-face:not(.die-face--front){ visibility:hidden; }
+  /* ===== Psychedelic dice effect (Chromatic) =====
+     A running, pulsating rainbow ring snakes around the die and a soft
+     chromatic glow engulfs it. The die face colour stays readable. */
+  body.dfx-chromatic .die:not(.rolling) .die-face--front{
+    animation:textPulse 2.8s ease-in-out infinite;
+    overflow:hidden;
+  }
+  /* Moving chromatic sheen sweeping across the solid face colour */
+  body.dfx-chromatic .die:not(.rolling) .die-face--front::after{
+    content:""; position:absolute; inset:0; border-radius:10px; z-index:1; pointer-events:none;
+    background:linear-gradient(115deg,
+      rgba(255,255,255,0) 0%,
+      rgba(255,255,255,0.45) 45%,
+      rgba(255,255,255,0.05) 52%,
+      rgba(255,255,255,0) 62%);
+    background-size:200% 100%; background-position:200% 0;
+    mix-blend-mode:screen;
+    animation:faceSheen 2.4s linear infinite;
+  }
+  @keyframes faceSheen{ to{ background-position:-100% 0; } }
+  body.dfx-chromatic .die:not(.rolling) .die-face--front::before{
+    content:""; position:absolute; inset:-4px; border-radius:13px; z-index:-1;
+    background:conic-gradient(#ff2a2a,#ff8c00,#eaff00,#0dff9f,#00c3ff,#ea00ff,#ff2a2a);
+    -webkit-mask:radial-gradient(farthest-side, transparent 60%, #000 62%);
+            mask:radial-gradient(farthest-side, transparent 60%, #000 62%);
+    animation:snakeSpin 1.2s linear infinite, ringPulse 1.2s ease-in-out infinite;
+  }
+  @keyframes snakeSpin{ to{ filter:hue-rotate(360deg); } }
+  @keyframes ringPulse{
+    0%,100%{ opacity:0.7; transform:scale(1); }
+    50%{ opacity:1; transform:scale(1.05); }
+  }
+  @keyframes textPulse{
+    0%,100%{ text-shadow:0 0 10px rgba(255,42,42,0.9), 0 0 24px rgba(255,42,42,0.4), 0 0 40px rgba(255,42,42,0.2); }
+    17%{    text-shadow:0 0 10px rgba(255,140,0,0.9), 0 0 24px rgba(255,140,0,0.4), 0 0 40px rgba(255,140,0,0.2); }
+    33%{    text-shadow:0 0 10px rgba(234,255,0,0.9), 0 0 24px rgba(234,255,0,0.4), 0 0 40px rgba(234,255,0,0.2); }
+    50%{    text-shadow:0 0 10px rgba(0,255,159,0.9), 0 0 24px rgba(0,255,159,0.4), 0 0 40px rgba(0,255,159,0.2); }
+    67%{    text-shadow:0 0 10px rgba(0,195,255,0.9), 0 0 24px rgba(0,195,255,0.4), 0 0 40px rgba(0,195,255,0.2); }
+    83%{    text-shadow:0 0 10px rgba(234,0,255,0.9), 0 0 24px rgba(234,0,255,0.4), 0 0 40px rgba(234,0,255,0.2); }
+  }
+  .die.selectable{ cursor:pointer; transition:transform .1s ease, box-shadow .1s ease; }
+  .die.selectable:hover{ transform:translateY(-3px) scale(1.05); box-shadow:0 0 0 3px rgba(192,82,42,0.55), 0 6px 14px rgba(0,0,0,0.4); }
+  .die.banked{ outline:3px solid var(--green); outline-offset:1px; cursor:pointer; }
+  .die.banked:hover{ transform:scale(0.95); }
+  .die.rolling{ animation:tumble 1.2s linear; will-change:transform; }
+  @keyframes tumble{
+    0%{ transform:translateY(0) rotateX(0deg) rotateY(0deg); }
+    25%{ transform:translateY(-12px) rotateX(200deg) rotateY(110deg); }
+    50%{ transform:translateY(0) rotateX(400deg) rotateY(220deg); }
+    75%{ transform:translateY(-8px) rotateX(560deg) rotateY(300deg); }
+    100%{ transform:translateY(0) rotateX(720deg) rotateY(360deg); }
+  }
+  .die.land{ animation:landpop 0.36s cubic-bezier(.18,.89,.32,1.28); }
+  @keyframes landpop{
+    0%{ transform:scale(1.35) translateY(-10px); }
+    55%{ transform:scale(0.9) translateY(3px); }
+    100%{ transform:scale(1) translateY(0); }
+  }
+
+  /* Subtle "crossed the gate" pulse on player cards — fires when their total
+     first crosses the 500 floor and they have an active turn. */
+  .p-card.gate-just-cleared{
+    animation: gate-cleared 1.2s ease-out 1;
+  }
+  @keyframes gate-cleared{
+    0%   { box-shadow:0 0 0 0 rgba(143,174,92,0.0); }
+    20%  { box-shadow:0 0 0 8px rgba(143,174,92,0.55); }
+    100% { box-shadow:0 0 0 0 rgba(143,174,92,0.0); }
+  }
+  .p-card.cpu-seat{
+    border-style:dashed;
+    border-color:rgba(42,157,143,0.55);
+  }
+  .p-card.cpu-seat.active{
+    border-style:solid;
+  }
+  .dice-controls{ display:flex; gap:10px; flex:1 1 100%; }
+  .dice-controls .btn{ flex:1; }
+  .dice-hint{ text-align:center; font-size:12px; color:var(--text-dim); margin-top:8px; min-height:16px; }
+
+  /* ---------- Action row ---------- */
+  .action-row{ display:flex; gap:10px; margin-top:8px; }
+  .action-row .btn{ flex:1; }
+
+  /* ---------- Winner screen ---------- */
+  .winner-screen{ text-align:center; padding:30px 10px; }
+  .trophy{ font-size:64px; }
+  .winner-name{
+    font-size:clamp(26px,8vw,40px); font-weight:900; color:var(--gold);
+    text-transform:uppercase; letter-spacing:1px; margin:10px 0 4px;
+  }
+  .winner-total{ font-size:20px; color:var(--text-dim); font-weight:700;}
+
+  /* ---------- Toast ---------- */
+  .toast{
+    position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+    background:#1a0e2b; border:1px solid var(--card-border);
+    padding:12px 20px; border-radius:12px; font-size:13px; font-weight:700;
+    z-index:100; opacity:0; pointer-events:none; transition:opacity .3s ease;
+  }
+  .toast.show{ opacity:1; }
+
+  /* ---------- Rules modal ---------- */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,0.75);
+    display:flex; align-items:center; justify-content:center; z-index:200;
+    padding:16px;
+  }
+  .modal{
+    background:var(--bg-1); border:1px solid var(--card-border); border-radius:18px;
+    width:100%; max-width:520px; max-height:88vh; overflow-y:auto; padding:20px;
+  }
+  .modal-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;}
+  .modal-close{ width:36px; height:36px; border-radius:50%; background:var(--card-bg); font-size:18px; color:var(--text);}
+  .rules-body{ font-size:13.5px; line-height:1.55; color:var(--text-dim); }
+  .settings-body{ font-size:13.5px; line-height:1.55; color:var(--text-dim); }
+  /* ---------- Dice letter toggle (settings) ---------- */
+  .letter-toggle{ display:flex; gap:8px; }
+  .letter-opt{
+    flex:1; padding:12px 8px; border-radius:12px; border:2px solid var(--card-border);
+    background:var(--bg-2); cursor:pointer; text-align:center; transition:border-color .12s ease, transform .12s ease;
+  }
+  .letter-opt .lo-set{ font-size:17px; font-weight:900; letter-spacing:1px; color:var(--text); }
+  .letter-opt .lo-label{ font-size:11px; color:var(--text-dim); margin-top:3px; }
+  .letter-opt.active{ border-color:var(--electric); box-shadow:0 0 0 2px rgba(52,152,219,0.3); transform:translateY(-1px); }
+  /* ---------- Dice animation effect chips ---------- */
+  .dfx-chips{ display:flex; flex-wrap:wrap; gap:6px; }
+  .dfx-chip{
+    flex:1; min-width:44px; padding:10px 4px; border-radius:10px; border:2px solid var(--card-border);
+    background:var(--bg-2); cursor:pointer; text-align:center; font-size:12px; font-weight:700;
+    color:var(--text-dim); transition:border-color .12s ease, transform .12s ease;
+  }
+  .dfx-chip.active{ border-color:var(--hot-pink); box-shadow:0 0 0 2px rgba(232,147,90,0.3); transform:translateY(-1px); color:var(--text); }
+  .rules-body h4{ color:var(--gold); margin:16px 0 6px; font-size:14px; letter-spacing:1px; text-transform:uppercase; }
+  .rules-body h4:first-child{ margin-top:0; }
+  .rules-body p{ margin:6px 0; }
+  .rules-body ol{ margin:6px 0 6px 18px; padding:0; }
+  .rules-body li{ margin:4px 0; }
+  .rules-table{ width:100%; border-collapse:collapse; margin:8px 0; font-size:13px; }
+  .rules-table td{ padding:5px 8px; border:1px solid var(--card-border); }
+  .rules-table td:nth-child(odd){ color:var(--text); font-weight:600; width:22%; }
+  .rules-table td:nth-child(even){ color:var(--gold); width:14%; }
+  .rules-small{ font-size:12px; opacity:0.85; }
+  .rules-callout{ background:rgba(232,147,90,0.12); border:1px solid var(--hot-pink); border-radius:12px; padding:10px 12px; color:var(--text); margin-top:8px; }
+
+  .hidden{ display:none !important; }
+  .section-title{ font-size:13px; text-transform:uppercase; letter-spacing:2px; color:var(--text-dim); margin:14px 0 8px;}
+
+  /* Current roll score display in Set Aside column */
+  .side-score{
+    background:rgba(192,82,42,0.15);
+    border:1px solid rgba(192,82,42,0.4);
+    border-radius:8px;
+    padding:8px 12px;
+    margin-bottom:8px;
+    text-align:center;
+    font-size:14px;
+    font-weight:800;
+    color:var(--gold);
+    letter-spacing:1px;
+  }
+  .side-score #currentRollScoreVal{
+    font-size:20px;
+    font-variant-numeric:tabular-nums;
+  }
+
+  @media (max-width:560px){
+    .dice-tray{ flex-direction:column; }
+    .dice-main{ min-width:0; width:100%; }
+    .dice-side{ flex:1 1 auto; width:100%; min-width:0; }
+    .score-guide .sg-legend{ justify-content:flex-start; }
+  }
+
+  /* ================= VISUAL IMPROVEMENTS (v1.4.0) ================= */
+
+  /* --- Score count-up tween (target span gets a class while animating) --- */
+  .p-total.tweening{ color:var(--gold-2); }
+  .p-total.bonus-flash{ animation:bonus-flash-pulse 0.9s ease-out; }
+  @keyframes bonus-flash-pulse{
+    0%   { transform:scale(1);   text-shadow:0 0 0 rgba(232,147,90,0); }
+    35%  { transform:scale(1.25);text-shadow:0 0 16px rgba(232,147,90,0.85); }
+    100% { transform:scale(1);   text-shadow:0 0 0 rgba(232,147,90,0); }
+  }
+
+  /* --- "+N" float-up above the card when banking --- */
+  .score-float{
+    position:absolute;
+    left:50%;
+    top:14px;
+    transform:translateX(-50%);
+    pointer-events:none;
+    font-weight:900;
+    font-size:18px;
+    color:var(--gold);
+    text-shadow:0 0 8px rgba(217,114,74,0.7), 0 2px 4px rgba(0,0,0,0.6);
+    animation:score-float-up 950ms cubic-bezier(.18,.7,.32,1) forwards;
+    z-index:5;
+    white-space:nowrap;
+  }
+  .score-float.bonus{
+    font-size:15px;
+    color:var(--electric);
+    text-shadow:0 0 8px rgba(42,157,143,0.7), 0 2px 4px rgba(0,0,0,0.6);
+    letter-spacing:1px;
+  }
+  @keyframes score-float-up{
+    0%   { opacity:0;   transform:translate(-50%, 6px)  scale(0.85); }
+    20%  { opacity:1;   transform:translate(-50%, -6px) scale(1.15); }
+    100% { opacity:0;   transform:translate(-50%, -38px) scale(1); }
+  }
+
+  /* --- End-mode screen shake --- */
+  .wrap.shake{ animation:screen-shake 420ms cubic-bezier(.36,.07,.19,.97); }
+  @keyframes screen-shake{
+    0%   { transform:translate(0,0)    rotate(0); }
+    15%  { transform:translate(-6px,2px) rotate(-0.4deg); }
+    30%  { transform:translate(7px,-3px) rotate(0.4deg); }
+    45%  { transform:translate(-5px,3px) rotate(-0.3deg); }
+    60%  { transform:translate(4px,-2px) rotate(0.2deg); }
+    75%  { transform:translate(-2px,1px) rotate(-0.1deg); }
+    100% { transform:translate(0,0)    rotate(0); }
+  }
+
+  /* --- Panel crossfade between setup/game/winner screens --- */
+  .panel.fading-out{ animation:panel-out 220ms ease-out forwards; }
+  .panel.fading-in { animation:panel-in  260ms ease-out  forwards; }
+  @keyframes panel-out{
+    0%   { opacity:1; transform:translateY(0)    scale(1); }
+    100% { opacity:0; transform:translateY(-8px) scale(0.98); }
+  }
+  @keyframes panel-in{
+    0%   { opacity:0; transform:translateY(8px)  scale(0.98); }
+    100% { opacity:1; transform:translateY(0)    scale(1); }
+  }
+
+  /* --- Confetti (winner screen) --- */
+  .confetti-piece{
+    position:fixed;
+    top:-12vh;
+    width:10px;
+    height:14px;
+    pointer-events:none;
+    z-index:90;
+    will-change:transform, opacity;
+    animation:confetti-fall linear forwards;
+  }
+  @keyframes confetti-fall{
+    0%   { transform:translateY(0)    rotate(0); opacity:1; }
+    90%  { opacity:1; }
+    100% { transform:translateY(115vh) rotate(720deg); opacity:0.4; }
+  }
+
+  /* --- Background particles (slow drift) --- */
+  .bg-particles{
+    position:fixed;
+    inset:0;
+    z-index:0;
+    pointer-events:none;
+    overflow:hidden;
+  }
+  .bg-particles .mote{
+    position:absolute;
+    width:4px;
+    height:4px;
+    border-radius:50%;
+    background:var(--gold);
+    opacity:0.18;
+    animation:bg-drift linear infinite;
+  }
+  .bg-particles .mote.teal{ background:var(--electric); }
+  @keyframes bg-drift{
+    0%   { transform:translate(0,0)    rotate(0); }
+    50%  { transform:translate(8px,-26px) rotate(180deg); }
+    100% { transform:translate(0,0)    rotate(360deg); }
+  }
+  /* Lift everything else above the particle layer */
+  .wrap{ position:relative; z-index:1; }
+
+  /* --- Dice tuck clone (FLIP technique) --- */
+  .die.tuck-clone{
+    position:fixed !important;
+    z-index:60;
+    margin:0 !important;
+    pointer-events:none;
+    transition:transform 320ms cubic-bezier(.18,.7,.32,1), opacity 320ms ease-out;
+  }
+
+  /* --- Respect prefers-reduced-motion across all v1.4.0 animations --- */
+  @media (prefers-reduced-motion: reduce){
+    .score-float,
+    .wrap.shake,
+    .panel.fading-out,
+    .panel.fading-in,
+    .confetti-piece,
+    .bg-particles .mote,
+    .die.tuck-clone,
+    .p-total.bonus-flash{
+      animation:none !important;
+      transition:none !important;
+    }
+    .die.tuck-clone{ display:none !important; }
+    .bg-particles{ display:none !important; }
+    .confetti-piece{ display:none !important; }
+  }
+/* --- Online multiplayer (open lobby, no join codes) --- */
+  .online-btn{ width:100%; margin-top:12px; padding:14px; border:1px dashed var(--hot-pink); color:var(--hot-pink); background:transparent; border-radius:12px; font-size:15px; font-weight:700; cursor:pointer; }
+  .online-btn:hover, .online-btn:active{ background:rgba(232,147,90,.08); }
+  .ol-row{ display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; background:var(--bg-1); border:1px solid var(--card-border); margin-bottom:8px; }
+  .ol-info{ flex:1; min-width:0; }
+  .ol-title{ font-weight:700; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .ol-meta{ font-size:11px; color:var(--text-dim); margin-top:2px; }
+  .ol-join{ width:auto; padding:8px 16px; font-size:13px; flex:none; }
+  .ol-join:disabled{ opacity:.4; cursor:not-allowed; }
+  .ol-status{ min-height:18px; font-size:12px; color:var(--text-dim); margin:8px 0; text-align:center; }
+  .ol-player{ display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:8px; background:var(--card-bg); border:1px solid var(--card-border); margin-bottom:6px; }
+  .ol-player.empty{ opacity:.4; border-style:dashed; }
+  .ol-seat{ width:24px; height:24px; border-radius:50%; background:var(--bg-2); color:var(--text-dim); font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center; flex:none; }
+  .ol-pname{ flex:1; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .ol-you{ color:var(--electric); font-weight:800; }
+  .ol-tag{ font-size:10px; letter-spacing:1px; color:var(--gold); font-weight:800; }
+  .ol-wait{ text-align:center; color:var(--text-dim); font-size:13px; padding:14px 0; }
+</style>
+</head>
+<body>
+
+<a href="index.html" class="back-link" title="Back to main menu">←</a>
+<div class="toast" id="toast"></div>
+
+<div class="wrap">
+  <div class="app-header">
+    <div class="title">$GREED</div>
+    <div class="subtitle">VIRTUAL DICE GAME — LOCAL ONLY</div>
+  </div>
+
+  <!-- ================= RESUME GAME (shown only if a cached game is found) ================= -->
+  <div id="resumePanel" class="panel hidden" style="margin-bottom:16px; border-color:var(--electric);">
+    <h3 style="text-align:center; color:var(--electric); margin-bottom:8px;">⏸ Unfinished Game Found</h3>
+    <div id="resumeSummary" style="text-align:center; font-size:13px; color:var(--text-dim); margin-bottom:14px;"></div>
+    <div style="display:flex; gap:10px;">
+      <button class="btn btn-cyan" style="flex:1;" onclick="resumeCachedGame()">Resume Game</button>
+      <button class="btn btn-ghost" style="flex:1;" onclick="discardCachedGame()">Discard</button>
+    </div>
+  </div>
+
+  <!-- ================= SETUP SCREEN ================= -->
+  <div id="setupScreen" class="panel">
+    <h2 style="text-align:center; margin-bottom:16px; letter-spacing:1px;">New Game</h2>
+    <button class="online-btn" id="playOnlineBtn" onclick="openOnline()">🎮 Play Online Multiplayer</button>
+    <div id="playerRows"></div>
+    <div style="display:flex; gap:10px; margin-top:6px;">
+      <button class="btn btn-secondary" style="flex:1;" id="addRowBtn" onclick="addPlayerRow()">+ Add Player</button>
+    </div>
+
+    <div class="chips-label">Saved Players</div>
+    <div class="chips" id="savedChips"></div>
+
+    <div class="chips-label" style="margin-top:20px;">📊 Local Player Tallies</div>
+    <div id="statsTable"></div>
+    <p class="rules-small" style="margin-top:6px; color:var(--text-dim); opacity:0.8;">
+      Tallies are stored <strong>only on this device</strong>. Switching browsers or clearing this site's data will erase them.
+    </p>
+
+    <div class="setup-error" id="setupError"></div>
+
+    <button class="btn btn-primary btn-block" style="margin-top:14px; padding:18px;" onclick="startGame()">🎲 Start Virtual Dice Game</button>
+
+    <div style="display:flex; gap:10px; margin-top:10px;">
+      <button class="btn btn-secondary btn-block" style="flex:1;" onclick="openSettings()">⚙️ Game Settings</button>
+    </div>
+
+    <p class="setup-note">
+      <strong>Single-player?</strong> Add your name as Player 1, then add 1–3 <em>Ai Opponent</em> seats (flip the slider on each) to play against. The AI rolls and banks automatically.
+    </p>
+    <p class="setup-note" style="color:var(--hot-pink); font-size:12px; margin-top:8px;">
+      ⚠ Each player must bank <strong>≥500 points on their first scoring turn</strong> — bonuses ($GREED/6-kind) exempt.
+    </p>
+    <div style="display:flex; gap:10px; margin-top:4px;">
+      <button class="btn btn-ghost btn-block" style="flex:1;" onclick="openRules()">📖 How to Play / Rules</button>
+    </div>
+  </div>
+
+  <!-- ================= ONLINE PANEL (open lobby browser, no join codes) ================= -->
+  <div id="onlinePanel" class="panel hidden">
+    <h2 style="text-align:center; margin-bottom:16px; letter-spacing:1px;">🎮 Online Multiplayer</h2>
+    <p class="setup-note" style="margin-top:0;">Open lobbies only — <strong>no join codes</strong>. Pick a name, then browse the open lobbies below or create a fresh one. Anyone with a free seat can jump straight in.</p>
+    <input type="text" id="onlineNameInput" placeholder="Your name" maxlength="24" style="width:100%; padding:13px 12px; border-radius:10px; border:1px solid var(--card-border); background:var(--bg-2); color:var(--text); font-size:16px; margin-bottom:10px;">
+    <div class="ol-status" id="onlineStatus"></div>
+    <div style="display:flex; gap:10px; margin-bottom:14px;">
+      <button class="btn btn-secondary" style="flex:1;" onclick="browseLobbies()">🔄 Refresh List</button>
+      <button class="btn btn-primary" style="flex:1;" onclick="createLobby()">➕ Create Lobby</button>
+    </div>
+    <div id="onlineLobbyList"></div>
+    <button class="btn btn-ghost" style="width:100%; margin-top:12px;" onclick="backToSetup()">← Back to Single-Player Setup</button>
+  </div>
+
+  <!-- ================= ONLINE LOBBY (active room) ================= -->
+  <div id="lobbyPanel" class="panel hidden">
+    <h2 style="text-align:center; margin-bottom:6px; letter-spacing:1px;" id="lobbyTitle">Online Lobby</h2>
+    <p class="setup-note" style="text-align:center; margin:0 0 12px;">Invite friends to open this same page and hit <b>Play Online</b> — then they join this lobby (no code).</p>
+    <div id="lobbyPlayers"></div>
+    <div id="hostStartBox" style="margin-top:12px;">
+      <button class="btn btn-primary" id="hostStartBtn" onclick="startOnlineGame()" disabled>🚀 Start (need 2+ players)</button>
+    </div>
+    <div class="ol-wait" id="lobbyWaitNote" style="display:none;">⏳ Waiting for the host to start the game…</div>
+    <button class="btn btn-ghost" style="width:100%; margin-top:12px;" onclick="leaveLobby()">← Leave lobby</button>
+  </div>
+
+  <!-- ================= GAME SCREEN ================= -->
+  <div id="gameScreen" class="hidden">
+    <div class="banner" id="banner"></div>
+    <div class="banner-stats" id="bannerStats"></div>
+
+    <div id="connBar" style="display:none; text-align:center; font-size:11px; color:var(--text-dim); margin-bottom:10px; line-height:1.6;">
+      <span id="connLabel"></span>
+    </div>
+
+    <div class="cards-grid" id="cardsGrid"></div>
+
+    <div class="panel entry-panel" id="entryPanel">
+      <div class="dice-tray">
+        <div class="dice-main">
+          <div class="dice-row" id="diceRow"></div>
+          <div class="dice-controls">
+            <button class="btn btn-primary" id="rollBtn" onclick="diceRoll()">🎲 ROLL</button>
+            <button class="btn btn-pink hidden" id="bankBtn" onclick="diceBank()">💰 BANK +0</button>
+            <button class="btn btn-secondary hidden" id="hotBtn" onclick="diceRoll()">🎲 HOT DICE</button>
+          </div>
+          <div class="dice-hint" id="diceHint"></div>
+        </div>
+        <div class="dice-side">
+          <div class="side-label">Set Aside</div>
+          <div id="currentRollScore" class="side-score" style="display:none;">This Roll: <span id="currentRollScoreVal">0</span></div>
+          <div class="dice-row side" id="bankedRow"></div>
+          <button class="btn btn-ghost btn-sm hidden" id="clearBtn" onclick="clearSelection()">↩ Move back</button>
+          <div class="score-guide" id="scoreGuide"></div>
+        </div>
+      </div>
+
+      <div class="action-row">
+        <button class="btn btn-secondary" onclick="handleNoScore()">No Score / Pass</button>
+        <button class="btn btn-ghost" onclick="undo()">↩ Undo</button>
+      </div>
+    </div>
+
+    <div style="text-align:center; margin-top:16px; display:flex; gap:10px; justify-content:center;">
+      <button class="btn btn-ghost" style="font-size:12px; padding:10px 16px;" onclick="toggleHistoryPanel()">📜 History</button>
+      <button class="btn btn-ghost" style="font-size:12px; padding:10px 16px;" onclick="confirmNewGame()">End Game / New Game</button>
+    </div>
+
+    <div id="historyPanel" class="panel hidden" style="margin-top:14px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <h3 style="font-size:14px; letter-spacing:1px; color:var(--text-dim); text-transform:uppercase;">Score History</h3>
+        <button class="modal-close" style="width:30px; height:30px; font-size:14px;" onclick="toggleHistoryPanel()">✕</button>
+      </div>
+      <div id="historyLogList" class="history-log-list"></div>
+    </div>
+  </div>
+
+  <!-- ================= WINNER SCREEN ================= -->
+  <div id="winnerScreen" class="hidden panel winner-screen">
+    <div class="trophy" id="trophyEmoji">🏆</div>
+    <div class="winner-name" id="winnerNameDisplay"></div>
+    <div class="winner-total" id="winnerTotalDisplay"></div>
+    <div class="cards-grid" id="finalCardsGrid" style="margin-top:24px;"></div>
+    <div style="display:flex; gap:10px; margin-top:20px;">
+      <button class="btn btn-cyan btn-block" style="flex:1; padding:16px;" onclick="playAgainSamePlayers()">🔁 Play Again (Same Players)</button>
+      <button class="btn btn-primary btn-block" style="flex:1; padding:16px;" onclick="newGame()">New Game</button>
+    </div>
+  </div>
+</div>
+
+<!-- Version footer -->
+<div style="text-align:center; margin-top:16px; padding:8px; color:var(--text-dim); font-size:11px; opacity:0.7;">
+  $GREED Dice v1.6.3 — Local Only
+</div>
+</div>
+
+<!-- ================= RULES MODAL ================= -->
+<div id="rulesOverlay" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>$GREED — How to Play</h3>
+      <button class="modal-close" onclick="closeRules()">✕</button>
+    </div>
+    <div class="rules-body">
+      <h4>Goal</h4>
+      <p>Be the first player to reach <strong>5000 points</strong>. Roll six dice, bank scoring combos, and push your luck — but if a roll scores nothing, you <strong>GREED OUT</strong> and lose everything banked that turn.</p>
+
+      <h4>Scoring & Combos</h4>
+      <table class="rules-table">
+        <tr><td>1× G</td><td>50</td><td>3× G</td><td>500 + 50/G extra</td></tr>
+        <tr><td>1× D</td><td>100</td><td>3× R</td><td>400 (fixed)</td></tr>
+        <tr><td>3× $</td><td>600 (fixed)</td><td>3× E</td><td>300 (fixed)</td></tr>
+        <tr><td>4× D</td><td>1000</td><td>$GREED / Full set</td><td>1000</td></tr>
+        <tr><td>6 of a kind (any)</td><td>5000</td><td colspan="2">—</td></tr>
+      </table>
+      <p class="rules-small"><strong>Dice:</strong> <span style="color:#7bb661;font-weight:700;">E light green</span>, <span style="color:#5a9bd4;font-weight:700;">E blue</span>, G yellow, R red, <span style="color:#3fbf7f;font-weight:700;">$ dark green</span>, D black. Only G and D score as <em>single</em> dice. Every other symbol needs 3+ to score. <strong>G is the only symbol where extras beyond 3 count</strong> (+50 each). $/R/E/D 3-of-a-kind pay fixed only — 4th/5th/6th add nothing. 4× D is special: pays 1000 flat. <strong>6 of a kind of ANY symbol (including D) = 5000.</strong></p>
+      <p class="rules-callout"><strong>$GREED (Full set) needs both coloured E's.</strong> To earn the 1000-point full set you must have one of every symbol in a single roll — including <em>both</em> the light-green E and the blue E. Two E's of the same colour do not complete the set. Note: the two E colours are separate entities — a 3-of-a-kind must be <em>3× light-green E</em> or <em>3× blue E</em>, never a mix of colours.</p>
+
+      <h4>How a Turn Works</h4>
+      <ol>
+        <li>Roll all six dice. Tap the scoring dice to set them aside.</li>
+        <li>Bank your points, or roll the <em>remaining</em> dice for more.</li>
+        <li>Set-aside dice are safe; only the dice you reroll are at risk.</li>
+        <li>If a reroll shows <strong>zero</strong> scoring dice → GREED OUT: the whole turn is forfeited (0 scored, passed on).</li>
+        <li>Roll all six again (a "hot roll") and the turn continues.</li>
+      </ol>
+
+      <h4>Ending the Game (First to 5000)</h4>
+      <p>When any player crosses <strong>5000</strong>, the <strong>final round</strong> begins. Every other player gets <strong>one last turn</strong> to try to overtake. Highest total after those final turns wins.</p>
+      <p class="rules-callout"><strong>Strategy — roll bust on purpose to delay the end:</strong> If you're near 5000 but an opponent is also close, banking a thin lead (e.g. you're on 4900, roll +200 → 5100) opens the final round and hands them a free last turn to beat you. Instead, <em>reroll your remaining dice</em> — if you bust, the turn ends at 0 and the final round is <strong>not</strong> triggered yet, buying you another go next round to land a bigger, safer lead.</p>
+
+      <h4>Single-Player vs AI</h4>
+      <p>Add your name as Player 1, then flip the <em>Ai Opponent</em> slider on 1–3 seats (named Claude, Gwen, Gemma). The AI rolls, banks the best scoring set, and uses positional strategy near 5000 — including the deliberate bust above.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ================= GAME SETTINGS MODAL ================= -->
+<div id="settingsOverlay" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>⚙️ Game Settings</h3>
+      <button class="modal-close" onclick="closeSettings()">✕</button>
+    </div>
+    <div class="settings-body">
+      <div class="chips-label">Dice Colour</div>
+      <div class="palette-chips" id="paletteChips"></div>
+
+      <div class="chips-label" style="margin-top:20px;">Dice Letters</div>
+      <div class="letter-toggle" id="letterToggle"></div>
+      <p class="rules-small" style="margin-top:8px;">
+        Swap the symbols on the dice faces for a different letter set.
+        Scoring is unchanged — this is purely cosmetic.
+      </p>
+
+      <div class="chips-label" style="margin-top:20px;">Dollar Symbol</div>
+      <div class="letter-toggle" id="coolSToggle"></div>
+      <p class="rules-small" style="margin-top:8px;">
+        Show the classic notebook <strong>Cool&nbsp;S</strong> instead of the <strong>$</strong> print symbol on dollar faces.
+        Scoring unaffected — cosmetic only.
+      </p>
+
+      <div class="chips-label" style="margin-top:20px;">🎨 Dice Animation</div>
+      <div class="dfx-chips" id="dfxChips"></div>
+      <p class="rules-small" style="margin-top:6px;">
+        🔥 <strong>Chromatic</strong> — a rainbow snake-border runs around each die and a full-body glow engulfs it. The die colour stays readable.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ================= NAME PROMPT (first open) ================= -->
+<div id="namePromptOverlay" class="modal-overlay hidden">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <h3>👋 Welcome to $GREED</h3>
+    </div>
+    <div class="settings-body">
+      <p style="margin:0 0 12px;">What's your name?</p>
+      <input type="text" id="namePromptInput" maxlength="24" placeholder="Your name" style="width:100%; padding:12px; border-radius:10px; border:1px solid var(--card-border); background:var(--bg-2); color:var(--text); font-size:16px;">
+      <p class="rules-small" style="margin-top:10px;">You'll be set as Player 1 by default. You can change this later in the Saved Players list.</p>
+      <button class="btn btn-primary btn-block" style="margin-top:14px; padding:14px;" onclick="submitDefaultPlayer()">Save &amp; Start</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= CONFIRM DELETE SAVED PLAYER ================= -->
+<div id="confirmDelOverlay" class="modal-overlay hidden">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-header">
+      <h3>🗑 Delete saved player?</h3>
+    </div>
+    <div class="settings-body">
+      <p id="confirmDelMsg" style="margin:0 0 8px;"></p>
+      <p class="rules-small" style="margin:0 0 14px;">This only removes the saved player name &amp; their local tally. It does not affect a running game.</p>
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-ghost" style="flex:1;" onclick="closeConfirmDel()">Cancel</button>
+        <button class="btn btn-primary" style="flex:1;" onclick="confirmDeleteSavedPlayer()">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================================
+   $GREED — Virtual Dice Game (local only, no cloud)
+   ========================================================================= */
+
+// ---------------- LocalStorage keys ----------------
+const LS_SAVED_PLAYERS = "greed-dice-saved-players-v1";
+const LS_ACTIVE_GAME = "greed-dice-active-game-v1";
+const LS_DEFAULT_PLAYER = "greed-dice-default-player-v1";
+const LS_PLAYER_STATS = "greed-dice-player-stats-v1";
+
+// ---------------- In-memory game state ----------------
+let players = [];              // {name, total, last, cpu}
+let current = 0;
+let history = [];              // {player, score, bonus}
+let gameRunning = false;
+let endMode = false;
+let endModeTriggerIdx = -1;
+let endTurnsRemaining = [];    // {remaining}
+let winnerDeclared = false;
+let bannerFlash = null;        // {text, className, expiresAt} — temporary override
+let bannerFlashTimer = null;
+let scoreLog = [];             // {text, ts} — human-readable event log
+let gateJustCleared = -1;      // player index whose card should pulse this render (consumed)
+
+let setupNames = ["", ""];
+let setupCpu = [false, false];
+let session = { unlocked: false };
+let sessionStats = { streak: 0 };  // +N = player winning streak, -N = player losing streak
+
+// =========================================================================
+// ONLINE MULTIPLAYER — OPEN LOBBY (no join codes), Supabase REST sync.
+// ONLINE defaults false; every gate below is guarded by `ONLINE` so the
+// single-player engine & screens are left completely untouched.
+// =========================================================================
+const SB_URL = "https://acejxcdqdxscewmqoucp.supabase.co";
+const SB_KEY = "sb_publishable_wnfbHEAZLhLVFVGIxoEF1g_54hKjn7G";
+let ONLINE = false;
+let mySeat = null;
+let myIsHost = false;
+let myRoom = null;
+let myOnlineName = "";
+let gamePoll = null;
+let seenTurnNo = 0;
+let applyingRemote = false;
+let lobbyPoll = null;
+let pushingSnapshot = false;
+
+function sbHeaders(extra) {
+  return Object.assign({ "apikey": SB_KEY, "Authorization": "Bearer " + SB_KEY, "Content-Type": "application/json" }, extra || {});
+}
+async function sbGet(table, query) {
+  try { const r = await fetch(SB_URL + "/rest/v1/" + table + "?" + query, { headers: sbHeaders() }); return r.ok ? await r.json() : null; }
+  catch (e) { console.warn("sbGet", table, e); return null; }
+}
+async function sbPost(table, body, extra) {
+  try {
+    const r = await fetch(SB_URL + "/rest/v1/" + table, {
+      method: "POST", headers: sbHeaders(Object.assign({ "Prefer": "return=representation" }, extra || {})), body: JSON.stringify(body)
+    }); return r.ok ? await r.json() : null;
+  } catch (e) { console.warn("sbPost", table, e); return null; }
+}
+async function sbPatch(table, query, body) {
+  try {
+    const r = await fetch(SB_URL + "/rest/v1/" + table + "?" + query, {
+      method: "PATCH", headers: sbHeaders({ "Prefer": "return=representation" }), body: JSON.stringify(body)
+    }); return r.ok ? await r.json() : null;
+  } catch (e) { console.warn("sbPatch", table, e); return null; }
+}
+
+// ---------- Online helpers ----------
+function makeLobbyId() { const c = "abcdefghjkmnpqrstuvwxyz23456789"; let s = ""; for (let i = 0; i < 5; i++) s += c[Math.floor(Math.random() * c.length)]; return s; }
+function onlineMyTurn() { return ONLINE && !!players[current] && !winnerDeclared && players[current].seat === mySeat; }
+function onlineActive() { return ONLINE && !!myRoom && mySeat !== null; }
+function clearOnlineTimers() { clearInterval(gamePoll); gamePoll = null; clearInterval(lobbyPoll); lobbyPoll = null; clearInterval(heartbeatTimer); heartbeatTimer = null; clearInterval(connTimer); connTimer = null; }
+function onlineName() { const i = document.getElementById("onlineNameInput"); const v = i ? i.value : ""; return (v || (getDefaultPlayer ? getDefaultPlayer() : "")).trim().slice(0, 24); }
+function showOnline(msg) { const t = document.getElementById("onlineStatus"); if (t) t.textContent = msg; }
+
+// -------------------------------------------------------------------------
+// LIVE CONNECTION STATUS + RECONNECT
+// Every player heartbeats its own seat's `last_seen` ~every 4s. A presence
+// poller reads all seats and paints a live status line (green=connected,
+// red=lost connection, amber=not in lobby yet). If this device can't heartbeat
+// or sees itself missing/disconnected, it offers a Reconnect action that
+// re-syncs the game from the authoritative state.
+// -------------------------------------------------------------------------
+let heartbeatTimer = null;
+let connTimer = null;
+function startHeartbeat() {
+  clearInterval(heartbeatTimer);
+  heartbeatTimer = setInterval(sendHeartbeat, 4000);
+  sendHeartbeat();
+}
+function sendHeartbeat() {
+  if (!ONLINE || !myRoom || mySeat === null) return;
+  const now = new Date().toISOString();
+  sbPatch("greed_lobby_players", `lobby_id=eq.${myRoom}&seat=eq.${mySeat}`,
+    { connected: true, last_seen: now }).catch(() => {});
+}
+function startConnWatch() {
+  clearInterval(connTimer);
+  connTimer = setInterval(renderConnectionStatus, 3000);
+  renderConnectionStatus();
+}
+async function renderConnectionStatus() {
+  const bar = document.getElementById("connBar");
+  const label = document.getElementById("connLabel");
+  if (!bar || !label) return;
+  if (!ONLINE || !myRoom) { bar.style.display = "none"; return; }
+  bar.style.display = "block";
+  const rows = await sbGet("greed_lobby_players", `select=name,seat,connected,last_seen&lobby_id=eq.${myRoom}&order=seat.asc`);
+  if (!rows) {
+    label.innerHTML = "⚠ <span style='color:var(--hot-pink)'>Connection check failed — retrying…</span>";
+    return;
+  }
+  const now = Date.now();
+  const parts = rows.map(r => {
+    let dot = "🔴";
+    if (r.connected && r.last_seen) {
+      const age = now - new Date(r.last_seen).getTime();
+      if (age < 9000) dot = "🟢";
+      else if (age < 20000) dot = "🟡";
+      else dot = "🔴";
+    }
+    const you = (r.seat === mySeat) ? " (you)" : "";
+    return `<span style="white-space:nowrap;">${dot} ${escapeHtml(r.name || ("Seat " + r.seat))}${you}</span>`;
+  }).join("&nbsp; · &nbsp;");
+  // self lost? offer reconnect
+  const me = (rows || []).find(r => r.seat === mySeat);
+  const meLost = !me || !me.connected || (me.last_seen && (now - new Date(me.last_seen).getTime()) > 20000);
+  const reconnectBtn = meLost
+    ? ` &nbsp;<button class="btn btn-secondary" style="padding:6px 12px; font-size:11px;" onclick="reconnectGame()">↻ Reconnect</button>`
+    : "";
+  const onlineCount = (rows || []).filter(r => r.connected && r.last_seen && (now - new Date(r.last_seen).getTime()) < 20000).length;
+  label.innerHTML = `<b>Live:</b> ${parts}<br><span style="font-size:10px;">${onlineCount}/${(rows||[]).length} connected${reconnectBtn}</span>`;
+}
+
+async function reconnectGame() {
+  if (!myRoom) return;
+  // Re-assert presence and re-sync authoritative state.
+  sendHeartbeat();
+  await syncOnlineOnce();
+  renderGame(true);
+  const bar = document.getElementById("connBar");
+  const label = document.getElementById("connLabel");
+  if (bar && label && game) {
+    const cur = players && players[current];
+    label.innerHTML = (cur && cur.seat === mySeat)
+      ? "↻ Reconnected — it's your turn. Tap ROLL."
+      : `↻ Reconnected — waiting for ${cur ? escapeHtml(cur.name) : ""}…`;
+    bar.style.display = "block";
+  }
+}
+
+function openOnline() {
+  ONLINE = false; myRoom = null; mySeat = null; myIsHost = false; myOnlineName = "";
+  clearOnlineTimers();
+  document.getElementById("setupScreen").classList.add("hidden");
+  document.getElementById("onlinePanel").classList.remove("hidden");
+  document.getElementById("lobbyPanel").classList.add("hidden");
+  document.getElementById("gameScreen").classList.add("hidden");
+  document.getElementById("winnerScreen").classList.add("hidden");
+  const i = document.getElementById("onlineNameInput");
+  if (i) { const d = getDefaultPlayer ? getDefaultPlayer() : ""; i.value = d || ""; }
+  browseLobbies();
+}
+function backToSetup() {
+  leaveLobby(true);
+  document.getElementById("onlinePanel").classList.add("hidden");
+  document.getElementById("lobbyPanel").classList.add("hidden");
+  document.getElementById("gameScreen").classList.add("hidden");
+  document.getElementById("winnerScreen").classList.add("hidden");
+  document.getElementById("setupScreen").classList.remove("hidden");
+  renderSetup();
+}
+function leaveLobby(silent) {
+  // Best effort: mark this seat disconnected so others see us drop out.
+  const rm = myRoom, seat = mySeat;
+  clearOnlineTimers();
+  ONLINE = false; myRoom = null; mySeat = null; myIsHost = false; myOnlineName = "";
+  if (rm !== null && seat !== null) {
+    sbPatch("greed_lobby_players", `lobby_id=eq.${rm}&seat=eq.${seat}`, { connected: false }).catch(() => {});
+  }
+  if (!silent && document.getElementById("onlinePanel")) {
+    document.getElementById("onlinePanel").classList.remove("hidden");
+    document.getElementById("lobbyPanel").classList.add("hidden");
+    browseLobbies();
+  }
+}
+
+async function browseLobbies() {
+  showOnline("Loading open lobbies…");
+  const list = document.getElementById("onlineLobbyList"); if (!list) return;
+  const lobbies = await sbGet("greed_lobbies", "select=id,host_name,status&status=eq.lobby&order=created_at.asc");
+  if (!lobbies) { list.innerHTML = '<div class="ol-wait">Online is unreachable — confirm the Supabase "greed-online-setup.sql" has been applied.</div>'; showOnline(""); return; }
+  const rows = [];
+  for (const lb of lobbies) {
+    const pl = await sbGet("greed_lobby_players", "select=seat,name&lobby_id=eq." + lb.id + "&order=seat.asc");
+    const playersIn = (pl || []).map(p => p.seat);
+    let count = 0, free = 0;
+    for (let s = 0; s < 6; s++) { if (playersIn.includes(s)) count++; else free++; }
+    rows.push({ id: lb.id, host: lb.host_name, count, free });
+  }
+  if (!rows.length) { list.innerHTML = '<div class="ol-wait">No open lobbies right now — <b>Create Lobby</b> above to start one.</div>'; showOnline(""); return; }
+  list.innerHTML = rows.map(r =>
+    '<div class="ol-row">' +
+      '<div class="ol-info"><div class="ol-title">Lobby by ' + escapeHtml(r.host) + '</div>' +
+      '<div class="ol-meta">' + r.count + '/6 seats taken · ' + (r.free > 0 ? r.free + ' free' : 'FULL') + '</div></div>' +
+      '<button class="btn btn-primary ol-join"' + (r.free > 0 ? ' onclick="joinLobby(\'' + r.id + '\')"' : ' disabled') + '>' + (r.free > 0 ? 'Join' : 'Full') + '</button>' +
+    '</div>').join("");
+  showOnline("");
+}
+
+async function createLobby() {
+  const name = onlineName(); if (!name) { toast("Enter a name first."); return; }
+  const id = makeLobbyId();
+  const row = await sbPost("greed_lobbies", { id, host_name: name, status: "lobby" });
+  if (!row) { showOnline("Could not create a lobby — is the Supabase table set up?"); return; }
+  myOnlineName = name; myIsHost = true; mySeat = 0; myRoom = id; ONLINE = true;
+  await sbPost("greed_lobby_players", { lobby_id: id, seat: 0, name, is_host: true, total: 0, connected: true });
+  enterLobbyPanel(id);
+}
+async function joinLobby(id) {
+  if (!id) return;
+  const name = onlineName(); if (!name) { toast("Enter a name first."); return; }
+  const lobby = await sbGet("greed_lobbies", "select=id,status&id=eq." + id);
+  if (!lobby || !lobby.length || lobby[0].status !== "lobby") { toast("That lobby is gone or has started."); browseLobbies(); return; }
+  const pl = await sbGet("greed_lobby_players", "select=seat&lobby_id=eq." + id);
+  const taken = new Set((pl || []).map(p => p.seat));
+  let seat = -1; for (let s = 0; s < 6; s++) { if (!taken.has(s)) { seat = s; break; } }
+  if (seat < 0) { showOnline("That lobby just filled up."); browseLobbies(); return; }
+  const row = await sbPost("greed_lobby_players", { lobby_id: id, seat, name, is_host: false, total: 0, connected: true });
+  if (!row) { showOnline("Could not join that lobby."); return; }
+  myOnlineName = name; myIsHost = false; mySeat = seat; myRoom = id; ONLINE = true;
+  enterLobbyPanel(id);
+}
+
+function enterLobbyPanel(id) {
+  document.getElementById("onlinePanel").classList.add("hidden");
+  document.getElementById("lobbyPanel").classList.remove("hidden");
+  document.getElementById("lobbyTitle").textContent = myIsHost
+    ? "Your Online Lobby — you are the host (seat 0)"
+    : "Online Lobby — joined (seat " + mySeat + ")";
+  document.getElementById("hostStartBox").style.display = myIsHost ? "block" : "none";
+  document.getElementById("lobbyWaitNote").style.display = myIsHost ? "none" : "block";
+  lobbyPoll = setInterval(() => pollOnlineLobby(id), 900);
+  renderOnlinePlayers([]);
+  startHeartbeat();
+  startConnWatch();
+}
+async function pollOnlineLobby(id) {
+  const pl = await sbGet("greed_lobby_players", "select=name,seat,is_host&lobby_id=eq." + id + "&order=seat.asc");
+  const lobby = await sbGet("greed_lobbies", "select=status,host_name&id=eq." + id);
+  if (!pl || !lobby) return;
+  renderOnlinePlayers(pl);
+  if (myIsHost) {
+    const btn = document.getElementById("hostStartBtn");
+    if (btn) { if (pl.length >= 2) { btn.disabled = false; btn.textContent = "🚀 Start Online Game"; } else { btn.disabled = true; btn.textContent = "🚀 Start (need 2+ players)"; } }
+  }
+  if (lobby[0].status === "playing") { clearOnlineTimers(); startGamePoll(); }
+}
+let lastLobbySig = "";
+function renderOnlinePlayers(pl) {
+  const sig = pl.map(p => p.seat + (p.is_host ? "H" : "") + p.name).join("|");
+  if (sig === lastLobbySig) return; lastLobbySig = sig;
+  const grid = document.getElementById("lobbyPlayers");
+  let rows = "";
+  for (let s = 0; s < 6; s++) {
+    const p = pl.find(x => x.seat === s);
+    rows += p
+      ? '<div class="ol-player"><span class="ol-seat">' + s + '</span><span class="ol-pname">' + escapeHtml(p.name) + (p.seat === mySeat ? ' <span class="ol-you">(you)</span>' : '') + '</span>' + (p.is_host ? '<span class="ol-tag">HOST</span>' : '') + '</div>'
+      : '<div class="ol-player empty"><span class="ol-seat">' + s + '</span><span class="ol-pname">Empty seat</span></div>';
+  }
+  grid.innerHTML = rows;
+}
+
+// ---- Start the online game (host only) ----
+async function startOnlineGame() {
+  if (!myIsHost || !myRoom) return;
+  const pl = await sbGet("greed_lobby_players", "select=name,seat&lobby_id=eq." + myRoom + "&order=seat.asc");
+  if (!pl || pl.length < 2) { toast("Need at least 2 players to start."); return; }
+  players = pl.map(p => ({ name: (p.name || "Player").slice(0, 24), total: 0, last: null, cpu: false, seat: p.seat }));
+  current = 0; history = []; gameRunning = true; endMode = false; endModeTriggerIdx = -1;
+  endTurnsRemaining = players.map(() => ({ remaining: 0 })); winnerDeclared = false; scoreLog = [];
+  seedPrevTotals();
+  const st = buildOnlineSnapshot();
+  const existing = await sbGet("greed_games", "select=id&id=eq." + myRoom);
+  if (!existing || !existing.length) await sbPost("greed_games", { id: myRoom, state: st, turn_no: 0 });
+  const upd = await sbPatch("greed_games", "id=eq." + myRoom + "&turn_no=eq.0", { state: st, turn_no: 1 });
+  seenTurnNo = (upd && upd.length) ? upd[0].turn_no : 1;
+  await sbPatch("greed_lobbies", "id=eq." + myRoom, { status: "playing", started_at: new Date().toISOString() });
+  startGamePoll();
+}
+
+function startGamePoll() {
+  clearOnlineTimers();
+  document.getElementById("onlinePanel").classList.add("hidden");
+  document.getElementById("lobbyPanel").classList.add("hidden");
+  document.getElementById("resumePanel").classList.add("hidden");
+  document.getElementById("winnerScreen").classList.add("hidden");
+  document.getElementById("gameScreen").classList.remove("hidden");
+  gameRunning = true;
+  ONLINE = true;
+  startHeartbeat();
+  startConnWatch();
+  syncOnlineOnce().then(() => renderGame(true));
+  gamePoll = setInterval(() => syncOnlineOnce().then(() => renderGame(true)), 1200);
+}
+
+// ---- Remote sync (poll greed_games) ----
+async function syncOnlineOnce() {
+  if (!onlineActive()) return;
+  const g = await sbGet("greed_games", "select=state,turn_no&id=eq." + myRoom);
+  if (!g || !g.length) return;
+  const tn = g[0].turn_no;
+  if (tn === seenTurnNo) return; // unchanged — nothing new to apply (protects the live engine mid-turn)
+  seenTurnNo = tn;
+  applyOnlineState(g[0].state);
+}
+
+function applyOnlineState(st) {
+  applyingRemote = true;
+  players = (st.players || []).map(p => ({ name: p.name, total: p.total || 0, last: (p.last !== undefined ? p.last : null), cpu: false, seat: p.seat }));
+  current = st.current || 0;
+  history = st.history || [];
+  endMode = !!st.endMode;
+  endModeTriggerIdx = (st.endModeTriggerIdx !== undefined ? st.endModeTriggerIdx : -1);
+  endTurnsRemaining = (st.endTurnsRemaining || players.map(() => ({ remaining: 0 }))).slice();
+  winnerDeclared = !!st.winnerDeclared;
+  turnScore = st.turnScore || 0;
+  scoreLog = st.scoreLog || [];
+  // Restore the live dice board so the opponent can watch the roll & set-aside.
+  if (st.dicePhase) {
+    dicePhase = st.dicePhase;
+    hotStreak = false;
+    turnDice = (st.diceInPlay || []).map(d => ({ sym: d.sym, cls: d.cls, color: d.color || null }));
+    rollGroups = (st.rollGroups || []).map(g => (g || []).map(d => ({ sym: d.sym, cls: d.cls, color: d.color || null })));
+  }
+  applyingRemote = false;
+  renderOnlineBoard();
+  renderGame(true);
+  if (winnerDeclared) showWinnerScreen();
+}
+
+// Render the dice trays from the current engine state (used for live board sync
+// so the opponent sees in-play and set-aside dice exactly as the actor does).
+function renderOnlineBoard() {
+  if (!ONLINE) return;
+  const row = document.getElementById("diceRow");
+  const bankedRow = document.getElementById("bankedRow");
+  if (!row || !bankedRow) return;
+  const inPlay = (turnDice || []).map(d => { const el = createCubeDie(d.cls, d.sym); return el.outerHTML; }).join("");
+  const setAside = (rollGroups || []).flat().map(d => { const el = createCubeDie(d.cls, d.sym); return el.outerHTML; }).join("");
+  row.innerHTML = inPlay || '<div class="dice-prompt">—</div>';
+  bankedRow.innerHTML = setAside || "";
+}
+
+function buildOnlineSnapshot() {
+  return {
+    players: players.map(p => ({ name: p.name, total: p.total, last: p.last, cpu: false, seat: p.seat })),
+    current, history, endMode, endModeTriggerIdx, endTurnsRemaining, winnerDeclared,
+    turnScore, dicePhase,
+    // Live dice board so the opponent can watch rolls + set-aside picks.
+    diceInPlay: (turnDice || []).map(d => ({ sym: d.sym, cls: d.cls, color: d.color || null })),
+    rollGroups: (rollGroups || []).map(g => (g || []).map(d => ({ sym: d.sym, cls: d.cls, color: d.color || null }))),
+    scoreLog, savedAt: Date.now()
+  };
+}
+
+// ---- Commit: acting player publishes a snapshot guarded by turn_no ----
+async function pushSnapshot() {
+  if (!ONLINE || !myRoom || pushingSnapshot) return;
+  pushingSnapshot = true;
+  try {
+    const st = buildOnlineSnapshot();
+    const r = await sbPatch("greed_games", "id=eq." + myRoom + "&turn_no=eq." + seenTurnNo, { state: st, turn_no: seenTurnNo + 1 });
+    if (r && r.length) { seenTurnNo = r[0].turn_no; }
+    else { await freshRowForGuard(st); }
+  } catch (e) { console.warn("pushSnapshot", e); }
+  pushingSnapshot = false;
+}
+async function freshRowForGuard(st) {
+  const g = await sbGet("greed_games", "select=turn_no&id=eq." + myRoom);
+  if (g && g.length && mySeat !== undefined) {
+    if (g[0].turn_no !== seenTurnNo) seenTurnNo = g[0].turn_no;
+    await sbPatch("greed_games", "id=eq." + myRoom + "&turn_no=eq." + seenTurnNo, { state: st, turn_no: seenTurnNo + 1 });
+  }
+}
+
+// ---- Live board push: acting player publishes a mid-turn snapshot (rolls & set-aside dice)
+// so other devices can watch the hand being played, without committing the turn.
+// Debounced so rapid pick/unpick toggles coalesce into one write.
+let boardPushTimer = null;
+function pushLiveBoard() {
+  if (!ONLINE || !myRoom) return;
+  if (boardPushTimer) clearTimeout(boardPushTimer);
+  boardPushTimer = setTimeout(() => {
+    boardPushTimer = null;
+    syncOnlineOnce().then(() => {   // refresh turn_no guard before writing
+      if (pushingSnapshot) return;
+      pushingSnapshot = true;
+      const st = buildOnlineSnapshot();
+      sbPatch("greed_games", "id=eq." + myRoom + "&turn_no=eq." + seenTurnNo, { state: st, turn_no: seenTurnNo + 1 })
+        .then(r => { if (r && r.length) seenTurnNo = r[0].turn_no; })
+        .catch(e => console.warn("pushLiveBoard", e))
+        .finally(() => { pushingSnapshot = false; });
+    });
+  }, 250);
+}
+
+// =========================================================================
+// DICE ENGINE — scoring per GREED-mechanics.md
+// =========================================================================
+let turnDice = [];      // not-yet-scored dice this turn: {sym,cls,color}
+let bankedDice = [];    // flat view of rollGroups (display only)
+let rollGroups = [];    // each entry = dice set aside from ONE physical roll; groups never merge across rolls
+let turnScore = 0;      // accumulated turn total (not yet committed)
+let dicePhase = "idle"; // idle | rolling | select | greedOut
+let diceAnimTimer = null;
+let diceSpinTimer = null;
+let diceWatchdog = null;
+let pendingRoll = null;     // {finalDice, fresh} locked-in result awaiting settle
+let hotStreak = false;      // true when the last throw was all-6-scoring → player must set all 6 aside & reroll (or bust)
+let lastDiceSig = "";        // cache of last rendered dice board; see renderDiceControls
+
+const DICE_SYMS = [
+  { sym: "$", cls: "dollar" },
+  { sym: "G", cls: "g" },
+  { sym: "R", cls: "r" },
+  { sym: "E", cls: "e-green", color: "green" },
+  { sym: "E", cls: "e-blue", color: "blue" },
+  { sym: "D", cls: "d" }
+];
+
+// =========================================================================
+// DICE LETTER SETS — cosmetic only, never touches scoring. The engine always
+// scores by the internal `sym` above ($ G R E E D); this layer only chooses
+// which GLYPH is painted on each face. "imon" renders "$IMON$":
+//   dollar->I  g->N  r->O  E(blue)->$(blue)  E(green)->$(green)  d->M
+// =========================================================================
+let letterMode = "greed"; // "greed" | "imon"
+const LETTER_MAPS = {
+  greed: { dollar: "$", g: "G", r: "R", "e-green": "E", "e-blue": "E", d: "D" },
+  imon:  { dollar: "I", g: "N", r: "O", "e-green": "$", "e-blue": "$", d: "M" }
+};
+function displayLetter(cls) {
+  const m = LETTER_MAPS[letterMode] || LETTER_MAPS.greed;
+  return (m && m[cls]) || (DICE_SYMS.find(s => s.cls === cls) || {}).sym || "";
+}
+
+// The classic "cool S" (straight-line notebook S) rendered as inline SVG,
+// built directly from the ASCII art you provided so the glyph matches it
+// exactly. Uses currentColor so it inherits the die face colour in every
+// palette. Each non-space cell becomes a rounded square; adjacent cells merge
+// into continuous strokes.
+const COOL_S_ART = [
+  "      ʌ",
+  "     / \\",
+  "    /   \\",
+  "    | | |",
+  "    \\ \\/",
+  "    /\\  \\",
+  "    | | |",
+  "    \\   /",
+  "     \\ /",
+  "      v"
+];
+// Build the cool-S glyph as CONNECTED LINE STROKES (round caps/joins) instead
+// of filled dots. Cells that touch orthogonally/diagonally are joined by line
+// segments, and the viewBox is centred on the glyph's real bounding box so the
+// S sits dead-centre on the face regardless of leading whitespace in the art.
+function buildCoolSvg() {
+  const rows = COOL_S_ART;
+  const cells = [];
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  rows.forEach((line, y) => {
+    [...line].forEach((ch, x) => {
+      if (ch.trim() !== "") {
+        cells.push([x, y]);
+        if (x < minX) minX = x; if (x > maxX) maxX = x;
+        if (y < minY) minY = y; if (y > maxY) maxY = y;
+      }
+    });
+  });
+  const used = new Set(cells.map(p => p[0] + "," + p[1]));
+  const neighborDirs = [[1,0],[0,1],[1,1],[1,-1]];
+  const seen = new Set();
+  let d = "";
+  let segs = 0;
+  cells.forEach(([x, y]) => {
+    neighborDirs.forEach(([dx, dy]) => {
+      const nx = x + dx, ny = y + dy;
+      if (used.has(nx + "," + ny)) {
+        const key = (x < nx || (x === nx && y < ny)) ? x + "," + y + "-" + nx + "," + ny : nx + "," + ny + "-" + x + "," + y;
+        if (seen.has(key)) return;
+        seen.add(key);
+        d += `M${x} ${y}L${nx} ${ny}`;
+        segs++;
+      }
+    });
+  });
+  const pad = 1;
+  const w = maxX - minX + pad * 2;
+  const h = maxY - minY + pad * 2;
+  const ox = minX - pad, oy = minY - pad;
+  return `<svg viewBox="${ox} ${oy} ${w} ${h}" class="cool-s" ` +
+    'xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">' +
+    `<path d="${d}" fill="none" stroke="currentColor" ` +
+    `stroke-width="1.05" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+const COOL_S_SVG = buildCoolSvg();
+
+// Build the glyph node for a die face. When the Cool S setting is ON, dollar
+// faces render the cool-S line-glyph instead of the "$" print symbol. When the
+// toggle is OFF (default) every face shows its normal print symbol.
+function glyphNode(cls) {
+  const letter = displayLetter(cls);
+  if (letter === "$" && coolSOn === true) {
+    const tpl = document.createElement("template");
+    tpl.innerHTML = COOL_S_SVG;
+    return tpl.content.firstChild;
+  }
+  return document.createTextNode(letter);
+}
+
+// =========================================================================
+// VISUAL IMPROVEMENTS (v1.4.0) — pure cosmetic helpers; no scoring impact.
+// =========================================================================
+
+// User prefers reduced motion? Cache the check once. Honored by every helper.
+const prefersReducedMotion = (typeof window !== "undefined"
+  && window.matchMedia
+  && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+// Tracks each player's previous total so we can tween (count up) on change.
+let prevTotals = [];
+
+// ---------- Score count-up tween ----------
+// Animates the displayed number from `from` to `to` over `duration` ms.
+// Uses rAF + easeOutCubic. Falls back to instant snap on reduced-motion.
+function tweenScoreTo(el, from, to, duration = 600) {
+  if (!el) return;
+  if (prefersReducedMotion || from === to) { el.textContent = to; return; }
+  el.classList.add("tweening");
+  const start = performance.now();
+  function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+  function frame(now) {
+    const t = Math.min(1, (now - start) / duration);
+    const v = Math.round(from + (to - from) * easeOutCubic(t));
+    el.textContent = v;
+    if (t < 1) requestAnimationFrame(frame);
+    else { el.textContent = to; el.classList.remove("tweening"); }
+  }
+  requestAnimationFrame(frame);
+}
+
+// ---------- "+N" float-up above the card ----------
+function floatScore(playerIdx, score, bonus) {
+  if (prefersReducedMotion || !score) return;
+  const cards = document.querySelectorAll("#cardsGrid .p-card");
+  const card = cards[playerIdx];
+  if (!card) return;
+  // Cap pile-up: drop oldest if too many.
+  const existing = card.querySelectorAll(":scope > .score-float");
+  if (existing.length >= 5) existing[0].remove();
+
+  const span = document.createElement("span");
+  span.className = "score-float" + (bonus ? " bonus" : "");
+  span.textContent = bonus === "greed" ? "💲 $GREED!"
+                       : bonus === "six" ? "6️⃣ SIX KIND!"
+                       : ("+" + score);
+  card.appendChild(span);
+  span.addEventListener("animationend", () => span.remove(), { once: true });
+}
+
+// Bonus entry: pulse the .p-total on the affected card.
+function pulseBonusTotal(playerIdx) {
+  const cards = document.querySelectorAll("#cardsGrid .p-card");
+  const total = cards[playerIdx] && cards[playerIdx].querySelector(".p-total");
+  if (!total) return;
+  total.classList.remove("bonus-flash"); // restart animation if already applied
+  // Force reflow so removing/re-adding the class restarts the keyframe.
+  void total.offsetWidth;
+  total.classList.add("bonus-flash");
+}
+
+// ---------- End-mode screen shake ----------
+function shakeScreen() {
+  if (prefersReducedMotion) return;
+  const wrap = document.querySelector(".wrap");
+  if (!wrap) return;
+  wrap.classList.remove("shake");
+  void wrap.offsetWidth;
+  wrap.classList.add("shake");
+  // Clean up on completion so the class can re-fire later.
+  wrap.addEventListener("animationend", function onEnd(e) {
+    if (e.animationName !== "screen-shake") return;
+    wrap.classList.remove("shake");
+    wrap.removeEventListener("animationend", onEnd);
+  });
+}
+
+// ---------- Panel crossfade ----------
+// Cross-fades between two panel elements (or by id). The outgoing panel
+// fades out; the incoming fades in. On reduced-motion: instant swap.
+function crossfadePanels(fromEl, toEl) {
+  if (!fromEl || !toEl) return;
+  if (prefersReducedMotion) { return; /* caller handles show/hide */ }
+  fromEl.classList.add("fading-out");
+  toEl.classList.add("fading-in");
+  // Remove the classes once the longer fade completes (panel-in = 260ms).
+  setTimeout(() => {
+    fromEl.classList.remove("fading-out");
+    toEl.classList.remove("fading-in");
+  }, 300);
+}
+
+// ---------- Confetti (winner screen) ----------
+const CONFETTI_COLORS = ["#d9724a", "#e8935a", "#2a9d8f", "#8fae5c", "#ffd400", "#c0392b"];
+function spawnConfetti(count = 60) {
+  if (prefersReducedMotion) return;
+  const frag = document.createDocumentFragment();
+  const pieces = [];
+  for (let i = 0; i < count; i++) {
+    const p = document.createElement("div");
+    p.className = "confetti-piece";
+    p.style.left = (Math.random() * 100) + "vw";
+    p.style.background = CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)];
+    p.style.animationDuration = (2.4 + Math.random() * 1.6) + "s";
+    p.style.animationDelay = (Math.random() * 0.8) + "s";
+    p.style.transform = "rotate(" + (Math.random() * 360) + "deg)";
+    p.style.opacity = String(0.6 + Math.random() * 0.4);
+    frag.appendChild(p);
+    pieces.push(p);
+  }
+  document.body.appendChild(frag);
+  // Self-clean each piece on its animationend (cap at 6s to be safe).
+  pieces.forEach(p => {
+    p.addEventListener("animationend", () => p.remove(), { once: true });
+    setTimeout(() => p.remove(), 6000);
+  });
+}
+
+// ---------- Background particles (slow drift) ----------
+function setupBackgroundParticles() {
+  if (prefersReducedMotion) return;
+  if (document.querySelector(".bg-particles")) return; // already there
+  const layer = document.createElement("div");
+  layer.className = "bg-particles";
+  layer.setAttribute("aria-hidden", "true");
+  const frag = document.createDocumentFragment();
+  const N = 30;
+  for (let i = 0; i < N; i++) {
+    const m = document.createElement("div");
+    m.className = "mote" + (Math.random() < 0.35 ? " teal" : "");
+    m.style.left = (Math.random() * 100) + "vw";
+    m.style.top = (Math.random() * 100) + "vh";
+    m.style.animationDuration = (18 + Math.random() * 18) + "s";
+    m.style.animationDelay = (-Math.random() * 30) + "s";
+    m.style.transform = "scale(" + (0.6 + Math.random() * 1.4).toFixed(2) + ")";
+    frag.appendChild(m);
+  }
+  layer.appendChild(frag);
+  document.body.insertBefore(layer, document.body.firstChild);
+}
+
+// ---------- Dice tuck (FLIP technique) ----------
+// Captures the bounding rect of `sourceEl`, then on the next paint builds a
+// fixed-position clone at that rect and tweens it to `targetRect` via CSS
+// transform. Removes itself on transition end. Pure visual — the actual
+// data move happens in toggleDie() / unselectDie() as before.
+function tuckDieTo(sourceEl, targetRect, cls) {
+  if (prefersReducedMotion || !sourceEl) return false;
+  const startRect = sourceEl.getBoundingClientRect();
+  const clone = sourceEl.cloneNode(true);
+  clone.classList.add("tuck-clone");
+  // Inline styles to position at startRect, identity transform.
+  clone.style.left = startRect.left + "px";
+  clone.style.top  = startRect.top  + "px";
+  clone.style.width  = startRect.width  + "px";
+  clone.style.height = startRect.height + "px";
+  clone.style.transform = "translate(0,0) rotate(0) scale(1)";
+  document.body.appendChild(clone);
+  // Force layout, then apply the inverse transform so it visually stays put.
+  void clone.offsetWidth;
+  const dx = targetRect.left - startRect.left;
+  const dy = targetRect.top  - startRect.top;
+  const scale = Math.min(targetRect.width, targetRect.height) /
+                Math.max(startRect.width, startRect.height);
+  clone.style.transform = `translate(${dx}px, ${dy}px) rotate(${(Math.random()*60-30).toFixed(1)}deg) scale(${scale.toFixed(2)})`;
+  clone.style.opacity = "0.85";
+  clone.addEventListener("transitionend", () => clone.remove(), { once: true });
+  // Safety: if transitionend never fires (e.g. reduced-motion toggled at runtime), clean up.
+  setTimeout(() => clone.remove(), 500);
+  return true;
+}
+
+// Track initial totals on first render of a game so the count-up has a baseline.
+function seedPrevTotals() {
+  prevTotals = players.map(p => p.total);
+}
+
+function rollDie() {
+  const base = DICE_SYMS[Math.floor(Math.random() * DICE_SYMS.length)];
+  return { sym: base.sym, cls: base.cls, color: base.color || null };
+}
+
+// Fisher-Yates shuffle an array in place
+function shuffleArray(arr) {
+  for (let j = arr.length - 1; j > 0; j--) {
+    const k = Math.floor(Math.random() * (j + 1));
+    [arr[j], arr[k]] = [arr[k], arr[j]];
+  }
+  return arr;
+}
+
+// Create a 3D cube die element with 6 faces
+// The front face shows the outcome symbol (sym/cls). The other 5 faces
+// show random symbols so hidden sides remain visible in 3D when viewed from angles.
+function createCubeDie(cls, sym, randomFaces) {
+  const die = document.createElement("div");
+  die.className = "die " + cls;
+  die.dataset.outcomeSym = sym;
+  die.dataset.outcomeCls = cls;
+  const sides = ['front', 'back', 'right', 'left', 'top', 'bottom'];
+  const symbols = [...DICE_SYMS];
+  if (randomFaces) {
+    shuffleArray(symbols);
+  }
+  sides.forEach((side, index) => {
+    const face = document.createElement("div");
+    let faceCls, faceSym;
+    if (randomFaces) {
+      // Tumbling: all faces random
+      faceCls = symbols[index].cls;
+      faceSym = symbols[index].sym;
+    } else if (side === 'front') {
+      // Settled: front face shows the dice outcome
+      faceCls = cls;
+      faceSym = sym;
+    } else {
+      // Settled: other faces show random symbols (still different colours/letters)
+      faceCls = symbols[index].cls;
+      faceSym = symbols[index].sym;
+    }
+    face.className = "die-face die-face--" + side + " " + faceCls;
+    face.appendChild(glyphNode(faceCls));
+    die.appendChild(face);
+  });
+  return die;
+}
+
+// Score a set of dice -> { score, kept:[indices] }
+function evalRoll(dice) {
+  // 6 of a kind = 5000. Must be SIX IDENTICAL dice: same symbol AND same colour.
+  // The two E's are different colours, so a mix (e.g. 5 green E + 1 blue E) is NOT six-of-a-kind.
+  if (dice.length === 6 && new Set(dice.map(d => d.sym + (d.color || ""))).size === 1) {
+    return { score: 5000, kept: [0,1,2,3,4,5] };
+  }
+  let score = 0;
+  const kept = new Set();
+  const idx = { "$": [], "G": [], "R": [], "E": [], "D": [] };
+  dice.forEach((d, i) => idx[d.sym].push(i));
+
+  // Full set: one of each, two E's different colours
+  if (idx["$"].length >= 1 && idx["G"].length >= 1 && idx["R"].length >= 1 &&
+      idx["D"].length >= 1 && idx["E"].length >= 2) {
+    const eColors = idx["E"].map(i => dice[i].color);
+    if (new Set(eColors).size >= 2) {
+      score += 1000;
+      kept.add(idx["$"][0]); kept.add(idx["G"][0]); kept.add(idx["R"][0]); kept.add(idx["D"][0]);
+      const e0 = idx["E"][0];
+      const e1 = idx["E"].find(i => dice[i].color !== dice[e0].color);
+      kept.add(e0); kept.add(e1);
+      return { score, kept: [...kept] };
+    }
+  }
+
+  // 4 D's (1000) + any extra single D (100 each)
+  if (idx["D"].length >= 4) {
+    const groups = Math.floor(idx["D"].length / 4);
+    score += groups * 1000;
+    const rem = idx["D"].length - groups * 4;
+    score += rem * 100;
+    idx["D"].forEach(i => kept.add(i));
+  } else if (idx["D"].length > 0) {
+    score += idx["D"].length * 100;
+    idx["D"].forEach(i => kept.add(i));
+  }
+
+  // 3 $ (600) — FIXED, no extras for additional dice
+  if (idx["$"].length >= 3) {
+    score += 600;
+    for (let k = 0; k < 3; k++) kept.add(idx["$"][k]);
+  }
+  // 3 G (500) + extra G (50 each) — G scores as single so extras count
+  if (idx["G"].length >= 3) {
+    score += 500;
+    for (let k = 0; k < 3; k++) kept.add(idx["G"][k]);
+    for (let k = 3; k < idx["G"].length; k++) { score += 50; kept.add(idx["G"][k]); }
+  } else if (idx["G"].length > 0) { score += idx["G"].length * 50; idx["G"].forEach(i => kept.add(i)); }
+  // 3 R (400) — FIXED, no extras for additional dice. R is NEVER a single.
+  if (idx["R"].length >= 3) {
+    score += 400;
+    for (let k = 0; k < 3; k++) kept.add(idx["R"][k]);
+  }
+  // 3 E (300) — FIXED, no extra for 4th. Colours are independent entities: must be 3+ of ONE colour.
+  const eGreen = idx["E"].filter(i => dice[i].color === "green");
+  const eBlue  = idx["E"].filter(i => dice[i].color === "blue");
+  const scoreErun = (run) => {
+    if (run.length >= 3) { score += 300; run.slice(0, 3).forEach(i => kept.add(i)); }
+  };
+  scoreErun(eGreen);
+  scoreErun(eBlue);
+
+  return { score, kept: [...kept] };
+}
+
+function resetDice() {
+  clearTimeout(diceAnimTimer); diceAnimTimer = null;
+  clearTimeout(diceSpinTimer); diceSpinTimer = null;
+  clearTimeout(diceWatchdog); diceWatchdog = null;
+  pendingRoll = null;
+  hotStreak = false;
+  turnDice = [];
+  bankedDice = [];
+  rollGroups = [];
+  turnScore = 0;
+  dicePhase = "idle";
+  lastDiceSig = "";   // force the next render to rebuild (fresh roll animates)
+  const row = document.getElementById("diceRow");
+  const bankedRow = document.getElementById("bankedRow");
+  const rollBtn = document.getElementById("rollBtn");
+  const bankBtn = document.getElementById("bankBtn");
+  const hotBtn = document.getElementById("hotBtn");
+  const clearBtn = document.getElementById("clearBtn");
+  const hint = document.getElementById("diceHint");
+  if (row) row.innerHTML = '<div class="dice-prompt">🎲 Tap ROLL to throw the dice</div>';
+  if (bankedRow) bankedRow.innerHTML = "";
+  if (rollBtn) { rollBtn.classList.remove("hidden"); rollBtn.textContent = "🎲 ROLL"; }
+  if (bankBtn) bankBtn.classList.add("hidden");
+  if (hotBtn) hotBtn.classList.add("hidden");
+  if (clearBtn) clearBtn.classList.add("hidden");
+  if (hint) hint.textContent = "";
+}
+
+function diceRoll() {
+  if (winnerDeclared) return;
+  if (ONLINE && !onlineMyTurn()) return;           // online: only the acting player may roll
+  if (dicePhase === "rolling") return; // ignore clicks while a roll is animating
+  const fresh = dicePhase === "idle" || dicePhase === "greedOut";
+  const canRoll = fresh || dicePhase === "select";
+  if (!canRoll) return;
+
+  let count;
+  if (fresh) count = 6;
+  else if (turnDice.length === 0) count = 6;          // hot dice → reroll all
+  else count = turnDice.length;                        // reroll the unselected remainder
+  const finalDice = [];
+  for (let i = 0; i < count; i++) finalDice.push(rollDie());
+
+  const row = document.getElementById("diceRow");
+  row.innerHTML = "";
+  const spinEls = [];
+  // Randomize the start order for a more natural, less mechanical cascade
+  const startOrder = [...Array(count).keys()];
+  shuffleArray(startOrder);
+  for (let i = 0; i < count; i++) {
+    // Create a 3D cube die with random face permutation, marked as rolling
+    const el = createCubeDie(finalDice[i].cls, finalDice[i].sym, true);
+    el.classList.add("rolling");
+    // Stagger the animation start by randomized order, not left-to-right
+    const orderIndex = startOrder.indexOf(i);
+    el.style.animationDelay = (orderIndex * 0.05) + "s";
+    row.appendChild(el);
+    spinEls.push({ el, orderIndex });
+  }
+  dicePhase = "rolling";
+  document.getElementById("rollBtn").classList.add("hidden");
+  document.getElementById("bankBtn").classList.add("hidden");
+  document.getElementById("hotBtn").classList.add("hidden");
+  document.getElementById("clearBtn").classList.add("hidden");
+  document.getElementById("diceHint").textContent = "Rolling…";
+
+  // Lock in the result now so we can settle even if a timer is lost (e.g. tab throttled).
+  pendingRoll = { finalDice, fresh };
+
+  // Wait for tumble animation to complete (1.2s + max stagger) then settle
+  clearTimeout(diceAnimTimer);
+  clearTimeout(diceSpinTimer);
+  clearTimeout(diceWatchdog);
+  const maxStagger = (count - 1) * 0.05;
+  diceAnimTimer = setTimeout(() => settleDice(finalDice, fresh), 1200 + maxStagger * 1000);
+  // Safety net: if for any reason the settle timer never fires, force a settle
+  diceWatchdog = setTimeout(() => {
+    if (dicePhase === "rolling") settleDice(finalDice, fresh);
+  }, 2500);
+}
+
+function scoreGroup(dice) {
+  return evalRoll(dice).score;
+}
+
+function recomputeTurnScore() {
+  turnScore = rollGroups.reduce((sum, g) => sum + scoreGroup(g), 0);
+  bankedDice = rollGroups.flat();
+}
+
+function settleDice(finalDice, fresh) {
+  clearTimeout(diceWatchdog);
+  diceWatchdog = null;
+  pendingRoll = null;
+  // open a fresh selection group for this physical roll
+  rollGroups.push([]);
+
+  // Render the real final faces with a land-pop (replaces the spinning ones)
+  // Note: renderDiceControls will rebuild with selectable + staggered land-pop
+  const row = document.getElementById("diceRow");
+  if (row) {
+    row.innerHTML = "";
+    finalDice.forEach(d => {
+      const el = createCubeDie(d.cls, d.sym);
+      el.classList.add("land");
+      row.appendChild(el);
+    });
+  }
+  document.getElementById("diceHint").textContent = "Rolled!";
+
+  if (evalRoll(finalDice).score === 0) {
+    // No scoring option on this throw → GREED OUT.
+    // On a reroll this forfeits EVERYTHING set aside earlier in the turn.
+    // Auto-commit a 0 and pass to the next player.
+    rollGroups = [];
+    bankedDice = [];
+    turnScore = 0;
+    turnDice = finalDice;
+    dicePhase = "greedOut";
+    toast(fresh
+      ? "GREED OUT — 0 scored, turn passed"
+      : "GREED OUT — all set-aside dice & score lost, turn passed");
+    diceAnimTimer = setTimeout(() => {
+      cpuThinking = false;
+      resetDice();
+      handleNoScore(); // commits 0 (end mode) or just advances (normal)
+    }, 1500);
+    return;
+  }
+
+  const res = evalRoll(finalDice);
+  hotStreak = res.score > 0 && res.kept.length === finalDice.length;
+  // NOTE: we do NOT auto-set-aside on a hot roll. The player must tap all 6 dice
+  // themselves (below), then either reroll all 6 to continue the streak, or choose
+  // to bust via "No Score / Pass". Banking mid-streak is not allowed.
+
+  turnDice = finalDice;
+  dicePhase = "select";
+  recomputeTurnScore();
+  renderDiceControls();
+  if (ONLINE && onlineMyTurn()) pushLiveBoard();   // opponent watches this roll
+  if (players[current] && players[current].cpu) setTimeout(cpuDecide, 450);
+}
+
+function toggleDie(index) {
+  if (ONLINE && !onlineMyTurn()) return;  // online: only the acting player may set dice aside
+  if (dicePhase !== "select") return;
+  if (index < 0 || index >= turnDice.length) return;
+  // v1.4.0 visual: dice tuck. Capture the source die's rect BEFORE the
+  // splice, then capture the bankedRow rect AFTER splice (the new appended
+  // die will appear in the side tray). Source die's element is at
+  // #diceRow children[index]; target is bankedRow lastChild after re-render.
+  const sourceEl = document.querySelectorAll("#diceRow .die")[index];
+  const d = turnDice.splice(index, 1)[0];
+  rollGroups[rollGroups.length - 1].push(d); // current roll's group only
+  recomputeTurnScore();
+  renderDiceControls();
+  if (ONLINE && onlineMyTurn()) pushLiveBoard();   // opponent sees the pick
+  // Find the newly-arrived banked die's rect (last child of bankedRow is the
+  // freshly-added die, since unselectDie only operates on the current roll's
+  // group which is the last group rendered last in the bankedRow).
+  if (sourceEl) {
+    const targetEl = document.querySelectorAll("#bankedRow .die");
+    const tEl = targetEl[targetEl.length - 1];
+    if (tEl) {
+      // tuckDieTo clones sourceEl, so we must NOT use it after this point.
+      tuckDieTo(sourceEl, tEl.getBoundingClientRect(), d.cls);
+    }
+  }
+}
+
+function unselectDie(index) {
+  if (ONLINE && !onlineMyTurn()) return;  // online: only the acting player may unselect
+  // Only the current roll's picks can be moved back (earlier rolls are locked).
+  if (dicePhase !== "select") return;
+  const g = rollGroups[rollGroups.length - 1];
+  if (index < 0 || index >= g.length) return;
+  // v1.4.0 visual: reverse tuck (banked → main tray).
+  // The source die is the index-th die inside the LAST group of bankedRow.
+  // We count children of bankedRow, then offset by the cumulative length of
+  // all preceding groups (rollGroups.length - 1 groups before this one).
+  const bankedEls = document.querySelectorAll("#bankedRow .die");
+  let offset = 0;
+  for (let k = 0; k < rollGroups.length - 1; k++) offset += rollGroups[k].length;
+  const sourceEl = bankedEls[offset + index];
+  const d = g.splice(index, 1)[0];
+  turnDice.push(d);
+  recomputeTurnScore();
+  renderDiceControls();
+  if (ONLINE && onlineMyTurn()) pushLiveBoard();   // opponent sees the unpick
+  if (sourceEl) {
+    // After re-render, turnDice last child is the freshly-added die in main tray.
+    const diceEls = document.querySelectorAll("#diceRow .die");
+    const targetEl = diceEls[diceEls.length - 1];
+    if (targetEl) tuckDieTo(sourceEl, targetEl.getBoundingClientRect(), d.cls);
+  }
+}
+
+function clearSelection() {
+  if (ONLINE && !onlineMyTurn()) return;  // online: only the acting player may clear selection
+  if (dicePhase !== "select") return;
+  const g = rollGroups[rollGroups.length - 1];
+  turnDice = turnDice.concat(g);
+  g.length = 0;
+  recomputeTurnScore();
+  renderDiceControls();
+  if (ONLINE && onlineMyTurn()) pushLiveBoard();   // opponent sees the clear
+}
+
+function renderDiceControls() {
+  // Skip the rebuild when nothing about the board changed since last render.
+  // This stops the online poll (which re-calls this every ~1.2s) from
+  // re-applying the .land pop animation to already-settled dice.
+  const sig = dicePhase + "|" +
+    (turnDice || []).map(d => d.sym + d.cls + (d.color || "")).join(",") + "|" +
+    (rollGroups || []).map(g => (g || []).map(d => d.sym + d.cls + (d.color || "")).join("+")).join(";") + "|" +
+    turnScore + "|" + hotStreak;
+  if (sig === lastDiceSig) return;
+  lastDiceSig = sig;
+
+  const row = document.getElementById("diceRow");
+  const bankedRow = document.getElementById("bankedRow");
+  const rollBtn = document.getElementById("rollBtn");
+  const bankBtn = document.getElementById("bankBtn");
+  const hotBtn = document.getElementById("hotBtn");
+  const clearBtn = document.getElementById("clearBtn");
+  const hint = document.getElementById("diceHint");
+  if (!row || !bankedRow) return;
+
+  if (dicePhase === "rolling") return; // leave tumbling faces up
+
+  if (dicePhase === "idle") {
+    row.innerHTML = '<div class="dice-prompt">🎲 Tap ROLL to throw the dice</div>';
+    bankedRow.innerHTML = "";
+    rollBtn.classList.remove("hidden"); rollBtn.textContent = "🎲 ROLL";
+    bankBtn.classList.add("hidden");
+    hotBtn.classList.add("hidden");
+    clearBtn.classList.add("hidden");
+    hint.textContent = "";
+    return;
+  }
+
+  if (dicePhase === "greedOut") {
+    row.innerHTML = turnDice.map(d => {
+      const el = createCubeDie(d.cls, d.sym);
+      return el.outerHTML;
+    }).join("");
+    bankedRow.innerHTML = "";
+    hint.textContent = "GREED OUT — tap “No Score / Pass” to lose the turn";
+    rollBtn.classList.add("hidden");
+    bankBtn.classList.add("hidden");
+    hotBtn.classList.add("hidden");
+    clearBtn.classList.add("hidden");
+    return;
+  }
+
+  // select — player taps dice in the main tray to set them aside
+  if (turnDice.length > 0) {
+    // Randomized stagger order for the land-pop animation
+    const landOrder = [...Array(turnDice.length).keys()];
+    shuffleArray(landOrder);
+    row.innerHTML = turnDice.map((d, i) => {
+      const el = createCubeDie(d.cls, d.sym);
+      el.classList.add("selectable", "land");
+      el.setAttribute("onclick", `toggleDie(${i})`);
+      // Stagger the land-pop: each die lands 100ms after the one before in random order
+      const orderIdx = landOrder.indexOf(i);
+      el.style.animationDelay = (orderIdx * 0.1) + "s";
+      return el.outerHTML;
+    }).join("");
+  } else {
+    row.innerHTML = '<div class="dice-prompt">All dice set aside — reroll!</div>';
+  }
+  // Side tray: earlier rolls are locked; current roll's picks are tappable to undo
+  const lastIdx = rollGroups.length - 1;
+  bankedRow.innerHTML = rollGroups.map((g, gi) => g.map((d, k) => {
+    const el = createCubeDie(d.cls, d.sym);
+    el.classList.add("banked");
+    if (gi === lastIdx) el.setAttribute("onclick", `unselectDie(${k})`);
+    return el.outerHTML;
+  }).join("")).join("");
+
+  // Show current roll score in the Set Aside column
+  const currentRollEl = document.getElementById("currentRollScore");
+  const currentRollValEl = document.getElementById("currentRollScoreVal");
+  if (currentRollEl && currentRollValEl) {
+    // Show accumulated turn total (all rolls this turn)
+    if (turnScore > 0) {
+      currentRollValEl.textContent = turnScore;
+      currentRollEl.style.display = "block";
+    } else {
+      currentRollEl.style.display = "none";
+    }
+  }
+
+  rollBtn.classList.add("hidden");
+  bankBtn.classList.remove("hidden");
+  // hotStreak (module flag) = last throw was all-6-scoring. The player must tap
+  // all 6 dice themselves, then either reroll all 6 to continue, or bust (Pass).
+  const allSelected = turnDice.length === 0;
+  if (hotStreak) {
+    bankBtn.disabled = true;
+    bankBtn.textContent = "🔥 LOCKED — SET ALL 6";
+    hotBtn.classList.remove("hidden");
+    hotBtn.disabled = !allSelected; // only allow reroll once every die is set aside
+    hotBtn.textContent = allSelected ? "🎲 SELECT ALL 6 & REROLL" : "🎲 TAP ALL 6 TO CONTINUE";
+    clearBtn.classList.add("hidden"); // can't partially unselect during a hot roll
+    hint.textContent = allSelected
+      ? `🔥 HOT ROLL! +${turnScore} so far — all 6 set aside. Reroll all 6 to build, BANK is locked, or PASS to bust.`
+      : `🔥 HOT ROLL! Tap ALL 6 dice to set them aside — then reroll, or PASS to bust (forfeit).`;
+  } else {
+    bankBtn.disabled = turnScore <= 0;
+    bankBtn.textContent = "💰 BANK +" + turnScore;
+    // Rule: to roll the remaining dice the player MUST have set aside a
+    // playable (scoring) die from the CURRENT roll. RollGroup[lastIdx] is this
+    // roll's selection; it must form a scoring combo (scoreGroup > 0).
+    const curSel = rollGroups[lastIdx] || [];
+    const hasPlayableAside = curSel.length > 0 && scoreGroup(curSel) > 0;
+    const canReroll = hasPlayableAside && turnDice.length > 0;
+    hotBtn.classList.toggle("hidden", !canReroll);
+    if (canReroll) hotBtn.textContent = `🎲 ROLL REMAINING (${turnDice.length})`;
+    clearBtn.classList.toggle("hidden", rollGroups[lastIdx].length === 0);
+    hint.textContent = turnScore > 0
+      ? (canReroll
+          ? `Set aside from ${rollGroups.length} roll(s) = +${turnScore} — bank it or roll the rest`
+          : (curSel.length > 0
+              ? `Set-aside dice don't score — set a scoring die aside to roll again, BANK +${turnScore}, or PASS`
+              : `Set a scoring die aside to roll the rest — BANK +${turnScore} or PASS`))
+      : "Set a scoring die aside to roll again";
+  }
+}
+
+async function diceBank() {
+  if (winnerDeclared) return;
+  if (ONLINE && !onlineMyTurn()) return;  // online: only the acting player may bank
+  if (turnScore <= 0) return;
+  // Defensive: never allow banking mid hot-streak (all 6 scored last throw).
+  if (hotStreak) return;
+  const s = turnScore;
+  const committed = await addScore(s); // normal entry: advances turn, triggers end mode, etc.
+  if (committed === false) {
+    // First-score gate rejected the bank (under 500). Keep the turn intact so the
+    // player can roll the remaining dice for more, or pass to try again next round.
+    if (players[current] && players[current].cpu) {
+      cpuThinking = false;
+      setTimeout(() => { if (dicePhase === "select") diceRoll(); }, 380); // AI keeps gambling
+    }
+    return;
+  }
+  resetDice();
+}
+
+// =========================================================================
+// CPU PLAYERS (dice mode only) — full auto turn.
+// =========================================================================
+let cpuThinking = false;
+
+function maybeRunCpu() {
+  if (!gameRunning || winnerDeclared) { cpuThinking = false; return; }
+  if (!players[current] || !players[current].cpu) { cpuThinking = false; return; }
+  if (cpuThinking) return;
+  cpuThinking = true;
+  setTimeout(cpuTakeTurn, 650);
+}
+
+function cpuTakeTurn() {
+  if (!players[current] || !players[current].cpu || winnerDeclared) { cpuThinking = false; return; }
+  // Start the roll (animates); cpuDecide() is invoked by settleDice when done.
+  toast(players[current].name + " (CPU) is rolling…");
+  diceRoll();
+}
+
+// Called by settleDice once the dice have landed on a CPU turn.
+function cpuDecide() {
+  if (dicePhase !== "select" || !players[current] || !players[current].cpu) return;
+  const res = evalRoll(turnDice);
+  // Bank the maximal scoring set for this roll (evalRoll already picks it).
+  const keep = res.kept.slice().sort((a, b) => b - a);
+  keep.forEach(idx => toggleDie(idx));
+
+  if (turnDice.length === 0) {
+    // All dice scored this roll → free hot-dice reroll for more.
+    setTimeout(() => { if (dicePhase === "select") diceRoll(); }, 380);
+    return;
+  }
+
+  // ---- Risk model: bust probability by dice remaining (conservative) ----
+  const nLeft = turnDice.length;
+  const BUST = {1:0.70, 2:0.50, 3:0.33, 4:0.20, 5:0.10};  // more conservative than true odds
+  const bust = BUST[nLeft] || 0.35;
+  // Risk multiplier: steeper curve — heavily penalizes few dice, modestly rewards many
+  const riskMult = 0.25 + 1.3 * (1 - bust);   // ~0.52 at 1 die, ~0.90 at 2, ~1.18 at 3, ~1.45 at 4, ~1.65 at 5
+
+  // ---- Opponent intelligence ----
+  const me = players[current];
+  const total = me.total;
+  const projected = total + turnScore;
+  const leaderTotal = Math.max(...players.map(p => p.total));
+  const leaderIsMe = total >= leaderTotal;
+
+  // Build opponent profiles
+  const opponents = players
+    .filter((p, i) => i !== current)
+    .map(p => ({
+      name: p.name,
+      total: p.total,
+      deficit: 5000 - p.total,           // points needed to win
+      turnsToWin: Math.ceil((5000 - p.total) / 800),  // est. turns at 800/turn avg
+      isThreat: p.total >= 4000,         // within striking distance
+      isCritical: p.total >= 4500        // one big turn from win
+    }))
+    .sort((a, b) => b.total - a.total);
+
+  const oppMax = opponents[0]?.total || 0;
+  const oppSecond = opponents[1]?.total || 0;
+  const criticalCount = opponents.filter(o => o.isCritical).length;
+  const threatCount = opponents.filter(o => o.isThreat).length;
+  const bankWin = projected >= 5000;
+
+  // How many opponents would get a final turn if we bank and trigger end mode?
+  const finalTurnRecipients = opponents.filter(o => o.total < 5000).length;
+
+  // Projected position after banking
+  const projectedLead = projected - oppMax;
+  const projectedLeadOverSecond = projected - oppSecond;
+
+  // ===== SESSION STREAK ADJUSTMENT =====
+  // streak: +1 to +5 = player winning streak → CPU plays more aggressively to catch up
+  // streak: -1 to -5 = player losing streak → CPU plays more conservatively to let player win
+  const streak = sessionStats.streak || 0;
+  let streakAdj = 0;
+  if (streak > 0) {
+    // Player winning: CPU takes more risks (lower thresholds, more randomness)
+    streakAdj = -streak * 100;  // -100 to -500
+  } else if (streak < 0) {
+    // Player losing: CPU plays safer (higher thresholds, less randomness)
+    streakAdj = -streak * 150;  // +150 to +750
+  }
+
+  let bank;
+
+  if (endMode) {
+    // ===== FINAL ROUND =====
+    if (bankWin) {
+      bank = true;  // bank the win outright
+    } else if (leaderIsMe && turnScore > 0) {
+      bank = true;  // already leading → lock it
+    } else if (turnScore > 0 && projected > oppMax) {
+      bank = true;  // just took the lead → bank
+    } else {
+      // Behind: need a big score, but don't be reckless with few dice
+      const thr = Math.max(1500, 1800 * riskMult);  // higher floor in end mode
+      bank = turnScore >= thr || (Math.random() < 0.20 * (1 - bust));
+    }
+  } else if (bankWin) {
+    // ===== BANKING WOULD TRIGGER FINAL ROUND =====
+    // DENY-THE-LEADER: if any opponent is critical (≥4500), need substantial margin
+    if (criticalCount > 0) {
+      // Need to survive their final turn — require 1200+ margin over best opponent
+      bank = projectedLead >= 1200;
+    } else if (threatCount > 0) {
+      // Opponents at 4000-4499: need 800+ margin
+      bank = projectedLead >= 800;
+    } else if (finalTurnRecipients >= 3) {
+      // Many opponents get a final turn → be more cautious
+      bank = projectedLead >= 600;
+    } else {
+      // No immediate threats, but still need some cushion
+      bank = projectedLead >= 400;
+    }
+  } else {
+    // ===== MID-GAME =====
+    const behind = leaderTotal - total;
+
+    // Opponent-aware base threshold
+    let base;
+    // Check if this is the opening roll for a player with 0 total (needs to clear 500 gate)
+    const isOpeningRoll = me.total === 0 && (me.last === null || me.last === 0) && rollGroups.length === 1;
+    
+    if (isOpeningRoll) {
+      // ===== OPENING ROLL STRATEGY =====
+      // Ultra-conservative: target exactly 500+, bank immediately, no gambling
+      if (turnScore >= 500) {
+        // Already have 500+ - bank it immediately
+        base = 0;  // Will force bank below
+      } else if (turnScore >= 300) {
+        // 300-499: bank if safe, only roll if very low risk
+        base = 300;
+      } else if (turnScore >= 200) {
+        // 200-299: cautious, bank if 3+ dice left
+        base = 200;
+      } else {
+        // <200: roll for more but with strict limits
+        base = 150;
+      }
+    } else if (behind > 1500) {
+      base = 1800;  // far behind → need big score, but not suicidal
+    } else if (behind > 800) {
+      base = 1300;  // moderately behind
+    } else if (leaderIsMe) {
+      // Leading: protect the lead, scale with opponent pressure
+      if (threatCount > 0) base = 900;       // threats nearby → bank sooner
+      else if (criticalCount > 0) base = 700; // critical opp → very conservative
+      else base = 600;                        // comfortable lead
+    } else {
+      // Neutral / slight deficit
+      if (criticalCount > 0) base = 1200;     // opponent near win → push harder
+      else if (threatCount > 0) base = 1000;
+      else base = 800;
+    }
+
+    // First-score gate awareness: if we have 0 banked this game, be more aggressive to clear 500
+    const hasBankedBefore = me.total > 0 || (me.last !== null && me.last > 0);
+    if (!hasBankedBefore && turnScore > 0 && turnScore < 500 && !isOpeningRoll) {
+      // Haven't cleared 500 yet — lean toward rolling unless very risky
+      // (isOpeningRoll handled above with stricter logic)
+      base = Math.min(base, 600);
+    }
+
+    // Post-gate conservative mode: once we've cleared 500, protect the banked total
+    // Don't gamble away a secured position just because we can
+    const postGate = hasBankedBefore && me.total >= 500;
+    if (postGate) {
+      // After clearing the gate, raise thresholds significantly to protect gains
+      if (leaderIsMe) {
+        base = Math.max(base, 900);  // leading → very conservative
+      } else if (behind > 800) {
+        base = Math.max(base, 1500); // behind but not desperate → still cautious
+      } else {
+        base = Math.max(base, 1100); // neutral → lock in decent scores
+      }
+    }
+
+    // Apply session streak adjustment
+    base += streakAdj;
+    // Clamp base to reasonable bounds
+    base = Math.max(300, Math.min(base, 3000));
+
+    const thr = base * riskMult;
+
+    // Randomness factor: lower = more deterministic/conservative
+    let rnd;
+    let hardGuard1, hardGuard2;  // shared across opening-roll & normal branches;
+                                 // each branch ASSIGNS to them; declared at outer
+                                 // scope so the post-branch read below sees them.
+    if (behind > 1500)       rnd = 0.20;  // desperate but not wild
+    else if (leaderIsMe)     rnd = 0.35;  // leading → quite conservative
+    else if (criticalCount > 0) rnd = 0.30; // opponent critical → calculated risks
+    else                     rnd = 0.25;  // neutral → slight caution
+
+    // ===== OPENING ROLL OVERRIDES =====
+    // Ultra-conservative on first roll when needing 500 gate
+    if (isOpeningRoll) {
+      // Force bank if we have 500+
+      if (turnScore >= 500) {
+        bank = true;
+        // Skip all other logic
+        if (bank) {
+          setTimeout(() => { cpuThinking = false; diceBank(); }, 380);
+        } else {
+          setTimeout(() => { if (dicePhase === "select") diceRoll(); }, 380);
+        }
+        return;
+      }
+      // Very low randomness - almost deterministic
+      rnd = 0.05;
+      // Much stricter hard guards
+      hardGuard1 = Math.max(500, base * 0.6);  // Need 500+ to roll 1 die
+      hardGuard2 = Math.max(600, base * 0.7);  // Need 600+ to roll 2 dice
+    } else {
+      // Apply session streak to randomness
+      // Player winning (streak > 0) → CPU more random/wild
+      // Player losing (streak < 0) → CPU more deterministic/conservative
+      if (streak > 0) {
+        rnd = Math.min(0.50, rnd + streak * 0.04);  // up to +0.20 at streak 5
+      } else if (streak < 0) {
+        rnd = Math.max(0.10, rnd + streak * 0.03);  // down to -0.15 at streak -5
+      }
+
+      // Additional safety: never roll with 1 die unless desperate
+      // Adjust hard guards based on streak
+      hardGuard1 = Math.max(800, base * 0.6);  // Need 800+ to roll 1 die (was 300)
+      hardGuard2 = Math.max(600, base * 0.5);  // Need 600+ to roll 2 dice (was 400)
+      if (streak > 0) {
+        // Player winning → CPU slightly more willing to roll 1-2 dice
+        hardGuard1 *= 0.9;
+        hardGuard2 *= 0.9;
+      } else if (streak < 0) {
+        // Player losing → CPU even less willing to roll 1-2 dice
+        hardGuard1 *= 1.3;
+        hardGuard2 *= 1.3;
+      }
+    }
+
+    if (nLeft === 1 && turnScore >= hardGuard1) {
+      bank = true;  // 70% bust with 1 die — bank unless we're truly desperate
+    } else if (nLeft === 2 && turnScore >= hardGuard2) {
+      bank = true;  // 50% bust with 2 dice — bank at moderate scores
+    } else {
+      bank = turnScore >= thr || (Math.random() < rnd * (1 - bust));
+    }
+  }
+
+  if (bank) {
+    setTimeout(() => { cpuThinking = false; diceBank(); }, 380);
+  } else {
+    setTimeout(() => { if (dicePhase === "select") diceRoll(); }, 380);
+  }
+}
+
+// =========================================================================
+// LIVE GAME AUTOSAVE (localStorage) — survives accidental refresh/close.
+// Snapshots the full in-memory game state after every mutation; cleared
+// once a winner is declared and acknowledged (New Game) or explicitly ended.
+// =========================================================================
+function saveGameState() {
+  if (!gameRunning) return;
+  try {
+    const snapshot = {
+      players, current, history, gameRunning, endMode,
+      endModeTriggerIdx, endTurnsRemaining, winnerDeclared, scoreLog,
+      // Persist dice/turn state so CPU turns resume correctly after a page reload
+      dicePhase, turnDice, bankedDice, rollGroups, turnScore, hotStreak,
+      savedAt: Date.now()
+    };
+    localStorage.setItem(LS_ACTIVE_GAME, JSON.stringify(snapshot));
+  } catch (e) { console.warn("saveGameState failed", e); }
+}
+
+function loadGameState() {
+  try {
+    const raw = localStorage.getItem(LS_ACTIVE_GAME);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch (e) { return null; }
+}
+
+function clearGameState() {
+  localStorage.removeItem(LS_ACTIVE_GAME);
+}
+
+function restoreGameState(snapshot) {
+  players = snapshot.players;
+  current = snapshot.current;
+  history = snapshot.history;
+  gameRunning = snapshot.gameRunning;
+  endMode = snapshot.endMode;
+  endModeTriggerIdx = snapshot.endModeTriggerIdx;
+  endTurnsRemaining = snapshot.endTurnsRemaining;
+  winnerDeclared = snapshot.winnerDeclared;
+  scoreLog = snapshot.scoreLog || [];
+  // Restore dice/turn state so in-progress turns (esp. CPU turns) resume correctly.
+  // If we reload mid-roll ("rolling" was snapshotted before timers finished),
+  // there's no live animation to settle, so drop the pending dice and force
+  // back to idle — the player simply rerolls. Otherwise the UI freezes with
+  // all buttons hidden because renderDiceControls early-returns in "rolling".
+  let restoredPhase = snapshot.dicePhase || "idle";
+  if (restoredPhase === "rolling" || restoredPhase === "greedOut") {
+    restoredPhase = "idle";
+    turnDice = [];
+    bankedDice = [];
+    rollGroups = [];
+    turnScore = 0;
+    hotStreak = false;
+  }
+  dicePhase = restoredPhase;
+  if (turnDice === undefined) turnDice = [];
+  if (bankedDice === undefined) bankedDice = [];
+  if (rollGroups === undefined) rollGroups = [];
+  if (turnScore === undefined) turnScore = 0;
+  hotStreak = snapshot.hotStreak || false;
+  // Clear any stale timers from a previous session
+  clearTimeout(diceAnimTimer); diceAnimTimer = null;
+  clearTimeout(diceSpinTimer); diceSpinTimer = null;
+  clearTimeout(diceWatchdog); diceWatchdog = null;
+  pendingRoll = null;
+
+  document.getElementById("setupScreen").classList.add("hidden");
+  document.getElementById("winnerScreen").classList.add("hidden");
+  document.getElementById("gameScreen").classList.remove("hidden");
+  // v1.4.0: reset prevTotals so the restored totals don't count-up from 0
+  // on the next bank (we want the number to display the actual saved value
+  // without an animated catch-up from a stale baseline).
+  prevTotals = snapshot.players.map(p => p.total);
+  renderGame(true); // skip resetDice() — restore the in-progress turn state instead
+  // Render the dice controls for the restored phase (select/greedOut/idle)
+  renderDiceControls();
+  const restoredText = (restoredPhase !== snapshot.dicePhase)
+    ? `Restored game — mid-roll was lost, ${players[current]?.name || "player"}'s turn restarts`
+    : "Restored your in-progress game";
+  toast(restoredText);
+  // If it's a CPU's turn, resume their decision-making:
+  // - If dice are already showing (select phase), call cpuDecide() directly
+  // - If idle (start of their turn), call maybeRunCpu() which calls cpuTakeTurn()
+  if (players[current] && players[current].cpu && dicePhase === "select") {
+    cpuThinking = true;
+    setTimeout(cpuDecide, 650);
+  } else {
+    maybeRunCpu();
+  }
+}
+
+// Checks localStorage for a cached in-progress game on load and, if found,
+// shows a resume prompt above the setup screen rather than auto-jumping in
+// (so a stale/unwanted cache doesn't silently trap the user).
+function checkForCachedGame() {
+  const snapshot = loadGameState();
+  const panel = document.getElementById("resumePanel");
+  if (!snapshot || !snapshot.players || snapshot.players.length === 0 || snapshot.winnerDeclared) {
+    panel.classList.add("hidden");
+    if (snapshot && snapshot.winnerDeclared) clearGameState(); // finished games shouldn't linger
+    return;
+  }
+  const names = snapshot.players.map(p => p.name).join(", ");
+  const turnName = snapshot.players[snapshot.current] ? snapshot.players[snapshot.current].name : "?";
+  const savedWhen = snapshot.savedAt ? new Date(snapshot.savedAt).toLocaleTimeString() : "";
+  document.getElementById("resumeSummary").textContent =
+    `${names} — ${snapshot.history.length} turn${snapshot.history.length === 1 ? "" : "s"} played, ${turnName} was up next${savedWhen ? " (saved " + savedWhen + ")" : ""}`;
+  panel.classList.remove("hidden");
+}
+
+function resumeCachedGame() {
+  const snapshot = loadGameState();
+  if (!snapshot) return;
+  document.getElementById("resumePanel").classList.add("hidden");
+  restoreGameState(snapshot);
+}
+
+function discardCachedGame() {
+  clearGameState();
+  document.getElementById("resumePanel").classList.add("hidden");
+}
+
+// =========================================================================
+// PERSISTENCE — saved players (localStorage only)
+// =========================================================================
+function getLocalSavedPlayers() {
+  try { return JSON.parse(localStorage.getItem(LS_SAVED_PLAYERS) || "[]"); }
+  catch (e) { return []; }
+}
+function setLocalSavedPlayers(arr) {
+  localStorage.setItem(LS_SAVED_PLAYERS, JSON.stringify(arr));
+}
+
+// Names the system auto-generates and must NEVER persist to the saved-players list.
+function isReservedName(n) {
+  const AI_NAMES = ["Claude", "Gwen", "Gemma"];
+  if (AI_NAMES.includes(n)) return true;
+  if (/^Player \d+$/.test(n)) return true;
+  if (/^CPU \d+$/.test(n)) return true;
+  return false;
+}
+
+// ---------------- Default player (Player 1) ----------------
+function getDefaultPlayer() {
+  try { return localStorage.getItem(LS_DEFAULT_PLAYER) || ""; } catch (e) { return ""; }
+}
+function setDefaultPlayer(name) {
+  try { localStorage.setItem(LS_DEFAULT_PLAYER, name); } catch (e) {}
+}
+// Ask the user for their name on first open and make them the default Player 1.
+function maybeShowNamePrompt() {
+  if (getDefaultPlayer()) return;          // already set
+  document.getElementById("namePromptOverlay").classList.remove("hidden");
+  const input = document.getElementById("namePromptInput");
+  setTimeout(() => { if (input) { input.value = ""; input.focus(); } }, 150);
+}
+function submitDefaultPlayer() {
+  const input = document.getElementById("namePromptInput");
+  const name = (input.value || "").trim().slice(0, 24);
+  if (!name) { toast("Please enter your name"); return; }
+  setDefaultPlayer(name);
+  // Ensure the default player is in the saved list and prefilled in Player 1.
+  if (!isReservedName(name)) {
+    const saved = getLocalSavedPlayers();
+    if (!saved.includes(name)) { saved.push(name); setLocalSavedPlayers(saved); }
+  }
+  setupNames[0] = name;
+  document.getElementById("namePromptOverlay").classList.add("hidden");
+  renderSetupRows();
+  renderSavedChips();
+  toast(`Welcome, ${name}!`);
+}
+
+function mergeAndSaveNames(newNames) {
+  // Never persist auto-assigned / default names (Claude / Gwen / Gemma, Player 1/2…, CPU 1…).
+  const humanNames = newNames.filter(n => !isReservedName(n));
+  const existing = getLocalSavedPlayers();
+  const merged = Array.from(new Set([...existing, ...humanNames]));
+  setLocalSavedPlayers(merged);
+}
+
+// =========================================================================
+// TOAST
+// =========================================================================
+let toastTimer = null;
+function toast(msg) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), 2200);
+}
+
+// =========================================================================
+// SETUP SCREEN
+// =========================================================================
+function addPlayerRow() {
+  if (setupNames.length >= 6) return;
+  setupNames.push("");
+  setupCpu.push(false);
+  renderSetupRows();
+}
+function removePlayerRow(idx) {
+  if (setupNames.length <= 2) return;
+  setupNames.splice(idx, 1);
+  setupCpu.splice(idx, 1);
+  renderSetupRows();
+}
+function updateSetupName(idx, val) {
+  setupNames[idx] = val;
+}
+function updateSetupCpu(idx, checked) {
+  setupCpu[idx] = checked;
+  if (checked) {
+    // Auto-assign the next unused AI name: Claude (1st) → Gwen (2nd) → Gemma (3rd).
+    // Pick the first name not already taken by another seat so re-toggling never duplicates.
+    const AI_NAMES = ["Claude", "Gwen", "Gemma"];
+    // Count seats that already have AI toggled on — refuse beyond 3 (spec cap).
+    const aiCount = setupCpu.filter(Boolean).length;
+    if (aiCount > 3) {
+      // Roll back this toggle — only 3 AI opponents allowed
+      setupCpu[idx] = false;
+      toast("Max 3 AI opponents — flip an existing AI seat off first");
+      renderSetupRows();
+      return;
+    }
+    const used = setupNames.filter(n => AI_NAMES.includes(n));
+    const aiName = AI_NAMES.find(n => !used.includes(n));
+    setupNames[idx] = aiName || AI_NAMES[Math.min(setupCpu.filter(Boolean).length - 1, AI_NAMES.length - 1)] || "Claude";
+  } else {
+    // Toggling off only clears the auto-assigned AI name. If the user typed a
+    // human name into this row (and it isn't one of the reserved AI names),
+    // preserve it instead of wiping their work.
+    const AI_NAMES = ["Claude", "Gwen", "Gemma"];
+    if (AI_NAMES.includes(setupNames[idx])) {
+      setupNames[idx] = "";
+    }
+    // Otherwise: leave the human's typed name in place.
+  }
+  renderSetupRows(); // redraw so the autofilled name shows in the input immediately
+}
+
+function renderSetupRows() {
+  // Always keep the default player prefilled in Player 1 (unless the user has
+  // typed something there themselves).
+  if (setupNames.length === 0) setupNames = ["", ""];
+  if (setupNames[0].trim() === "" && getDefaultPlayer()) setupNames[0] = getDefaultPlayer();
+  const container = document.getElementById("playerRows");
+  container.innerHTML = "";
+  setupNames.forEach((name, idx) => {
+    const row = document.createElement("div");
+    row.className = "setup-row";
+    row.innerHTML = `
+      <input type="text" placeholder="Player ${idx + 1} name" value="${escapeHtml(name)}"
+        oninput="updateSetupName(${idx}, this.value)" maxlength="24">
+      <label class="row-cpu" title="AI auto-plays this seat (dice mode)">
+        <span class="switch">
+          <input type="checkbox" ${setupCpu[idx] ? "checked" : ""} onchange="updateSetupCpu(${idx}, this.checked)">
+          <span class="slider"></span>
+        </span>
+        <span class="ai-label">Ai Opponent</span>
+      </label>
+      <button class="row-remove" ${setupNames.length <= 2 ? "disabled" : ""} onclick="removePlayerRow(${idx})">−</button>
+    `;
+    container.appendChild(row);
+  });
+  document.getElementById("addRowBtn").disabled = setupNames.length >= 6;
+}
+
+function escapeHtml(str) {
+  const d = document.createElement("div");
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+async function renderSavedChips() {
+  const chipsEl = document.getElementById("savedChips");
+  const saved = getLocalSavedPlayers();
+  chipsEl.innerHTML = "";
+  if (saved.length === 0) {
+    chipsEl.innerHTML = `<span style="font-size:12px; color:var(--text-dim);">No saved players yet</span>`;
+    return;
+  }
+  saved.sort((a, b) => a.localeCompare(b)).forEach(name => {
+    const already = setupNames.includes(name);
+    const chip = document.createElement("div");
+    chip.className = "chip saved-chip" + (already ? " added" : "");
+    chip.innerHTML = `
+      <button class="sc-add" title="Add to lineup">${already ? "✓ " + escapeHtml(name) : escapeHtml(name)}</button>
+      <button class="sc-edit" title="Rename saved player" onclick="editSavedPlayer('${escapeHtml(name).replace(/'/g, "\\'")}')">✏️</button>
+      <button class="sc-del" title="Delete saved player" onclick="deleteSavedPlayer('${escapeHtml(name).replace(/'/g, "\\'")}')">✕</button>
+    `;
+    const addBtn = chip.querySelector(".sc-add");
+    addBtn.onclick = () => {
+      if (setupNames.includes(name)) return;
+      const emptyIdx = setupNames.findIndex(n => n.trim() === "");
+      if (emptyIdx !== -1) setupNames[emptyIdx] = name;
+      else if (setupNames.length < 6) setupNames.push(name);
+      else { toast("Max 6 players"); return; }
+      renderSetupRows();
+      renderSavedChips();
+    };
+    chipsEl.appendChild(chip);
+  });
+}
+
+// Rename a saved player (no login required — it's a local device nickname).
+function editSavedPlayer(oldName) {
+  const newName = prompt("Edit saved player name:", oldName);
+  if (newName === null) return;
+  const clean = newName.trim().slice(0, 24);
+  if (!clean) { toast("Name can't be empty"); return; }
+  const saved = getLocalSavedPlayers();
+  const i = saved.indexOf(oldName);
+  if (i === -1) return;
+  if (clean !== oldName && saved.includes(clean)) { toast("That name is already saved"); return; }
+  saved[i] = clean;
+  setLocalSavedPlayers(Array.from(new Set(saved)));
+  // If the default player was renamed, update it too.
+  if (getDefaultPlayer() === oldName) setDefaultPlayer(clean);
+  // Migrate the local tally to the new name.
+  const stats = getLocalStats();
+  if (stats[oldName]) { stats[clean] = stats[oldName]; delete stats[oldName]; setLocalStats(stats); }
+  toast("Saved player renamed");
+  renderSavedChips();
+  renderSetupRows();
+  renderStatsTable();
+}
+
+// Delete a saved player — asks for confirmation via a modal first.
+let pendingDeleteName = null;
+function deleteSavedPlayer(name) {
+  pendingDeleteName = name;
+  const msg = document.getElementById("confirmDelMsg");
+  if (msg) msg.textContent = `Remove "${name}" from saved players?`;
+  document.getElementById("confirmDelOverlay").classList.remove("hidden");
+}
+function closeConfirmDel() {
+  pendingDeleteName = null;
+  document.getElementById("confirmDelOverlay").classList.add("hidden");
+}
+function confirmDeleteSavedPlayer() {
+  const name = pendingDeleteName;
+  if (name) {
+    const saved = getLocalSavedPlayers().filter(n => n !== name);
+    setLocalSavedPlayers(saved);
+    deletePlayerStats(name); // also wipe their local tally
+    toast(`Removed "${name}"`);
+    renderSavedChips();
+    renderSetupRows();
+    renderStatsTable();
+  }
+  closeConfirmDel();
+}
+
+// =========================================================================
+// LOCAL PLAYER TALLIES — stored only on this device (localStorage).
+// Tracks per-name: games played, games won, avg winning margin, highest score.
+// =========================================================================
+function getLocalStats() {
+  try { return JSON.parse(localStorage.getItem(LS_PLAYER_STATS) || "{}"); }
+  catch (e) { return {}; }
+}
+function setLocalStats(obj) {
+  try { localStorage.setItem(LS_PLAYER_STATS, JSON.stringify(obj)); } catch (e) {}
+}
+function ensureStats(name) {
+  const s = getLocalStats();
+  if (!s[name]) s[name] = { games: 0, wins: 0, marginSum: 0, high: 0 };
+  setLocalStats(s);
+  return s;
+}
+// Record a completed game for one player. Called from declareWinner.
+function recordGameResult(name, won, margin) {
+  const s = ensureStats(name);
+  s[name].games += 1;
+  if (won) { s[name].wins += 1; s[name].marginSum += margin; }
+  setLocalStats(s);
+}
+// Record a single-score high for one player. Called from addScore.
+function recordHighScore(name, score) {
+  if (score <= 0) return;
+  const s = ensureStats(name);
+  if (score > s[name].high) { s[name].high = score; setLocalStats(s); }
+}
+function deletePlayerStats(name) {
+  const s = getLocalStats();
+  if (s[name]) { delete s[name]; setLocalStats(s); }
+}
+function renderStatsTable() {
+  const el = document.getElementById("statsTable");
+  if (!el) return;
+  const s = getLocalStats();
+  const names = Object.keys(s).filter(n => s[n].games > 0 || s[n].high > 0);
+  if (names.length === 0) {
+    el.innerHTML = `<div style="font-size:12px; color:var(--text-dim);">No games recorded yet. Play a game to start your local tally.</div>`;
+    return;
+  }
+  names.sort((a, b) => (s[b].wins - s[a].wins) || (s[b].games - s[a].games));
+  el.innerHTML = `
+    <div class="stats-table">
+      <div class="st-row st-head">
+        <span>Player</span><span>Games</span><span>Wins</span><span>Avg Margin</span><span>High</span>
+      </div>
+      ${names.map(n => {
+        const d = s[n];
+        const avgM = d.wins > 0 ? Math.round(d.marginSum / d.wins) : 0;
+        return `<div class="st-row"><span>${escapeHtml(n)}</span><span>${d.games}</span><span>${d.wins}</span><span>${avgM}</span><span>${d.high}</span></div>`;
+      }).join("")}
+    </div>`;
+}
+
+function startGame() {
+  const errEl = document.getElementById("setupError");
+  errEl.textContent = "";
+  const names = setupNames.map((n, i) => {
+    const base = n.trim();
+    if (base.length > 0) return base;
+    return setupCpu[i] ? "CPU " + (i + 1) : "Player " + (i + 1);
+  }).filter(Boolean);
+
+  if (names.length < 2) { errEl.textContent = "Enter at least 2 player names"; return; }
+  if (names.length > 6) { errEl.textContent = "Max 6 players"; return; }
+
+  players = names.map((n, i) => ({ name: n, total: 0, last: null, cpu: !!setupCpu[i] }));
+  current = 0;
+  history = [];
+  gameRunning = true;
+  endMode = false;
+  endModeTriggerIdx = -1;
+  endTurnsRemaining = players.map(() => ({ remaining: 0 }));
+  winnerDeclared = false;
+  scoreLog = [];
+  seedPrevTotals(); // v1.4.0: baseline for count-up tween
+
+  mergeAndSaveNames(names);
+
+  document.getElementById("setupScreen").classList.add("hidden");
+  document.getElementById("winnerScreen").classList.add("hidden");
+  document.getElementById("gameScreen").classList.remove("hidden");
+  document.getElementById("resumePanel").classList.add("hidden");
+
+  saveGameState();
+  renderGame();
+  maybeRunCpu();
+}
+
+// =========================================================================
+// GAME LOGIC
+// =========================================================================
+function findHighestScorer() {
+  let best = 0;
+  for (let i = 1; i < players.length; i++) {
+    if (players[i].total > players[best].total) best = i;
+  }
+  return best;
+}
+
+function cardClasses(i) {
+  const classes = [];
+  const highest = findHighestScorer();
+  if (winnerDeclared) {
+    classes.push(i === highest ? "leader" : "eliminated");
+    return classes;
+  }
+  if (!endMode) {
+    if (i === current) classes.push("active");
+    return classes;
+  }
+  // endMode
+  if (i === highest) classes.push("leader");
+  if (i === current) classes.push("active");
+  if (endTurnsRemaining[i] && endTurnsRemaining[i].remaining === 0) classes.push("eliminated");
+  return classes;
+}
+
+async function addScore(rawScore, bonus) {
+  if (winnerDeclared) return false;
+  let score = Math.max(0, parseInt(rawScore) || 0);
+  const i = current;
+  const name = players[i].name;
+
+  // First-score gate: every player must bank at least 500 on their opening score.
+  // Bonuses ($GREED 1000 / 6-of-a-kind 5000) always clear it. Once a player has
+  // banked >=500 once, the gate stays open for the rest of the game.
+  if (!bonus && score > 0 && players[i].total === 0 && (players[i].last === null || players[i].last === 0) && score < 500) {
+    toast(`${name}: first score must be at least 500 — bank more or it's a bust`);
+    return false; // reject the entry; player keeps rolling / can pass to try next round
+  }
+
+  players[i].last = score;
+  // v1.4.0 visual: capture pre-bank total so renderPlayerCards can count-up tween.
+  const prevTotal = players[i].total;
+  players[i].total += score;
+  // Track highest single score in the local tally.
+  if (!isReservedName(name)) recordHighScore(name, score);
+
+  // Detect the moment this entry crossed the 500-point gate (was below, now >=).
+  // Sets a transient flag that renderPlayerCards consumes on the next render —
+  // fires a brief green pulse on the card. The flag auto-clears after one render.
+  if (players[i].total >= 500 && players[i].total - score < 500) {
+    gateJustCleared = i;
+  }
+
+  history.push({ player: name, score, bonus });
+
+  const bonusLabel = bonus === "greed" ? " ($GREED)" : bonus === "six" ? " (6 OF A KIND)" : "";
+  logEvent(`${name}: +${score}${bonusLabel}`);
+
+  // v1.4.0 visual: "+N" float-up above the banker's card (and pulse on bonus).
+  // Track the pre-bank total so the count-up tween in renderPlayerCards knows
+  // where to start from. Both helpers no-op on reduced-motion.
+  if (score > 0) {
+    floatScore(i, score, bonus);
+    if (bonus) pulseBonusTotal(i);
+  }
+
+  // Cheerful flash for bonus plays — stays visible until the turn advances
+  // (no timeout), shown even if this turn also triggers final round since
+  // the bonus is the more immediate, celebratory event.
+  if (bonus === "greed") {
+    setBannerFlashPersistent(`💲 ${name.toUpperCase()} CALLED $GREED! +1000`, "bonus-flash");
+  } else if (bonus === "six") {
+    setBannerFlashPersistent(`6️⃣ ${name.toUpperCase()} ROLLED SIX OF A KIND! +5000`, "bonus-flash");
+  }
+
+  // Trigger end mode
+  if (!endMode && players[i].total >= 5000) {
+    endMode = true;
+    endModeTriggerIdx = i;
+    endTurnsRemaining = players.map((_, idx) => ({ remaining: idx === i ? 0 : 1 }));
+    if (!bonus) {
+      setBannerFlash("WE HAVE ENTERED THE FINAL ROUND", "final-round", 3500);
+      shakeScreen(); // v1.4.0: brief screen shake on final-round trigger
+    }
+  } else if (endMode && !bonus) {
+    // End-mode completion path (only for non-bonus entries)
+    if (endTurnsRemaining[i]) {
+      endTurnsRemaining[i].remaining = Math.max(0, endTurnsRemaining[i].remaining - 1);
+    }
+    const allDone = endTurnsRemaining.every(t => t.remaining === 0);
+    if (allDone) {
+      await declareWinner();
+      saveGameState();
+      renderGame();
+      if (ONLINE) await pushSnapshot();  // final winning snapshot
+      return true;
+    }
+  }
+
+  if (!bonus) {
+    advance();
+  }
+  saveGameState();
+  renderGame();
+  if (ONLINE) await pushSnapshot();  // commit the banked turn
+  return true;
+}
+
+function advance() {
+  // Clear any persistent bonus-celebration flash — it stays up until the
+  // turn moves on, per spec (no auto-timeout for $GREED / 6-of-a-kind).
+  if (bannerFlash && bannerFlash.persistent) {
+    bannerFlash = null;
+  }
+  const n = players.length;
+  let next = (current + 1) % n;
+  let tries = 0;
+  while (tries < n) {
+    if (!endMode || (endTurnsRemaining[next] && endTurnsRemaining[next].remaining > 0)) break;
+    next = (next + 1) % n;
+    tries++;
+  }
+  current = next;
+}
+
+async function declareWinner() {
+  const topScore = Math.max(...players.map(p => p.total));
+  const winners = players.filter(p => p.total === topScore);
+  const secondScore = Math.max(0, ...players.filter(p => p.total < topScore).map(p => p.total));
+  const margin = topScore - secondScore;
+
+  // Track session streak for CPU difficulty adjustment
+  // Find human player (non-CPU)
+  const humanIdx = players.findIndex(p => !p.cpu);
+  if (humanIdx !== -1) {
+    const humanWon = winners.some(w => w.name === players[humanIdx].name);
+    if (humanWon) {
+      sessionStats.streak = Math.min(sessionStats.streak + 1, 5);
+    } else {
+      sessionStats.streak = Math.max(sessionStats.streak - 1, -5);
+    }
+  }
+
+  // Record local per-name tallies for every participant.
+  players.forEach(p => {
+    if (isReservedName(p.name)) return; // skip generic auto names
+    const won = winners.some(w => w.name === p.name);
+    recordGameResult(p.name, won, margin);
+  });
+
+  // Virtual dice games are friendly only — they never touch any leaderboard.
+  winnerDeclared = true;
+}
+
+function handleBonus(type) {
+  if (winnerDeclared) return;
+  if (ONLINE && !onlineMyTurn()) return;  // online: only the acting player may claim bonuses
+  const score = type === "greed" ? 1000 : 5000;
+  addScore(score, type);
+}
+
+function handleNoScore() {
+  if (winnerDeclared) return;
+  if (ONLINE && !onlineMyTurn()) return;  // online: only the acting player may pass/commit 0
+  if (!endMode) {
+    const name = players[current].name;
+    logEvent(`${name}: passed (no score)`);
+    advance();
+    saveGameState();
+    renderGame();
+    if (ONLINE) pushSnapshot();
+  } else {
+    addScore(0, undefined);
+  }
+}
+
+function undo() {
+  if (ONLINE) return; // no undo across the network
+  if (history.length === 0) return;
+  bannerFlash = null;
+  clearTimeout(bannerFlashTimer);
+  const last = history.pop();
+  const pid = players.findIndex(p => p.name === last.player);
+  if (pid === -1) return;
+
+  if (endMode && endTurnsRemaining[pid]) {
+    endTurnsRemaining[pid].remaining += 1;
+  }
+  players[pid].total -= last.score;
+  players[pid].last = null;
+
+  if (endMode) {
+    const anyHigh = players.some((p, idx) => p.total >= 5000 && endTurnsRemaining[idx] && endTurnsRemaining[idx].remaining > 0);
+    if (!anyHigh) {
+      endMode = false;
+      endModeTriggerIdx = -1;
+      endTurnsRemaining = players.map(() => ({ remaining: 0 }));
+    }
+  }
+
+  winnerDeclared = false;
+  current = pid;
+
+  const bonusLabel = last.bonus === "greed" ? " ($GREED)" : last.bonus === "six" ? " (6 OF A KIND)" : "";
+  logEvent(`↩ UNDO: reverted ${last.player}'s +${last.score}${bonusLabel}`);
+
+  saveGameState();
+  renderGame();
+}
+
+function confirmNewGame() {
+  if (ONLINE) return; // can't end an online game locally
+  if (confirm("End this game and return to setup? Progress will be lost.")) {
+    newGame();
+  }
+}
+
+function newGame() {
+  bannerFlash = null;
+  clearTimeout(bannerFlashTimer);
+  clearGameState();
+  players = [];
+  current = 0;
+  history = [];
+  gameRunning = false;
+  endMode = false;
+  endModeTriggerIdx = -1;
+  endTurnsRemaining = [];
+  winnerDeclared = false;
+  scoreLog = [];
+  gateJustCleared = -1;
+  prevTotals = []; // v1.4.0: clear count-up baselines
+  setupNames = ["", ""];
+  setupCpu = [false, false];
+
+  document.getElementById("gameScreen").classList.add("hidden");
+  document.getElementById("winnerScreen").classList.add("hidden");
+  document.getElementById("setupScreen").classList.remove("hidden");
+  renderSetup();
+}
+
+// Restart a fresh game with the exact same players, without returning to the
+// setup screen. Keeps names + CPU flags, zeroes all scores and history.
+function playAgainSamePlayers() {
+  if (!players || players.length === 0) { newGame(); return; }
+  // Capture current line-up (names + cpu flags) before resetting state.
+  const names = players.map(p => p.name);
+  const cpu = players.map(p => !!p.cpu);
+
+  bannerFlash = null;
+  clearTimeout(bannerFlashTimer);
+  clearGameState();
+
+  players = names.map((n, i) => ({ name: n, total: 0, last: null, cpu: !!cpu[i] }));
+  current = 0;
+  history = [];
+  gameRunning = true;
+  endMode = false;
+  endModeTriggerIdx = -1;
+  endTurnsRemaining = players.map(() => ({ remaining: 0 }));
+  winnerDeclared = false;
+  scoreLog = [];
+  gateJustCleared = -1;
+  seedPrevTotals(); // v1.4.0: reset count-up baselines
+
+  document.getElementById("setupScreen").classList.add("hidden");
+  document.getElementById("winnerScreen").classList.add("hidden");
+  document.getElementById("gameScreen").classList.remove("hidden");
+  document.getElementById("resumePanel").classList.add("hidden");
+
+  saveGameState();
+  renderGame();
+  maybeRunCpu();
+}
+
+// =========================================================================
+// RENDER
+// =========================================================================
+function setBannerFlash(text, className, durationMs) {
+  bannerFlash = { text, className, expiresAt: Date.now() + durationMs, persistent: false };
+  clearTimeout(bannerFlashTimer);
+  bannerFlashTimer = setTimeout(() => {
+    bannerFlash = null;
+    bannerState();
+  }, durationMs);
+}
+
+// Bonus flashes (per your request) don't time out on their own — they stay
+// visible until the turn actually advances (advance() clears them).
+function setBannerFlashPersistent(text, className) {
+  clearTimeout(bannerFlashTimer);
+  bannerFlash = { text, className, expiresAt: Infinity, persistent: true };
+}
+
+// Appends a human-readable entry to the (hidden by default) score history log.
+function logEvent(text) {
+  scoreLog.push({ text, ts: Date.now() });
+}
+
+function bannerState() {
+  const bannerEl = document.getElementById("banner");
+  const statsEl = document.getElementById("bannerStats");
+  statsEl.innerHTML = "";
+
+  if (winnerDeclared) {
+    bannerFlash = null;
+    clearTimeout(bannerFlashTimer);
+    const topScore = Math.max(...players.map(p => p.total));
+    const winners = players.filter(p => p.total === topScore);
+    if (winners.length > 1) {
+      bannerEl.className = "banner tie";
+      bannerEl.textContent = "TIE";
+    } else {
+      bannerEl.className = "banner winner";
+      bannerEl.textContent = `WINNER: ${winners[0].name}`;
+    }
+    return;
+  }
+
+  // An active temporary flash (bonus celebration, final-round announce) overrides everything
+  if (bannerFlash && bannerFlash.expiresAt > Date.now()) {
+    bannerEl.className = "banner " + bannerFlash.className;
+    bannerEl.innerHTML = bannerFlash.text;
+    return;
+  }
+
+  const info = getGameInfoText();
+
+  if (endMode) {
+    bannerEl.className = "banner end-times";
+    bannerEl.innerHTML = info || "WE ARE IN THE END TIMES";
+    return;
+  }
+
+  bannerEl.className = "banner first-to";
+  bannerEl.innerHTML = info || "FIRST TO 5000";
+}
+
+// Computes the current zero-score streak for a player by walking their
+// history entries from most recent backward, stopping at the first
+// non-zero score (or start of history).
+function currentZeroStreak(name) {
+  let streak = 0;
+  for (let i = history.length - 1; i >= 0; i--) {
+    const h = history[i];
+    if (h.player !== name) continue;
+    if (h.score === 0) { streak++; }
+    else break;
+  }
+  return streak;
+}
+
+// Checks if any player still needs their initial 500-point gate clearance
+// A player has cleared the gate when EITHER:
+//   (a) they banked a non-bonus score >= 500 in a single turn, OR
+//   (b) their cumulative non-bonus total has reached 500, OR
+//   (c) a bonus ($GREED / 6-of-a-kind) entry has been credited to their total
+//       (the addScore gate in addScore lets bonuses through without the
+//       500-floor, so any player whose total > 0 from a bonus is past the gate).
+function anyPlayerNeedsInitial500() {
+  return players.some(p => {
+    const nonBonusHistory = history.filter(h => h.player === p.name && !h.bonus);
+    const nonBonusTotal = nonBonusHistory.reduce((sum, h) => sum + h.score, 0);
+    if (nonBonusTotal >= 500) return false;              // (b)
+    if (nonBonusHistory.some(h => h.score >= 500)) return false; // (a)
+    // (c) cleared via bonus: any bonus entry credited to this player pushes total past the gate
+    const bonusCleared = history.some(h => h.player === p.name && (h.bonus === "greed" || h.bonus === "six"));
+    if (bonusCleared) return false;
+    // Otherwise: if total > 0 and last > 0 (they banked a positive non-bonus under 500),
+    // still need a bigger score or a bonus to clear.
+    return true;
+  });
+}
+
+// Builds the live game-info string that overrides the static banner text
+// (FIRST TO 5000 / WE ARE IN THE END TIMES) once there's something to say.
+// Prioritizes the most notable fact: an active zero-streak (2+) beats
+// leader-margin, since a streak is the more "in the moment" event.
+function getGameInfoText() {
+  if (players.length === 0) return "";
+
+  // Show 500-point gate reminder until all players have cleared it
+  if (anyPlayerNeedsInitial500()) {
+    const needing = players
+      .filter(p => {
+        // Mirror the gate-cleared logic above so the listed names match
+        const nonBonusHistory = history.filter(h => h.player === p.name && !h.bonus);
+        const nonBonusTotal = nonBonusHistory.reduce((sum, h) => sum + h.score, 0);
+        if (nonBonusTotal >= 500) return false;
+        if (nonBonusHistory.some(h => h.score >= 500)) return false;
+        return !history.some(h => h.player === p.name && (h.bonus === "greed" || h.bonus === "six"));
+      })
+      .map(p => escapeHtml(p.name))
+      .join(", ");
+    return `⚠ <span class="stat-hot">${needing}</span> need <strong>≥500 first score</strong> to open their account`;
+  }
+
+  const streaks = players
+    .map(p => ({ name: p.name, streak: currentZeroStreak(p.name) }))
+    .filter(s => s.streak >= 2)
+    .sort((a, b) => b.streak - a.streak);
+  if (streaks.length > 0) {
+    const s = streaks[0];
+    return `<span class="stat-cold">${escapeHtml(s.name)}</span> HAS ROLLED ZERO ${s.streak} TIMES IN A ROW`;
+  }
+
+  const sorted = [...players].sort((a, b) => b.total - a.total);
+  if (sorted[0].total > 0 && players.length > 1) {
+    const leader = sorted[0];
+    const runnerUp = sorted[1];
+    if (leader.total > runnerUp.total) {
+      const margin = leader.total - runnerUp.total;
+      return `<span class="stat-hot">${escapeHtml(leader.name)}</span> IS LEADING BY ${margin} PT${margin === 1 ? "" : "S"}`;
+    } else if (leader.total === runnerUp.total) {
+      const tiedNames = sorted.filter(p => p.total === leader.total).map(p => p.name);
+      return `${tiedNames.map(escapeHtml).join(" & ")} TIED FOR THE LEAD`;
+    }
+  }
+
+  return "";
+}
+
+// Counts this-game $GREED and 6-of-a-kind hits per player from history
+// (live, in-memory — distinct from any cross-game stats).
+function gameAchievements(name) {
+  let greed = 0, six = 0;
+  for (const h of history) {
+    if (h.player !== name) continue;
+    if (h.bonus === "greed") greed++;
+    else if (h.bonus === "six") six++;
+  }
+  return { greed, six };
+}
+
+function renderPlayerCards(targetGridId) {
+  const grid = document.getElementById(targetGridId);
+  const highest = findHighestScorer();
+  const leaderTotal = players[highest] ? players[highest].total : 0;
+
+  grid.innerHTML = players.map((p, i) => {
+    const classes = cardClasses(i).join(" ");
+    const extraClasses = [];
+    if (p.cpu) extraClasses.push("cpu-seat");
+    if (i === gateJustCleared) extraClasses.push("gate-just-cleared");
+    let badge = "";
+    if (winnerDeclared) {
+      if (i === highest) badge = `<div class="badge leader-badge">🏆 Winner</div>`;
+    } else if (!endMode && i === current) {
+      badge = `<div class="badge your-turn">Your Turn</div>`;
+    } else if (endMode) {
+      if (i === highest) badge = `<div class="badge leader-badge">Leader</div>`;
+      if (endTurnsRemaining[i] && endTurnsRemaining[i].remaining === 0 && i !== highest) badge = `<div class="badge out-badge">Out</div>`;
+    }
+    const needsHtml = (endMode && !winnerDeclared && i !== highest && (leaderTotal - p.total) > 0)
+      ? `<div class="p-needs">needs ${leaderTotal - p.total}</div>` : "";
+    const lastHtml = p.last !== null ? `<div class="p-last">last: +${p.last}</div>` : `<div class="p-last">&nbsp;</div>`;
+
+    const achv = gameAchievements(p.name);
+    const achvPills = [];
+    if (achv.greed > 0) achvPills.push(`<span class="achv-pill greed">💲${achv.greed}</span>`);
+    if (achv.six > 0) achvPills.push(`<span class="achv-pill six">6️⃣${achv.six}</span>`);
+    const achvHtml = achvPills.length > 0 ? `<div class="p-achievements">${achvPills.join("")}</div>` : "";
+
+    return `
+      <div class="p-card ${classes} ${winnerDeclared && i === highest ? "winner-card" : ""} ${extraClasses.join(" ")}">
+        ${badge}
+        <div class="p-name">${escapeHtml(p.name)}${p.cpu ? '<span class="cpu-tag">🤖</span>' : ''}</div>
+        <div class="p-total">${p.total}</div>
+        ${lastHtml}
+        ${needsHtml}
+        ${achvHtml}
+      </div>
+    `;
+  }).join("");
+  // The gate-cleared pulse is a one-shot animation; consume the flag so a
+  // subsequent render (e.g. on the next turn advance) doesn't re-pulse.
+  gateJustCleared = -1;
+
+  // v1.4.0 visual: count-up tween for any player whose total just changed.
+  // prevTotals[i] is seeded by seedPrevTotals() and updated as banks land.
+  // Skip the winner screen (different render path) — only animate active cards.
+  if (targetGridId === "cardsGrid") {
+    const cardEls = grid.querySelectorAll(".p-card");
+    players.forEach((p, i) => {
+      const prev = prevTotals[i];
+      if (prev === undefined) {
+        prevTotals[i] = p.total; // first render — establish baseline, no tween
+        return;
+      }
+      if (prev !== p.total) {
+        const totalEl = cardEls[i] && cardEls[i].querySelector(".p-total");
+        if (totalEl) tweenScoreTo(totalEl, prev, p.total, 600);
+        prevTotals[i] = p.total;
+      }
+    });
+  }
+}
+
+function renderGame(skipDiceReset) {
+  if (!skipDiceReset) resetDice();
+  // Online mode: when it is not this device's turn, show a read-only view.
+  // Scores stay visible; all dice interaction is disabled until it becomes
+  // this player's turn again.
+  if (ONLINE && !winnerDeclared && !onlineMyTurn()) {
+    const cur = players && players[current];
+    const hint = document.getElementById("diceHint");
+    if (hint) hint.textContent = cur ? ("⏳ Waiting for " + cur.name + "…") : "⏳ Waiting…";
+    ["rollBtn", "bankBtn", "hotBtn", "clearBtn"].forEach(id => {
+      const b = document.getElementById(id); if (b) b.disabled = true;
+    });
+    const tray = document.querySelector(".dice-tray");
+    if (tray) tray.classList.remove("hidden");
+  } else {
+    // It is this device's turn (or the game is over): restore the standard
+    // greedy-dice button state (idle → ROLL; select → BANK + ROLL REMAINING;
+    // hot roll → HOT DICE) and un-disable after a "waiting" period.
+    if (ONLINE) {
+      renderDiceControls();
+      ["rollBtn", "bankBtn", "hotBtn", "clearBtn"].forEach(id => {
+        const b = document.getElementById(id); if (b) b.disabled = false;
+      });
+      const hint = document.getElementById("diceHint");
+      if (hint && dicePhase === "idle") hint.textContent = "Your turn — tap ROLL.";
+    }
+  }
+  bannerState();
+  renderPlayerCards("cardsGrid");
+  renderHistoryLog();
+
+  const entryPanel = document.getElementById("entryPanel");
+  const diceTray = document.querySelector(".dice-tray");
+  if (winnerDeclared) {
+    entryPanel.classList.add("hidden");
+    showWinnerScreen();
+  } else {
+    entryPanel.classList.remove("hidden");
+    document.getElementById("gameScreen").classList.remove("hidden");
+    document.getElementById("winnerScreen").classList.add("hidden");
+    if (diceTray) diceTray.classList.remove("hidden");
+  }
+  maybeRunCpu();
+}
+
+function toggleHistoryPanel() {
+  const panel = document.getElementById("historyPanel");
+  panel.classList.toggle("hidden");
+  if (!panel.classList.contains("hidden")) {
+    // When reopening, scroll the list to the top so the most recent turn is in view.
+    const list = document.getElementById("historyLogList");
+    if (list) list.scrollTop = 0;
+  }
+}
+
+function renderHistoryLog() {
+  const el = document.getElementById("historyLogList");
+  if (!el) return;
+  if (scoreLog.length === 0) {
+    el.innerHTML = `<div class="history-empty">No turns logged yet</div>`;
+    return;
+  }
+  el.innerHTML = scoreLog.map(entry => {
+    const isUndo = entry.text.startsWith("↩");
+    const time = new Date(entry.ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    return `
+      <div class="history-row ${isUndo ? "is-undo" : ""}">
+        <span class="h-text">${escapeHtml(entry.text)}</span>
+        <span class="h-time">${time}</span>
+      </div>
+    `;
+  }).join("");
+}
+
+function showWinnerScreen() {
+  const topScore = Math.max(...players.map(p => p.total));
+  const winners = players.filter(p => p.total === topScore);
+
+  document.getElementById("gameScreen").classList.add("hidden");
+  document.getElementById("winnerScreen").classList.remove("hidden");
+
+  if (winners.length > 1) {
+    document.getElementById("trophyEmoji").textContent = "🤝";
+    document.getElementById("winnerNameDisplay").textContent = "TIE";
+    document.getElementById("winnerTotalDisplay").textContent = `${winners.map(w => w.name).join(" & ")} — ${topScore} pts`;
+  } else {
+    document.getElementById("trophyEmoji").textContent = "🏆";
+    document.getElementById("winnerNameDisplay").textContent = winners[0].name;
+    document.getElementById("winnerTotalDisplay").textContent = `${topScore} points`;
+    // v1.4.0: celebrate the solo winner with confetti. Ties skip it.
+    spawnConfetti(60);
+  }
+  renderPlayerCards("finalCardsGrid");
+}
+
+function openRules() {
+  document.getElementById("rulesOverlay").classList.remove("hidden");
+}
+function closeRules() {
+  document.getElementById("rulesOverlay").classList.add("hidden");
+}
+// Close rules (or any modal) when tapping the dark backdrop.
+document.addEventListener("click", (e) => {
+  if (e.target && e.target.id === "rulesOverlay") closeRules();
+});
+
+function renderSetup() {
+  renderSetupRows();
+  renderSavedChips();
+  renderStatsTable();
+  checkForCachedGame();
+}
+
+// =========================================================================
+// ADD-TO-HOME-SCREEN PROMPT + FULL-SCREEN STANDALONE SUPPORT
+// =========================================================================
+let deferredInstallPrompt = null; // Android/Chrome native install prompt
+
+window.addEventListener("beforeinstallprompt", (e) => {
+  // Don't let Chrome auto-show its mini-infobar; we surface our own card.
+  e.preventDefault();
+  deferredInstallPrompt = e;
+});
+
+function isMobile() {
+  return /Android|iPhone|iPod|iPad|Mobile|Windows Phone/i.test(navigator.userAgent)
+    || (window.matchMedia && window.matchMedia("(max-width:560px)").matches && "ontouchstart" in window);
+}
+
+function initA2HS() {
+  // Only show on mobile, not already standalone, not dismissed, and install prompt available
+  const standalone = window.matchMedia("(display-mode: standalone)").matches
+    || window.navigator.standalone === true;
+  const dismissed = localStorage.getItem("a2hs-dismissed") === "1";
+  if (!isMobile() || standalone || dismissed) return;
+
+  // iOS Safari: no beforeinstallprompt, but we can still show a generic card
+  if (deferredInstallPrompt || /iPhone|iPad|iPod/.test(navigator.userAgent)) {
+    setTimeout(() => {
+      document.getElementById("a2hsOverlay").classList.remove("a2hs-hide");
+    }, 1200);
+  }
+}
+
+function dismissA2HS() {
+  document.getElementById("a2hsOverlay").classList.add("a2hs-hide");
+  localStorage.setItem("a2hs-dismissed", "1");
+}
+
+// Render score guide (dice side panel legend)
+function renderScoreGuide() {
+  const el = document.getElementById("scoreGuide");
+  if (!el) return;
+  const L = displayLetter; // glyph for each class
+  el.innerHTML = `
+    <h4>Score Possibilities</h4>
+    <ul>
+      <li><span class="sg-k">1× <span class="dot g"></span> ${L("g")}</span><span class="sg-v">50</span></li>
+      <li><span class="sg-k">1× <span class="dot d"></span> ${L("d")}</span><span class="sg-v">100</span></li>
+      <li><span class="sg-k">3× <span class="dot dollar"></span> ${L("dollar")}</span><span class="sg-v">600 (fixed)</span></li>
+      <li><span class="sg-k">4× <span class="dot d"></span> ${L("d")}</span><span class="sg-v">1000</span></li>
+      <li><span class="sg-k">3× <span class="dot g"></span> ${L("g")}</span><span class="sg-v">500 + 50/extra ${L("g")}</span></li>
+      <li><span class="sg-k">3× <span class="dot r"></span> ${L("r")}</span><span class="sg-v">400 (fixed)</span></li>
+      <li><span class="sg-k">3× <span class="dot e-green"></span> ${L("e-green")} / 3× <span class="dot e-blue"></span> ${L("e-blue")}</span><span class="sg-v">300 (fixed)</span></li>
+      <li><span class="sg-k">${letterMode === "imon" ? "$IMON$ (1 of each)" : "$GREED (1 of each, both E colours)"}</span><span class="sg-v">1000</span></li>
+      <li><span class="sg-k">6 of a kind (any symbol + colour)</span><span class="sg-v">5000</span></li>
+    </ul>
+    <p class="sg-note">Only ${L("g")} adds extras beyond 3 (+50 each). ${L("dollar")}/${L("r")}/${L("e-blue")}/${L("d")} 3-of-a-kind pay fixed only. 4× ${L("d")} = 1000 flat. 6 of ANY kind = 5000.</p>
+    <p class="sg-note sg-warn">⚠ Two ${L("e-blue")} colours are separate — 3-of-a-kind must be ONE colour only</p>
+    <div class="sg-legend">
+      <span><span class="dot dollar"></span>${L("dollar")}</span>
+      <span><span class="dot g"></span>${L("g")}</span>
+      <span><span class="dot r"></span>${L("r")}</span>
+      <span><span class="dot e-green"></span>${L("e-green")} green</span>
+      <span><span class="dot e-blue"></span>${L("e-blue")} blue</span>
+      <span><span class="dot d"></span>${L("d")}</span>
+    </div>
+  `;
+}
+
+// =========================================================================
+// DICE COLOUR PALETTES — visual only, no scoring/gameplay impact.
+// Each palette lists the 6 symbol swatch colours (dollar, g, r, e-green,
+// e-blue, d) which match the CSS body.pal-* classes defined above.
+// =========================================================================
+const DICE_PALETTES = [
+  { id: "classic", label: "Classic",
+    swatches: ["#1e7a4d", "#ffd400", "#c0392b", "#7bb661", "#3b6fb5", "#0a0a0a"] },
+  { id: "fluoro", label: "Fluorescent",
+    swatches: ["#39ff14", "#ff8c00", "#ff2a2a", "#0dff9f", "#00c3ff", "#ea00ff"] },
+  { id: "pastel", label: "Pastel",
+    swatches: ["#a8e6cf", "#ffb6a3", "#ffd3b6", "#c4e8a3", "#a0e0ff", "#dcd6f7"] },
+  { id: "ocean", label: "Ocean",
+    swatches: ["#009688", "#ff7043", "#e53935", "#26c6da", "#1e88e5", "#283593"] },
+  { id: "candy", label: "Candy",
+    swatches: ["#f48fb1", "#ffab73", "#ff8a65", "#a5d6a7", "#90caf9", "#b39ddb"] },
+  { id: "gold", label: "Gold",
+    swatches: ["#c9a227", "#b87333", "#c2572b", "#7da453", "#4c6fa8", "#3b3b3b"] }
+];
+
+function setDiePalette(id) {
+  // Remove any previous palette class, then add body.pal-<id> if not classic.
+  DICE_PALETTES.forEach(p => document.body.classList.remove("pal-" + p.id));
+  if (id && id !== "classic") document.body.classList.add("pal-" + id);
+  try { localStorage.setItem("greedPalette", id || "classic"); } catch (e) {}
+  // Refresh active chip highlight.
+  const chips = document.querySelectorAll("#paletteChips .palette-chip");
+  chips.forEach(c => c.classList.toggle("active", c.dataset.pal === id));
+}
+
+function renderPalettePicker() {
+  const wrap = document.getElementById("paletteChips");
+  if (!wrap) return;
+  let cur = "classic";
+  try { cur = localStorage.getItem("greedPalette") || "classic"; } catch (e) {}
+  wrap.innerHTML = DICE_PALETTES.map(p => {
+    const sw = p.swatches.map(c => `<i style="background:${c}"></i>`).join("");
+    return `<div class="palette-chip ${p.id === cur ? "active" : ""}" data-pal="${p.id}" onclick="setDiePalette('${p.id}')">
+        <div class="palette-swatches">${sw}</div>
+        <div class="pc-name">${p.label}</div>
+      </div>`;
+  }).join("");
+  // Apply stored palette on load.
+  setDiePalette(cur);
+}
+
+// =========================================================================
+// GAME SETTINGS MODAL — palette picker + letter set toggle + effect toggle.
+// =========================================================================
+let dfxMode = "none"; // "none" | "breathe" | "float" | "rainbow" | "chromatic"
+const LS_DFX_MODE = "greed-dice-dfx-mode-v1";
+
+function openSettings() {
+  renderPalettePicker();
+  renderLetterToggle();
+  renderCoolSToggle();
+  renderDfxChips();
+  document.getElementById("settingsOverlay").classList.remove("hidden");
+}
+function closeSettings() {
+  document.getElementById("settingsOverlay").classList.add("hidden");
+}
+// Close settings modal when tapping the dark backdrop.
+document.addEventListener("click", (e) => {
+  if (e.target && e.target.id === "settingsOverlay") closeSettings();
+});
+
+function setLetterMode(mode) {
+  if (mode !== "greed" && mode !== "imon") mode = "greed";
+  letterMode = mode;
+  try { localStorage.setItem("greedLetters", mode); } catch (e) {}
+  renderLetterToggle();
+  // Re-render any visible dice so the new glyphs apply immediately.
+  renderDiceControls();
+  renderScoreGuide();
+}
+
+function renderLetterToggle() {
+  const wrap = document.getElementById("letterToggle");
+  if (!wrap) return;
+  let cur = "greed";
+  try { cur = localStorage.getItem("greedLetters") || "greed"; } catch (e) {}
+  const opts = [
+    { id: "greed", setFace: "$ G R E E D", label: "Classic" },
+    { id: "imon", setFace: "$ I M O N $", label: "$IMON$" }
+  ];
+  wrap.innerHTML = opts.map(o =>
+    `<div class="letter-opt ${o.id === cur ? "active" : ""}" onclick="setLetterMode('${o.id}')">
+       <div class="lo-set">${o.setFace}</div>
+       <div class="lo-label">${o.label}</div>
+     </div>`
+  ).join("");
+}
+
+// =========================================================================
+// COOL S SUBSTITUTION — cosmetic only. When enabled, dollar faces show the
+// classic notebook "cool S" line-glyph instead of the "$" print symbol.
+// =========================================================================
+let coolSOn = false;
+const LS_COOL_S = "greed-dice-cool-s-v1";
+
+function setCoolS(on) {
+  coolSOn = !!on;
+  try { localStorage.setItem(LS_COOL_S, on ? "1" : "0"); } catch (e) {}
+  renderCoolSToggle();
+  // Re-render any visible dice so the glyph swap applies immediately.
+  renderDiceControls();
+  renderScoreGuide();
+}
+
+function renderCoolSToggle() {
+  const wrap = document.getElementById("coolSToggle");
+  if (!wrap) return;
+  let on = false;
+  try { on = localStorage.getItem(LS_COOL_S) === "1"; } catch (e) {}
+  const opts = [
+    { id: 0, setFace: "$", label: "Print $" },
+    { id: 1, setFace: "S", label: "Cool S" }
+  ];
+  wrap.innerHTML = opts.map(o =>
+    `<div class="letter-opt ${o.id === (on ? 1 : 0) ? "active" : ""}" onclick="setCoolS(${o.id === 1})">
+       <div class="lo-set">${o.setFace}</div>
+       <div class="lo-label">${o.label}</div>
+     </div>`
+  ).join("");
+}
+
+// =========================================================================
+// PSYCHEDELIC DICE EFFECTS — visual only, colour stays readable.
+// =========================================================================
+function setDfxMode(mode) {
+  const valid = ["none","chromatic"];
+  if (!valid.includes(mode)) mode = "none";
+  dfxMode = mode;
+  // Remove any previous dfx class from body, then add the active one.
+  valid.forEach(v => document.body.classList.remove("dfx-" + v));
+  if (mode !== "none") document.body.classList.add("dfx-" + mode);
+  try { localStorage.setItem(LS_DFX_MODE, mode); } catch (e) {}
+  renderDfxChips();
+}
+function renderDfxChips() {
+  const wrap = document.getElementById("dfxChips");
+  if (!wrap) return;
+  let cur = "none";
+  try { cur = localStorage.getItem(LS_DFX_MODE) || "none"; } catch (e) {}
+  const opts = [
+    { id: "none",     ico: "◻️",  label: "Off" },
+    { id: "chromatic",ico: "✨",  label: "Chromatic" }
+  ];
+  wrap.innerHTML = opts.map(o =>
+    `<div class="dfx-chip ${o.id === cur ? "active" : ""}" onclick="setDfxMode('${o.id}')">
+       ${o.ico}<br><span style="font-size:10px;">${o.label}</span>
+     </div>`
+  ).join("");
+}
+
+// Boot
+document.addEventListener("DOMContentLoaded", () => {
+  // Restore saved dice letter set before rendering the score guide (its
+  // legend depends on letterMode via displayLetter).
+  let savedLetters = "greed";
+  try { savedLetters = localStorage.getItem("greedLetters") || "greed"; } catch (e) {}
+  letterMode = savedLetters === "imon" ? "imon" : "greed";
+  // Restore saved Cool S substitution state.
+  let savedCoolS = false;
+  try { savedCoolS = localStorage.getItem(LS_COOL_S) === "1"; } catch (e) {}
+  coolSOn = savedCoolS;
+  // Restore saved psychedelic effect mode.
+  let savedDfx = "none";
+  try { savedDfx = localStorage.getItem(LS_DFX_MODE) || "none"; } catch (e) {}
+  if (savedDfx !== "none") {
+    document.body.classList.add("dfx-" + savedDfx);
+    dfxMode = savedDfx;
+  }
+  renderPalettePicker();
+  renderLetterToggle();
+  renderScoreGuide();
+  renderSetup();
+  setupBackgroundParticles(); // v1.4.0: slow-drifting motes
+  // Ask for the user's name on first open (sets the default Player 1).
+  maybeShowNamePrompt();
+});
+
+// Version display
+const APP_VERSION = "1.6.3";
+console.log(`$GREED Dice v${APP_VERSION} loaded`);
+</script>
+</body>
+</html>
