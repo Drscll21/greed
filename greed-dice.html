@@ -164,6 +164,20 @@
     margin:18px 0 8px;
   }
   .chips{ display:flex; flex-wrap:wrap; gap:8px; }
+  /* ---------- Dice colour palette picker ---------- */
+  .palette-picker{ flex:1 1 100%; }
+  .palette-chips{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; }
+  .palette-chip{
+    display:flex; flex-direction:column; align-items:center; gap:6px; cursor:pointer;
+    padding:8px 10px 6px; border-radius:12px; border:2px solid var(--card-border);
+    background:var(--bg-2); transition:border-color .12s ease, transform .12s ease;
+  }
+  .palette-chip .pc-name{ font-size:11px; font-weight:700; color:var(--text-dim); white-space:nowrap; }
+  .palette-chip.active{ border-color:var(--green); box-shadow:0 0 0 2px rgba(42,157,143,0.3); transform:translateY(-1px); }
+  .palette-swatches{ display:flex; gap:3px; }
+  .palette-swatches i{
+    width:13px; height:13px; border-radius:4px; border:1px solid rgba(0,0,0,0.25); display:block;
+  }
   .chip{
     padding:9px 14px;
     border-radius:20px;
@@ -174,6 +188,25 @@
   }
   .chip.added{ background:rgba(247,237,228,0.05); border-color:var(--card-border); color:var(--text-dim); }
   .chip:active{ transform:scale(0.94); }
+  /* Saved player chip with add/edit/delete controls */
+  .saved-chip{ display:inline-flex; align-items:center; gap:2px; padding:4px 6px 4px 12px; cursor:default; }
+  .saved-chip .sc-add{ background:none; border:none; color:inherit; font:inherit; font-weight:700; cursor:pointer; padding:2px 4px; }
+  .saved-chip .sc-edit,
+  .saved-chip .sc-del{
+    width:24px; height:24px; border-radius:50%; border:none; cursor:pointer; font-size:12px;
+    display:inline-flex; align-items:center; justify-content:center; line-height:1;
+  }
+  .saved-chip .sc-edit{ background:rgba(42,157,143,0.2); color:var(--electric); }
+  .saved-chip .sc-del{ background:rgba(192,82,42,0.25); color:#ff8f70; }
+  /* ---------- Local player tallies table ---------- */
+  .stats-table{ display:flex; flex-direction:column; gap:2px; }
+  .st-row{
+    display:grid; grid-template-columns:1.6fr .7fr .7fr 1fr 1fr; gap:6px;
+    padding:6px 8px; border-radius:8px; font-size:12px; align-items:center;
+  }
+  .st-row span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .st-head{ background:rgba(42,157,143,0.15); color:var(--electric); font-weight:800; text-transform:uppercase; letter-spacing:.5px; font-size:10px; }
+  .st-row:not(.st-head):nth-child(odd){ background:rgba(247,237,228,0.04); }
 
   .setup-error{
     color:var(--hot-pink); font-weight:700; font-size:14px;
@@ -327,6 +360,74 @@
   .die-face.e-green{ background:#7bb661; color:#10240c; border-color:#5a9447; }
   .die-face.e-blue{ background:#3b6fb5; color:#fff; border-color:#2a527f; }
   .die-face.d{ background:#0a0a0a; color:#f5f5f5; border-color:#3a3a3a; }
+  /* ============ DICE COLOUR PALETTES — visual only ============
+     body.pal-* applies an alternate colour set to die faces + legend.
+     'classic' is the default (no body class). Letters & physics unchanged. */
+  /* Fluorescent (neon) */
+  body.pal-fluoro .die-face.dollar{ background:#39ff14; color:#001f00; border-color:#0f9d0f; }
+  body.pal-fluoro .die-face.g{ background:#ff8c00; color:#2a0a00; border-color:#b36400; }
+  body.pal-fluoro .die-face.r{ background:#ff2a2a; color:#fff; border-color:#a00000; }
+  body.pal-fluoro .die-face.e-green{ background:#0dff9f; color:#003322; border-color:#00915c; }
+  body.pal-fluoro .die-face.e-blue{ background:#00c3ff; color:#00121a; border-color:#007099; }
+  body.pal-fluoro .die-face.d{ background:#ea00ff; color:#fff; border-color:#9a00ad; }
+  body.pal-fluoro .score-guide .sg-legend .dot.dollar{ background:#39ff14; }
+  body.pal-fluoro .score-guide .sg-legend .dot.g{ background:#ff8c00; }
+  body.pal-fluoro .score-guide .sg-legend .dot.r{ background:#ff2a2a; }
+  body.pal-fluoro .score-guide .sg-legend .dot.e-green{ background:#0dff9f; }
+  body.pal-fluoro .score-guide .sg-legend .dot.e-blue{ background:#00c3ff; }
+  body.pal-fluoro .score-guide .sg-legend .dot.d{ background:#ea00ff; }
+  /* Pastel */
+  body.pal-pastel .die-face.dollar{ background:#a8e6cf; color:#123; border-color:#6fbf9a; }
+  body.pal-pastel .die-face.g{ background:#ffb6a3; color:#501; border-color:#d98a72; }
+  body.pal-pastel .die-face.r{ background:#ffd3b6; color:#622; border-color:#e59a6f; }
+  body.pal-pastel .die-face.e-green{ background:#c4e8a3; color:#241; border-color:#8fbe64; }
+  body.pal-pastel .die-face.e-blue{ background:#a0e0ff; color:#123; border-color:#6fb6de; }
+  body.pal-pastel .die-face.d{ background:#dcd6f7; color:#332; border-color:#a99cd6; }
+  body.pal-pastel .score-guide .sg-legend .dot.dollar{ background:#a8e6cf; }
+  body.pal-pastel .score-guide .sg-legend .dot.g{ background:#ffb6a3; }
+  body.pal-pastel .score-guide .sg-legend .dot.r{ background:#ffd3b6; }
+  body.pal-pastel .score-guide .sg-legend .dot.e-green{ background:#c4e8a3; }
+  body.pal-pastel .score-guide .sg-legend .dot.e-blue{ background:#a0e0ff; }
+  body.pal-pastel .score-guide .sg-legend .dot.d{ background:#dcd6f7; }
+  /* Ocean */
+  body.pal-ocean .die-face.dollar{ background:#009688; color:#eafff8; border-color:#00695c; }
+  body.pal-ocean .die-face.g{ background:#ff7043; color:#2a0a00; border-color:#c25030; }
+  body.pal-ocean .die-face.r{ background:#e53935; color:#fff; border-color:#a92f2b; }
+  body.pal-ocean .die-face.e-green{ background:#26c6da; color:#00212a; border-color:#1a8ea0; }
+  body.pal-ocean .die-face.e-blue{ background:#1e88e5; color:#fff; border-color:#155fa6; }
+  body.pal-ocean .die-face.d{ background:#283593; color:#eef0ff; border-color:#1a2369; }
+  body.pal-ocean .score-guide .sg-legend .dot.dollar{ background:#009688; }
+  body.pal-ocean .score-guide .sg-legend .dot.g{ background:#ff7043; }
+  body.pal-ocean .score-guide .sg-legend .dot.r{ background:#e53935; }
+  body.pal-ocean .score-guide .sg-legend .dot.e-green{ background:#26c6da; }
+  body.pal-ocean .score-guide .sg-legend .dot.e-blue{ background:#1e88e5; }
+  body.pal-ocean .score-guide .sg-legend .dot.d{ background:#283593; }
+  /* Candy */
+  body.pal-candy .die-face.dollar{ background:#f48fb1; color:#3a0a1e; border-color:#c26284; }
+  body.pal-candy .die-face.g{ background:#ffab73; color:#3a1200; border-color:#c9803f; }
+  body.pal-candy .die-face.r{ background:#ff8a65; color:#3a1003; border-color:#c26040; }
+  body.pal-candy .die-face.e-green{ background:#a5d6a7; color:#102; border-color:#74a576; }
+  body.pal-candy .die-face.e-blue{ background:#90caf9; color:#0a1a2a; border-color:#608ec4; }
+  body.pal-candy .die-face.d{ background:#b39ddb; color:#120; border-color:#826fa8; }
+  body.pal-candy .score-guide .sg-legend .dot.dollar{ background:#f48fb1; }
+  body.pal-candy .score-guide .sg-legend .dot.g{ background:#ffab73; }
+  body.pal-candy .score-guide .sg-legend .dot.r{ background:#ff8a65; }
+  body.pal-candy .score-guide .sg-legend .dot.e-green{ background:#a5d6a7; }
+  body.pal-candy .score-guide .sg-legend .dot.e-blue{ background:#90caf9; }
+  body.pal-candy .score-guide .sg-legend .dot.d{ background:#b39ddb; }
+  /* Gold */
+  body.pal-gold .die-face.dollar{ background:#c9a227; color:#fff8e0; border-color:#8a6d14; }
+  body.pal-gold .die-face.g{ background:#b87333; color:#fff6e0; border-color:#8a5420; }
+  body.pal-gold .die-face.r{ background:#c2572b; color:#fff5ec; border-color:#8a3a17; }
+  body.pal-gold .die-face.e-green{ background:#7da453; color:#0f1803; border-color:#557536; }
+  body.pal-gold .die-face.e-blue{ background:#4c6fa8; color:#eef4ff; border-color:#34507d; }
+  body.pal-gold .die-face.d{ background:#3b3b3b; color:#fff0cc; border-color:#141414; }
+  body.pal-gold .score-guide .sg-legend .dot.dollar{ background:#c9a227; }
+  body.pal-gold .score-guide .sg-legend .dot.g{ background:#b87333; }
+  body.pal-gold .score-guide .sg-legend .dot.r{ background:#c2572b; }
+  body.pal-gold .score-guide .sg-legend .dot.e-green{ background:#7da453; }
+  body.pal-gold .score-guide .sg-legend .dot.e-blue{ background:#4c6fa8; }
+  body.pal-gold .score-guide .sg-legend .dot.d{ background:#3b3b3b; }
   .die{ background:transparent; }
   /* Settled look: only the outcome face is visible. When not tumbling we
      flatten the cube and hide the other 5 faces so no edge slivers of the
@@ -409,6 +510,16 @@
   .modal-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;}
   .modal-close{ width:36px; height:36px; border-radius:50%; background:var(--card-bg); font-size:18px; color:var(--text);}
   .rules-body{ font-size:13.5px; line-height:1.55; color:var(--text-dim); }
+  .settings-body{ font-size:13.5px; line-height:1.55; color:var(--text-dim); }
+  /* ---------- Dice letter toggle (settings) ---------- */
+  .letter-toggle{ display:flex; gap:8px; }
+  .letter-opt{
+    flex:1; padding:12px 8px; border-radius:12px; border:2px solid var(--card-border);
+    background:var(--bg-2); cursor:pointer; text-align:center; transition:border-color .12s ease, transform .12s ease;
+  }
+  .letter-opt .lo-set{ font-size:17px; font-weight:900; letter-spacing:1px; color:var(--text); }
+  .letter-opt .lo-label{ font-size:11px; color:var(--text-dim); margin-top:3px; }
+  .letter-opt.active{ border-color:var(--electric); box-shadow:0 0 0 2px rgba(52,152,219,0.3); transform:translateY(-1px); }
   .rules-body h4{ color:var(--gold); margin:16px 0 6px; font-size:14px; letter-spacing:1px; text-transform:uppercase; }
   .rules-body h4:first-child{ margin-top:0; }
   .rules-body p{ margin:6px 0; }
@@ -584,7 +695,7 @@
 </head>
 <body>
 
-<a href="index4.html" class="back-link" title="Back to main menu">←</a>
+<a href="index.html" class="back-link" title="Back to main menu">←</a>
 <div class="toast" id="toast"></div>
 
 <div class="wrap">
@@ -614,9 +725,19 @@
     <div class="chips-label">Saved Players</div>
     <div class="chips" id="savedChips"></div>
 
+    <div class="chips-label" style="margin-top:20px;">📊 Local Player Tallies</div>
+    <div id="statsTable"></div>
+    <p class="rules-small" style="margin-top:6px; color:var(--text-dim); opacity:0.8;">
+      Tallies are stored <strong>only on this device</strong>. Switching browsers or clearing this site's data will erase them.
+    </p>
+
     <div class="setup-error" id="setupError"></div>
 
     <button class="btn btn-primary btn-block" style="margin-top:14px; padding:18px;" onclick="startGame()">🎲 Start Virtual Dice Game</button>
+
+    <div style="display:flex; gap:10px; margin-top:10px;">
+      <button class="btn btn-secondary btn-block" style="flex:1;" onclick="openSettings()">⚙️ Game Settings</button>
+    </div>
 
     <p class="setup-note">
       <strong>Single-player?</strong> Add your name as Player 1, then add 1–3 <em>Ai Opponent</em> seats (flip the slider on each) to play against. The AI rolls and banks automatically.
@@ -682,13 +803,16 @@
     <div class="winner-name" id="winnerNameDisplay"></div>
     <div class="winner-total" id="winnerTotalDisplay"></div>
     <div class="cards-grid" id="finalCardsGrid" style="margin-top:24px;"></div>
-    <button class="btn btn-primary btn-block" style="margin-top:20px; padding:16px;" onclick="newGame()">New Game</button>
+    <div style="display:flex; gap:10px; margin-top:20px;">
+      <button class="btn btn-cyan btn-block" style="flex:1; padding:16px;" onclick="playAgainSamePlayers()">🔁 Play Again (Same Players)</button>
+      <button class="btn btn-primary btn-block" style="flex:1; padding:16px;" onclick="newGame()">New Game</button>
+    </div>
   </div>
 </div>
 
 <!-- Version footer -->
 <div style="text-align:center; margin-top:16px; padding:8px; color:var(--text-dim); font-size:11px; opacity:0.7;">
-  $GREED Dice v1.5.0 — Local Only
+  $GREED Dice v1.6.0 — Local Only
 </div>
 </div>
 
@@ -733,6 +857,59 @@
   </div>
 </div>
 
+<!-- ================= GAME SETTINGS MODAL ================= -->
+<div id="settingsOverlay" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>⚙️ Game Settings</h3>
+      <button class="modal-close" onclick="closeSettings()">✕</button>
+    </div>
+    <div class="settings-body">
+      <div class="chips-label">Dice Colour</div>
+      <div class="palette-chips" id="paletteChips"></div>
+
+      <div class="chips-label" style="margin-top:20px;">Dice Letters</div>
+      <div class="letter-toggle" id="letterToggle"></div>
+      <p class="rules-small" style="margin-top:8px;">
+        Swap the symbols on the dice faces for a different letter set.
+        Scoring is unchanged — this is purely cosmetic.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ================= NAME PROMPT (first open) ================= -->
+<div id="namePromptOverlay" class="modal-overlay hidden">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <h3>👋 Welcome to $GREED</h3>
+    </div>
+    <div class="settings-body">
+      <p style="margin:0 0 12px;">What's your name?</p>
+      <input type="text" id="namePromptInput" maxlength="24" placeholder="Your name" style="width:100%; padding:12px; border-radius:10px; border:1px solid var(--card-border); background:var(--bg-2); color:var(--text); font-size:16px;">
+      <p class="rules-small" style="margin-top:10px;">You'll be set as Player 1 by default. You can change this later in the Saved Players list.</p>
+      <button class="btn btn-primary btn-block" style="margin-top:14px; padding:14px;" onclick="submitDefaultPlayer()">Save &amp; Start</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= CONFIRM DELETE SAVED PLAYER ================= -->
+<div id="confirmDelOverlay" class="modal-overlay hidden">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-header">
+      <h3>🗑 Delete saved player?</h3>
+    </div>
+    <div class="settings-body">
+      <p id="confirmDelMsg" style="margin:0 0 8px;"></p>
+      <p class="rules-small" style="margin:0 0 14px;">This only removes the saved player name &amp; their local tally. It does not affect a running game.</p>
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-ghost" style="flex:1;" onclick="closeConfirmDel()">Cancel</button>
+        <button class="btn btn-primary" style="flex:1;" onclick="confirmDeleteSavedPlayer()">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 /* =========================================================================
    $GREED — Virtual Dice Game (local only, no cloud)
@@ -741,6 +918,8 @@
 // ---------------- LocalStorage keys ----------------
 const LS_SAVED_PLAYERS = "greed-dice-saved-players-v1";
 const LS_ACTIVE_GAME = "greed-dice-active-game-v1";
+const LS_DEFAULT_PLAYER = "greed-dice-default-player-v1";
+const LS_PLAYER_STATS = "greed-dice-player-stats-v1";
 
 // ---------------- In-memory game state ----------------
 let players = [];              // {name, total, last, cpu}
@@ -783,6 +962,22 @@ const DICE_SYMS = [
   { sym: "E", cls: "e-blue", color: "blue" },
   { sym: "D", cls: "d" }
 ];
+
+// =========================================================================
+// DICE LETTER SETS — cosmetic only, never touches scoring. The engine always
+// scores by the internal `sym` above ($ G R E E D); this layer only chooses
+// which GLYPH is painted on each face. "imon" renders "$IMON$":
+//   dollar->I  g->N  r->O  E(blue)->$(blue)  E(green)->$(green)  d->M
+// =========================================================================
+let letterMode = "greed"; // "greed" | "imon"
+const LETTER_MAPS = {
+  greed: { dollar: "$", g: "G", r: "R", "e-green": "E", "e-blue": "E", d: "D" },
+  imon:  { dollar: "I", g: "N", r: "O", "e-green": "$", "e-blue": "$", d: "M" }
+};
+function displayLetter(cls) {
+  const m = LETTER_MAPS[letterMode] || LETTER_MAPS.greed;
+  return (m && m[cls]) || (DICE_SYMS.find(s => s.cls === cls) || {}).sym || "";
+}
 
 // =========================================================================
 // VISUAL IMPROVEMENTS (v1.4.0) — pure cosmetic helpers; no scoring impact.
@@ -1005,7 +1200,7 @@ function createCubeDie(cls, sym, randomFaces) {
       faceSym = symbols[index].sym;
     }
     face.className = "die-face die-face--" + side + " " + faceCls;
-    face.textContent = faceSym;
+    face.textContent = displayLetter(faceCls);
     die.appendChild(face);
   });
   return die;
@@ -1810,6 +2005,37 @@ function isReservedName(n) {
   return false;
 }
 
+// ---------------- Default player (Player 1) ----------------
+function getDefaultPlayer() {
+  try { return localStorage.getItem(LS_DEFAULT_PLAYER) || ""; } catch (e) { return ""; }
+}
+function setDefaultPlayer(name) {
+  try { localStorage.setItem(LS_DEFAULT_PLAYER, name); } catch (e) {}
+}
+// Ask the user for their name on first open and make them the default Player 1.
+function maybeShowNamePrompt() {
+  if (getDefaultPlayer()) return;          // already set
+  document.getElementById("namePromptOverlay").classList.remove("hidden");
+  const input = document.getElementById("namePromptInput");
+  setTimeout(() => { if (input) { input.value = ""; input.focus(); } }, 150);
+}
+function submitDefaultPlayer() {
+  const input = document.getElementById("namePromptInput");
+  const name = (input.value || "").trim().slice(0, 24);
+  if (!name) { toast("Please enter your name"); return; }
+  setDefaultPlayer(name);
+  // Ensure the default player is in the saved list and prefilled in Player 1.
+  if (!isReservedName(name)) {
+    const saved = getLocalSavedPlayers();
+    if (!saved.includes(name)) { saved.push(name); setLocalSavedPlayers(saved); }
+  }
+  setupNames[0] = name;
+  document.getElementById("namePromptOverlay").classList.add("hidden");
+  renderSetupRows();
+  renderSavedChips();
+  toast(`Welcome, ${name}!`);
+}
+
 function mergeAndSaveNames(newNames) {
   // Never persist auto-assigned / default names (Claude / Gwen / Gemma, Player 1/2…, CPU 1…).
   const humanNames = newNames.filter(n => !isReservedName(n));
@@ -1880,6 +2106,10 @@ function updateSetupCpu(idx, checked) {
 }
 
 function renderSetupRows() {
+  // Always keep the default player prefilled in Player 1 (unless the user has
+  // typed something there themselves).
+  if (setupNames.length === 0) setupNames = ["", ""];
+  if (setupNames[0].trim() === "" && getDefaultPlayer()) setupNames[0] = getDefaultPlayer();
   const container = document.getElementById("playerRows");
   container.innerHTML = "";
   setupNames.forEach((name, idx) => {
@@ -1918,10 +2148,15 @@ async function renderSavedChips() {
   }
   saved.sort((a, b) => a.localeCompare(b)).forEach(name => {
     const already = setupNames.includes(name);
-    const chip = document.createElement("button");
-    chip.className = "chip" + (already ? " added" : "");
-    chip.textContent = already ? "✓ " + name : name;
-    chip.onclick = () => {
+    const chip = document.createElement("div");
+    chip.className = "chip saved-chip" + (already ? " added" : "");
+    chip.innerHTML = `
+      <button class="sc-add" title="Add to lineup">${already ? "✓ " + escapeHtml(name) : escapeHtml(name)}</button>
+      <button class="sc-edit" title="Rename saved player" onclick="editSavedPlayer('${escapeHtml(name).replace(/'/g, "\\'")}')">✏️</button>
+      <button class="sc-del" title="Delete saved player" onclick="deleteSavedPlayer('${escapeHtml(name).replace(/'/g, "\\'")}')">✕</button>
+    `;
+    const addBtn = chip.querySelector(".sc-add");
+    addBtn.onclick = () => {
       if (setupNames.includes(name)) return;
       const emptyIdx = setupNames.findIndex(n => n.trim() === "");
       if (emptyIdx !== -1) setupNames[emptyIdx] = name;
@@ -1932,6 +2167,112 @@ async function renderSavedChips() {
     };
     chipsEl.appendChild(chip);
   });
+}
+
+// Rename a saved player (no login required — it's a local device nickname).
+function editSavedPlayer(oldName) {
+  const newName = prompt("Edit saved player name:", oldName);
+  if (newName === null) return;
+  const clean = newName.trim().slice(0, 24);
+  if (!clean) { toast("Name can't be empty"); return; }
+  const saved = getLocalSavedPlayers();
+  const i = saved.indexOf(oldName);
+  if (i === -1) return;
+  if (clean !== oldName && saved.includes(clean)) { toast("That name is already saved"); return; }
+  saved[i] = clean;
+  setLocalSavedPlayers(Array.from(new Set(saved)));
+  // If the default player was renamed, update it too.
+  if (getDefaultPlayer() === oldName) setDefaultPlayer(clean);
+  // Migrate the local tally to the new name.
+  const stats = getLocalStats();
+  if (stats[oldName]) { stats[clean] = stats[oldName]; delete stats[oldName]; setLocalStats(stats); }
+  toast("Saved player renamed");
+  renderSavedChips();
+  renderSetupRows();
+  renderStatsTable();
+}
+
+// Delete a saved player — asks for confirmation via a modal first.
+let pendingDeleteName = null;
+function deleteSavedPlayer(name) {
+  pendingDeleteName = name;
+  const msg = document.getElementById("confirmDelMsg");
+  if (msg) msg.textContent = `Remove "${name}" from saved players?`;
+  document.getElementById("confirmDelOverlay").classList.remove("hidden");
+}
+function closeConfirmDel() {
+  pendingDeleteName = null;
+  document.getElementById("confirmDelOverlay").classList.add("hidden");
+}
+function confirmDeleteSavedPlayer() {
+  const name = pendingDeleteName;
+  if (name) {
+    const saved = getLocalSavedPlayers().filter(n => n !== name);
+    setLocalSavedPlayers(saved);
+    deletePlayerStats(name); // also wipe their local tally
+    toast(`Removed "${name}"`);
+    renderSavedChips();
+    renderSetupRows();
+    renderStatsTable();
+  }
+  closeConfirmDel();
+}
+
+// =========================================================================
+// LOCAL PLAYER TALLIES — stored only on this device (localStorage).
+// Tracks per-name: games played, games won, avg winning margin, highest score.
+// =========================================================================
+function getLocalStats() {
+  try { return JSON.parse(localStorage.getItem(LS_PLAYER_STATS) || "{}"); }
+  catch (e) { return {}; }
+}
+function setLocalStats(obj) {
+  try { localStorage.setItem(LS_PLAYER_STATS, JSON.stringify(obj)); } catch (e) {}
+}
+function ensureStats(name) {
+  const s = getLocalStats();
+  if (!s[name]) s[name] = { games: 0, wins: 0, marginSum: 0, high: 0 };
+  setLocalStats(s);
+  return s;
+}
+// Record a completed game for one player. Called from declareWinner.
+function recordGameResult(name, won, margin) {
+  const s = ensureStats(name);
+  s[name].games += 1;
+  if (won) { s[name].wins += 1; s[name].marginSum += margin; }
+  setLocalStats(s);
+}
+// Record a single-score high for one player. Called from addScore.
+function recordHighScore(name, score) {
+  if (score <= 0) return;
+  const s = ensureStats(name);
+  if (score > s[name].high) { s[name].high = score; setLocalStats(s); }
+}
+function deletePlayerStats(name) {
+  const s = getLocalStats();
+  if (s[name]) { delete s[name]; setLocalStats(s); }
+}
+function renderStatsTable() {
+  const el = document.getElementById("statsTable");
+  if (!el) return;
+  const s = getLocalStats();
+  const names = Object.keys(s).filter(n => s[n].games > 0 || s[n].high > 0);
+  if (names.length === 0) {
+    el.innerHTML = `<div style="font-size:12px; color:var(--text-dim);">No games recorded yet. Play a game to start your local tally.</div>`;
+    return;
+  }
+  names.sort((a, b) => (s[b].wins - s[a].wins) || (s[b].games - s[a].games));
+  el.innerHTML = `
+    <div class="stats-table">
+      <div class="st-row st-head">
+        <span>Player</span><span>Games</span><span>Wins</span><span>Avg Margin</span><span>High</span>
+      </div>
+      ${names.map(n => {
+        const d = s[n];
+        const avgM = d.wins > 0 ? Math.round(d.marginSum / d.wins) : 0;
+        return `<div class="st-row"><span>${escapeHtml(n)}</span><span>${d.games}</span><span>${d.wins}</span><span>${avgM}</span><span>${d.high}</span></div>`;
+      }).join("")}
+    </div>`;
 }
 
 function startGame() {
@@ -2016,6 +2357,8 @@ async function addScore(rawScore, bonus) {
   // v1.4.0 visual: capture pre-bank total so renderPlayerCards can count-up tween.
   const prevTotal = players[i].total;
   players[i].total += score;
+  // Track highest single score in the local tally.
+  if (!isReservedName(name)) recordHighScore(name, score);
 
   // Detect the moment this entry crossed the 500-point gate (was below, now >=).
   // Sets a transient flag that renderPlayerCards consumes on the next render —
@@ -2097,6 +2440,8 @@ function advance() {
 async function declareWinner() {
   const topScore = Math.max(...players.map(p => p.total));
   const winners = players.filter(p => p.total === topScore);
+  const secondScore = Math.max(0, ...players.filter(p => p.total < topScore).map(p => p.total));
+  const margin = topScore - secondScore;
 
   // Track session streak for CPU difficulty adjustment
   // Find human player (non-CPU)
@@ -2109,6 +2454,13 @@ async function declareWinner() {
       sessionStats.streak = Math.max(sessionStats.streak - 1, -5);
     }
   }
+
+  // Record local per-name tallies for every participant.
+  players.forEach(p => {
+    if (isReservedName(p.name)) return; // skip generic auto names
+    const won = winners.some(w => w.name === p.name);
+    recordGameResult(p.name, won, margin);
+  });
 
   // Virtual dice games are friendly only — they never touch any leaderboard.
   winnerDeclared = true;
@@ -2194,6 +2546,40 @@ function newGame() {
   document.getElementById("winnerScreen").classList.add("hidden");
   document.getElementById("setupScreen").classList.remove("hidden");
   renderSetup();
+}
+
+// Restart a fresh game with the exact same players, without returning to the
+// setup screen. Keeps names + CPU flags, zeroes all scores and history.
+function playAgainSamePlayers() {
+  if (!players || players.length === 0) { newGame(); return; }
+  // Capture current line-up (names + cpu flags) before resetting state.
+  const names = players.map(p => p.name);
+  const cpu = players.map(p => !!p.cpu);
+
+  bannerFlash = null;
+  clearTimeout(bannerFlashTimer);
+  clearGameState();
+
+  players = names.map((n, i) => ({ name: n, total: 0, last: null, cpu: !!cpu[i] }));
+  current = 0;
+  history = [];
+  gameRunning = true;
+  endMode = false;
+  endModeTriggerIdx = -1;
+  endTurnsRemaining = players.map(() => ({ remaining: 0 }));
+  winnerDeclared = false;
+  scoreLog = [];
+  gateJustCleared = -1;
+  seedPrevTotals(); // v1.4.0: reset count-up baselines
+
+  document.getElementById("setupScreen").classList.add("hidden");
+  document.getElementById("winnerScreen").classList.add("hidden");
+  document.getElementById("gameScreen").classList.remove("hidden");
+  document.getElementById("resumePanel").classList.add("hidden");
+
+  saveGameState();
+  renderGame();
+  maybeRunCpu();
 }
 
 // =========================================================================
@@ -2503,6 +2889,7 @@ document.addEventListener("click", (e) => {
 function renderSetup() {
   renderSetupRows();
   renderSavedChips();
+  renderStatsTable();
   checkForCachedGame();
 }
 
@@ -2546,41 +2933,140 @@ function dismissA2HS() {
 function renderScoreGuide() {
   const el = document.getElementById("scoreGuide");
   if (!el) return;
+  const L = displayLetter; // glyph for each class
   el.innerHTML = `
     <h4>Score Possibilities</h4>
     <ul>
-      <li><span class="sg-k">1× <span class="dot g"></span> G</span><span class="sg-v">50</span></li>
-      <li><span class="sg-k">1× <span class="dot d"></span> D</span><span class="sg-v">100</span></li>
-      <li><span class="sg-k">3× <span class="dot dollar"></span> $</span><span class="sg-v">600 (fixed)</span></li>
-      <li><span class="sg-k">4× <span class="dot d"></span> D</span><span class="sg-v">1000</span></li>
-      <li><span class="sg-k">3× <span class="dot g"></span> G</span><span class="sg-v">500 + 50/extra G</span></li>
-      <li><span class="sg-k">3× <span class="dot r"></span> R</span><span class="sg-v">400 (fixed)</span></li>
-      <li><span class="sg-k">3× <span class="dot e-green"></span> E / 3× <span class="dot e-blue"></span> E</span><span class="sg-v">300 (fixed)</span></li>
-      <li><span class="sg-k">$GREED (1 of each, both E colours)</span><span class="sg-v">1000</span></li>
+      <li><span class="sg-k">1× <span class="dot g"></span> ${L("g")}</span><span class="sg-v">50</span></li>
+      <li><span class="sg-k">1× <span class="dot d"></span> ${L("d")}</span><span class="sg-v">100</span></li>
+      <li><span class="sg-k">3× <span class="dot dollar"></span> ${L("dollar")}</span><span class="sg-v">600 (fixed)</span></li>
+      <li><span class="sg-k">4× <span class="dot d"></span> ${L("d")}</span><span class="sg-v">1000</span></li>
+      <li><span class="sg-k">3× <span class="dot g"></span> ${L("g")}</span><span class="sg-v">500 + 50/extra ${L("g")}</span></li>
+      <li><span class="sg-k">3× <span class="dot r"></span> ${L("r")}</span><span class="sg-v">400 (fixed)</span></li>
+      <li><span class="sg-k">3× <span class="dot e-green"></span> ${L("e-green")} / 3× <span class="dot e-blue"></span> ${L("e-blue")}</span><span class="sg-v">300 (fixed)</span></li>
+      <li><span class="sg-k">${letterMode === "imon" ? "$IMON$ (1 of each)" : "$GREED (1 of each, both E colours)"}</span><span class="sg-v">1000</span></li>
       <li><span class="sg-k">6 of a kind (any symbol + colour)</span><span class="sg-v">5000</span></li>
     </ul>
-    <p class="sg-note">Only G adds extras beyond 3 (+50 each). $/R/E/D 3-of-a-kind pay fixed only. 4× D = 1000 flat. 6 of ANY kind = 5000.</p>
-    <p class="sg-note sg-warn">⚠ Two E colours are separate — 3-of-a-kind must be ONE colour only</p>
+    <p class="sg-note">Only ${L("g")} adds extras beyond 3 (+50 each). ${L("dollar")}/${L("r")}/${L("e-blue")}/${L("d")} 3-of-a-kind pay fixed only. 4× ${L("d")} = 1000 flat. 6 of ANY kind = 5000.</p>
+    <p class="sg-note sg-warn">⚠ Two ${L("e-blue")} colours are separate — 3-of-a-kind must be ONE colour only</p>
     <div class="sg-legend">
-      <span><span class="dot dollar"></span>$</span>
-      <span><span class="dot g"></span>G</span>
-      <span><span class="dot r"></span>R</span>
-      <span><span class="dot e-green"></span>E green</span>
-      <span><span class="dot e-blue"></span>E blue</span>
-      <span><span class="dot d"></span>D</span>
+      <span><span class="dot dollar"></span>${L("dollar")}</span>
+      <span><span class="dot g"></span>${L("g")}</span>
+      <span><span class="dot r"></span>${L("r")}</span>
+      <span><span class="dot e-green"></span>${L("e-green")} green</span>
+      <span><span class="dot e-blue"></span>${L("e-blue")} blue</span>
+      <span><span class="dot d"></span>${L("d")}</span>
     </div>
   `;
 }
 
+// =========================================================================
+// DICE COLOUR PALETTES — visual only, no scoring/gameplay impact.
+// Each palette lists the 6 symbol swatch colours (dollar, g, r, e-green,
+// e-blue, d) which match the CSS body.pal-* classes defined above.
+// =========================================================================
+const DICE_PALETTES = [
+  { id: "classic", label: "Classic",
+    swatches: ["#1e7a4d", "#ffd400", "#c0392b", "#7bb661", "#3b6fb5", "#0a0a0a"] },
+  { id: "fluoro", label: "Fluorescent",
+    swatches: ["#39ff14", "#ff8c00", "#ff2a2a", "#0dff9f", "#00c3ff", "#ea00ff"] },
+  { id: "pastel", label: "Pastel",
+    swatches: ["#a8e6cf", "#ffb6a3", "#ffd3b6", "#c4e8a3", "#a0e0ff", "#dcd6f7"] },
+  { id: "ocean", label: "Ocean",
+    swatches: ["#009688", "#ff7043", "#e53935", "#26c6da", "#1e88e5", "#283593"] },
+  { id: "candy", label: "Candy",
+    swatches: ["#f48fb1", "#ffab73", "#ff8a65", "#a5d6a7", "#90caf9", "#b39ddb"] },
+  { id: "gold", label: "Gold",
+    swatches: ["#c9a227", "#b87333", "#c2572b", "#7da453", "#4c6fa8", "#3b3b3b"] }
+];
+
+function setDiePalette(id) {
+  // Remove any previous palette class, then add body.pal-<id> if not classic.
+  DICE_PALETTES.forEach(p => document.body.classList.remove("pal-" + p.id));
+  if (id && id !== "classic") document.body.classList.add("pal-" + id);
+  try { localStorage.setItem("greedPalette", id || "classic"); } catch (e) {}
+  // Refresh active chip highlight.
+  const chips = document.querySelectorAll("#paletteChips .palette-chip");
+  chips.forEach(c => c.classList.toggle("active", c.dataset.pal === id));
+}
+
+function renderPalettePicker() {
+  const wrap = document.getElementById("paletteChips");
+  if (!wrap) return;
+  let cur = "classic";
+  try { cur = localStorage.getItem("greedPalette") || "classic"; } catch (e) {}
+  wrap.innerHTML = DICE_PALETTES.map(p => {
+    const sw = p.swatches.map(c => `<i style="background:${c}"></i>`).join("");
+    return `<div class="palette-chip ${p.id === cur ? "active" : ""}" data-pal="${p.id}" onclick="setDiePalette('${p.id}')">
+        <div class="palette-swatches">${sw}</div>
+        <div class="pc-name">${p.label}</div>
+      </div>`;
+  }).join("");
+  // Apply stored palette on load.
+  setDiePalette(cur);
+}
+
+// =========================================================================
+// GAME SETTINGS MODAL — palette picker + letter set toggle.
+// =========================================================================
+function openSettings() {
+  renderPalettePicker();
+  renderLetterToggle();
+  document.getElementById("settingsOverlay").classList.remove("hidden");
+}
+function closeSettings() {
+  document.getElementById("settingsOverlay").classList.add("hidden");
+}
+// Close settings modal when tapping the dark backdrop.
+document.addEventListener("click", (e) => {
+  if (e.target && e.target.id === "settingsOverlay") closeSettings();
+});
+
+function setLetterMode(mode) {
+  if (mode !== "greed" && mode !== "imon") mode = "greed";
+  letterMode = mode;
+  try { localStorage.setItem("greedLetters", mode); } catch (e) {}
+  renderLetterToggle();
+  // Re-render any visible dice so the new glyphs apply immediately.
+  renderDiceControls();
+  renderScoreGuide();
+}
+
+function renderLetterToggle() {
+  const wrap = document.getElementById("letterToggle");
+  if (!wrap) return;
+  let cur = "greed";
+  try { cur = localStorage.getItem("greedLetters") || "greed"; } catch (e) {}
+  const opts = [
+    { id: "greed", setFace: "$ G R E E D", label: "Classic" },
+    { id: "imon", setFace: "$ I M O N $", label: "$IMON$" }
+  ];
+  wrap.innerHTML = opts.map(o =>
+    `<div class="letter-opt ${o.id === cur ? "active" : ""}" onclick="setLetterMode('${o.id}')">
+       <div class="lo-set">${o.setFace}</div>
+       <div class="lo-label">${o.label}</div>
+     </div>`
+  ).join("");
+}
+
 // Boot
 document.addEventListener("DOMContentLoaded", () => {
+  // Restore saved dice letter set before rendering the score guide (its
+  // legend depends on letterMode via displayLetter).
+  let savedLetters = "greed";
+  try { savedLetters = localStorage.getItem("greedLetters") || "greed"; } catch (e) {}
+  letterMode = savedLetters === "imon" ? "imon" : "greed";
+  renderPalettePicker();
+  renderLetterToggle();
   renderScoreGuide();
   renderSetup();
   setupBackgroundParticles(); // v1.4.0: slow-drifting motes
+  // Ask for the user's name on first open (sets the default Player 1).
+  maybeShowNamePrompt();
 });
 
 // Version display
-const APP_VERSION = "1.5.0";
+const APP_VERSION = "1.6.0";
 console.log(`$GREED Dice v${APP_VERSION} loaded`);
 </script>
 </body>

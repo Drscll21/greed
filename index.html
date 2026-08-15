@@ -267,6 +267,10 @@
     box-shadow:0 0 0 3px rgba(192,82,42,0.3), 0 8px 20px rgba(192,82,42,0.18);
     transform:translateY(-2px);
   }
+  /* Scoring mode: cards are tappable to select the active player. */
+  .p-card.selectable-card{ cursor:pointer; }
+  .p-card.selectable-card:hover{ border-color:var(--gold); transform:translateY(-2px); }
+  .p-card.selectable-card:active{ transform:scale(0.97); }
   .p-card.leader{ border-color:var(--green); box-shadow:0 0 0 3px rgba(143,174,92,0.25);}
   .p-card.eliminated{ opacity:0.4; filter:grayscale(0.6); }
   .p-card.winner-card{ border-color:var(--gold); box-shadow:0 0 0 4px rgba(192,82,42,0.4), 0 0 30px rgba(192,82,42,0.4); animation:winner-glow 1.6s ease-in-out infinite; }
@@ -489,7 +493,7 @@
   }
 
   .bonus-grid{
-    display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;
+    display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:18px;
   }
   .bonus-btn{ padding:16px 8px; border-radius:12px; font-size:14px; }
 
@@ -820,8 +824,8 @@
     </div>
 
     <button class="btn btn-cyan btn-block" style="margin-top:14px; padding:16px;" onclick="startGame('score')">📝 Start Scoring Game</button>
-    <div style="text-align:right; margin-top:10px;">
-      <button class="btn btn-primary" id="virtualDiceBtn" style="padding:6px 10px; font-size:10px; font-weight:700; border-radius:8px; min-width:200px;" onclick="window.location.href='greed-dice.html'">TAKE ME TO VIRTUAL DICE GAME</button>
+    <div style="margin-top:10px;">
+      <button class="btn btn-primary btn-block" id="virtualDiceBtn" style="padding:16px;" onclick="window.location.href='greed-dice.html'">TAKE ME TO VIRTUAL DICE GAME</button>
     </div>
     <div style="display:flex; gap:10px; margin-top:4px;">
       <button class="btn btn-ghost btn-block" style="flex:1;" onclick="openRules()">📖 How to Play / Rules</button>
@@ -865,14 +869,14 @@
 
       <div class="quick-grid" id="quickGrid"></div>
 
-      <div class="bonus-grid">
-        <button class="btn btn-pink bonus-btn" onclick="handleBonus('greed')">💲 $GREED<br><span style="font-size:11px; opacity:0.85;">+1000, keep turn</span></button>
-        <button class="btn btn-cyan bonus-btn" onclick="handleBonus('six')">6️⃣ 6 OF A KIND<br><span style="font-size:11px; opacity:0.85;">+5000, keep turn</span></button>
-      </div>
-
       <div class="action-row">
         <button class="btn btn-secondary" onclick="handleNoScore()">No Score / Pass</button>
         <button class="btn btn-ghost" onclick="undo()">↩ Undo</button>
+      </div>
+
+      <div class="bonus-grid">
+        <button class="btn btn-pink bonus-btn" onclick="handleBonus('greed')">💲 $GREED<br><span style="font-size:11px; opacity:0.85;">+1000, keep turn</span></button>
+        <button class="btn btn-cyan bonus-btn" onclick="handleBonus('six')">6️⃣ 6 OF A KIND<br><span style="font-size:11px; opacity:0.85;">+5000, keep turn</span></button>
       </div>
     </div>
 
@@ -896,13 +900,16 @@
     <div class="winner-name" id="winnerNameDisplay"></div>
     <div class="winner-total" id="winnerTotalDisplay"></div>
     <div class="cards-grid" id="finalCardsGrid" style="margin-top:24px;"></div>
-    <button class="btn btn-primary btn-block" style="margin-top:20px; padding:16px;" onclick="newGame()">New Game</button>
+    <div style="display:flex; gap:10px; margin-top:20px;">
+      <button class="btn btn-cyan btn-block" style="flex:1; padding:16px;" onclick="playAgainSamePlayers()">🔁 Play Again (Same Players)</button>
+      <button class="btn btn-primary btn-block" style="flex:1; padding:16px;" onclick="newGame()">New Game</button>
+    </div>
   </div>
 </div>
 
 <!-- Version footer -->
 <div style="text-align:center; margin-top:16px; padding:8px; color:var(--text-dim); font-size:11px; opacity:0.7;">
-  $GREED Scoreboard v1.4.5 — Cloud sync via Supabase
+  $GREED Scoreboard v1.5.0 — Cloud sync via Supabase
 </div>
 
 <!-- ================= RULES MODAL ================= -->
@@ -2186,6 +2193,24 @@ function cardClasses(i) {
   return classes;
 }
 
+// Scoring mode: tap any player card to make them the active target for the
+// next entry. Selection is logged to the score history so it's auditable.
+function selectScoreTarget(i) {
+  if (gameMode !== "score" || winnerDeclared) return;
+  if (!players[i]) return;
+  // Clear any persistent bonus-celebration flash before switching target.
+  if (bannerFlash && bannerFlash.persistent) bannerFlash = null;
+  if (players[current] && players[current].cpu) { cpuThinking = false; }
+  current = i;
+  const name = players[i].name;
+  logEvent(`✏️ Now scoring for: ${name}`);
+  saveGameState();
+  renderPlayerCards("cardsGrid");
+  renderHistoryLog();
+  bannerState();
+  toast(`Scoring for ${name} — enter their points below`);
+}
+
 async function addScore(rawScore, bonus) {
   if (winnerDeclared) return false;
   let score = Math.max(0, parseInt(rawScore) || 0);
@@ -2411,6 +2436,37 @@ function newGame() {
   renderSetup();
 }
 
+// Restart a fresh game with the exact same players, without returning to the
+// setup screen. Keeps the current game mode + player line-up, zeroes scores.
+function playAgainSamePlayers() {
+  if (!players || players.length === 0) { newGame(); return; }
+  // Capture the current line-up before resetting state (keeps order/names).
+  const names = players.map(p => p.name);
+
+  bannerFlash = null;
+  clearTimeout(bannerFlashTimer);
+  clearGameState();
+
+  players = names.map(n => ({ name: n, total: 0, last: null, cpu: false }));
+  current = 0;
+  history = [];
+  gameRunning = true;
+  endMode = false;
+  endModeTriggerIdx = -1;
+  endTurnsRemaining = players.map(() => ({ remaining: 0 }));
+  winnerDeclared = false;
+  scoreLog = [];
+  prevTotals = [];
+  playerOrder = null;
+
+  document.getElementById("setupScreen").classList.add("hidden");
+  document.getElementById("winnerScreen").classList.add("hidden");
+  document.getElementById("gameScreen").classList.remove("hidden");
+
+  saveGameState();
+  renderGame();
+}
+
 // =========================================================================
 // RENDER
 // =========================================================================
@@ -2607,8 +2663,10 @@ function renderPlayerCards(targetGridId) {
     if (achv.six > 0) achvPills.push(`<span class="achv-pill six">6️⃣${achv.six}</span>`);
     const achvHtml = achvPills.length > 0 ? `<div class="p-achievements">${achvPills.join("")}</div>` : "";
 
+    const clickable = (gameMode === "score" && !winnerDeclared) ? ` onclick="selectScoreTarget(${i})" role="button"` : "";
+
     return `
-      <div class="p-card ${classes} ${winnerDeclared && i === highest ? "winner-card" : ""}" style="${zoneStyle}">
+      <div class="p-card ${classes} ${winnerDeclared && i === highest ? "winner-card" : ""} ${gameMode === "score" && !winnerDeclared ? "selectable-card" : ""}" style="${zoneStyle}"${clickable}>
         ${badge}
         <div class="p-meter" aria-hidden="true"><div class="p-meter-fill ${meterClass}" style="width:${meterPct}%"></div></div>
         <div class="p-name">${escapeHtml(p.name)}${p.cpu ? '<span class="cpu-tag">🤖</span>' : ''}</div>
@@ -3140,7 +3198,7 @@ function renderScoreGuide() {
 }
 
 // Version display
-const APP_VERSION = "1.4.5";
+const APP_VERSION = "1.5.0";
 console.log(`$GREED Scoreboard v${APP_VERSION} loaded`);
 </script>
 </body>
