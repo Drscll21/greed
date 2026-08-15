@@ -347,6 +347,7 @@
     box-shadow:0 4px 8px rgba(0,0,0,0.35);
     transition:background .2s, color .2s, border-color .2s;
   }
+  .die-face .cool-s{ width:44px; height:44px; display:block; overflow:visible; }
   .die-face--front  { transform: translateZ(31px); }
   .die-face--back   { transform: rotateY(180deg) translateZ(31px); }
   .die-face--right  { transform: rotateY(90deg) translateZ(31px); }
@@ -860,7 +861,7 @@
 
 <!-- Version footer -->
 <div style="text-align:center; margin-top:16px; padding:8px; color:var(--text-dim); font-size:11px; opacity:0.7;">
-  $GREED Dice v1.6.1 — Local Only
+  $GREED Dice v1.6.2 — Local Only
 </div>
 </div>
 
@@ -1031,6 +1032,59 @@ const LETTER_MAPS = {
 function displayLetter(cls) {
   const m = LETTER_MAPS[letterMode] || LETTER_MAPS.greed;
   return (m && m[cls]) || (DICE_SYMS.find(s => s.cls === cls) || {}).sym || "";
+}
+
+// The classic "cool S" (straight-line notebook S) rendered as inline SVG,
+// built directly from the ASCII art you provided so the glyph matches it
+// exactly. Uses currentColor so it inherits the die face colour in every
+// palette. Each non-space cell becomes a rounded square; adjacent cells merge
+// into continuous strokes.
+const COOL_S_ART = [
+  "      ʌ",
+  "     / \\",
+  "    /   \\",
+  "    | | |",
+  "    \\ \\/",
+  "    /\\  \\",
+  "    | | |",
+  "    \\   /",
+  "     \\ /",
+  "      v"
+];
+function buildCoolSvg() {
+  const rows = COOL_S_ART;
+  const H = rows.length;
+  const W = Math.max(...rows.map(r => r.length));
+  let rects = "";
+  rows.forEach((line, y) => {
+    [...line].forEach((ch, x) => {
+      if (ch.trim() !== "") {
+        rects += `<rect x="${x}" y="${y}" width="0.92" height="0.92" rx="0.5"/>`;
+      }
+    });
+  });
+  return `<svg viewBox="-1 -1 ${W + 2} ${H + 2}" class="cool-s" ` +
+    'xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">' +
+    `<g fill="currentColor">${rects}</g></svg>`;
+}
+const COOL_S_SVG = buildCoolSvg();
+
+// Build the glyph node for a die face. The cool-S only replaces the "$" glyph
+// when an ALTERNATE setting is applied (a non-classic dice palette, or the
+// "imon" letter set). On the standard color/letter dice the plain "$" is kept.
+function hasAlternateSetting() {
+  if (typeof document === "undefined" || typeof letterMode === "undefined") return false;
+  if (letterMode !== "greed") return true;
+  return [...document.body.classList].some(c => c.indexOf("pal-") === 0);
+}
+function glyphNode(cls) {
+  const letter = displayLetter(cls);
+  if (letter === "$" && hasAlternateSetting()) {
+    const tpl = document.createElement("template");
+    tpl.innerHTML = COOL_S_SVG;
+    return tpl.content.firstChild;
+  }
+  return document.createTextNode(letter);
 }
 
 // =========================================================================
@@ -1254,7 +1308,7 @@ function createCubeDie(cls, sym, randomFaces) {
       faceSym = symbols[index].sym;
     }
     face.className = "die-face die-face--" + side + " " + faceCls;
-    face.textContent = displayLetter(faceCls);
+    face.appendChild(glyphNode(faceCls));
     die.appendChild(face);
   });
   return die;
@@ -3160,7 +3214,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // Version display
-const APP_VERSION = "1.6.1";
+const APP_VERSION = "1.6.2";
 console.log(`$GREED Dice v${APP_VERSION} loaded`);
 </script>
 </body>
