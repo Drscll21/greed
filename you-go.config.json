@@ -1,0 +1,113 @@
+{
+  "title": "You-Go",
+  "subtitle": "Flip the rules — turn-based card battle",
+  "version": "2.4.1",
+
+  "players": {
+    "min": 2,
+    "max": 6,
+    "handSize": 7
+  },
+
+  "sides": {
+    "light": {
+      "name": "☀️ Light Side",
+      "colors": ["yellow", "green", "blue", "red"],
+      "palette": "pastel",
+      "drawCount": 1,
+      "wildDrawCount": 2
+    },
+    "dark": {
+      "name": "🌑 Dark Side",
+      "colors": ["pink", "yellow", "green", "blue"],
+      "palette": "neon on black",
+      "drawCount": 3,
+      "wildDrawCount": 4
+    }
+  },
+
+  "cardTypes": {
+    "number": {
+      "label": "Number",
+      "range": [1, 9],
+      "countPerColorPerSide": 1
+    },
+    "skip": {
+      "label": "Skip",
+      "icon": "🚫",
+      "countPerColorPerSide": 1,
+      "description": "Next player loses their turn"
+    },
+    "reverse": {
+      "label": "Reverse",
+      "icon": "🔁",
+      "countPerColorPerSide": 1,
+      "description": "Reverses turn direction"
+    },
+    "draw": {
+      "label": "Draw",
+      "icon": {
+        "light": "+1",
+        "dark": "+3"
+      },
+      "countPerColorPerSide": 1,
+      "description": "Next player draws N cards (light=dark's drawCount)"
+    },
+    "wild": {
+      "label": "Wild",
+      "icon": "★",
+      "countPerSide": 4,
+      "description": "Play anytime, choose the next color"
+    },
+    "wilddraw": {
+      "label": "Wild Draw",
+      "icon": {
+        "light": "+2",
+        "dark": "+4"
+      },
+      "countPerSide": 4,
+      "description": "Play anytime, choose color, next player draws N (light=dark's wildDrawCount)"
+    },
+    "flip": {
+      "label": "You-Go!",
+      "icon": "🔄",
+      "countPerSide": 4,
+      "description": "Flips the entire game to the opposite side (all hands, deck, discard)"
+    }
+  },
+
+  "rules": {
+    "playMatching": "Match the top card of the discard pile by color, number, or symbol",
+    "wildPlayable": "Wild and Wild Draw cards can be played on any card",
+    "flipPlayable": "Flip (You-Go!) cards can be played on any card, ensure all players are playing the same side of cards, players should never be playing light against dark",
+    "flipEffect": "When a Flip card is played, every card in every player's hand flips to the opposite side's colors. The deck and discard pile also flip. The turn continues.",
+    "drawOnNoMatch": "If you cannot or choose not to play, draw one card. Your turn then passes.",
+    "drawnCardPlayable": "A drawn card cannot be played immediately — the turn passes after drawing.",
+    "wildColorChoice": "After playing a Wild or Wild Draw card, pick a color. The wild card just played turn that colour to indicate to other players. The discard continues with that color.",
+    "shuffleDiscardIntoDeck": "When the deck runs out, shuffle the discard pile (keeping the top card) into a new deck",
+    "winCondition": "First player to empty their hand wins the round",
+    "turnOrder": "Turns pass clockwise by default. Reverse changes direction. Skip skips the next player.",
+    "drawCardAmounts": "Draw cards force the next player to draw (light drawN / dark drawN). Wild Draw cards force the next player to draw (light wildDrawN / dark wildDrawN)."
+  },
+
+  "deckComposition": {
+    "notes": "Each side is built independently. Numbers 1-9, plus action cards, plus globals (wild/wilddraw/flip). Total cards per side = sum below.",
+    "cardsPerColorPerSide": {
+      "numberCards": 9,
+      "actionCards": 3
+    },
+    "globalCardsPerSide": {
+      "wild": 4,
+      "wilddraw": 4,
+      "flip": 4
+    }
+  },
+
+  "notes": [
+    "Light side colors (pastel): yellow, green, blue, red",
+    "Dark side colors (neon on black): pink, yellow, green, blue",
+    "When the deck/side flips, a colour must be assumed, the first card placed in discard pile will now be on top, assume the opposite flip side of that card",
+    "Wild cards have no color — they use a dark card back with a rainbow overlay",
+    "The game is local-only (single device, pass-and-play)"
+  ]
+}
