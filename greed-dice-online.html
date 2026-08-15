@@ -855,6 +855,9 @@
 
     <div id="connBar" style="display:none; text-align:center; font-size:11px; color:var(--text-dim); margin-bottom:10px; line-height:1.6;">
       <span id="connLabel"></span>
+      <div style="margin-top:6px;">
+        <button class="btn btn-secondary" style="padding:6px 14px; font-size:11px;" onclick="refreshConnection()">🔄 Refresh Connection</button>
+      </div>
     </div>
 
     <div class="cards-grid" id="cardsGrid"></div>
@@ -1196,6 +1199,32 @@ async function reconnectGame() {
       ? "↻ Reconnected — it's your turn. Tap ROLL."
       : `↻ Reconnected — waiting for ${cur ? escapeHtml(cur.name) : ""}…`;
     bar.style.display = "block";
+  }
+}
+
+// Manually attempt to re-establish / refresh the connection: ping the server
+// with a heartbeat (re-asserts this seat as present), then force a full re-sync
+// of the authoritative game state and repaint the status + board.
+async function refreshConnection() {
+  const bar = document.getElementById("connBar");
+  const label = document.getElementById("connLabel");
+  if (bar) bar.style.display = "block";
+  if (label) label.innerHTML = "🔄 Refreshing connection…";
+  if (!myRoom) { if (label) label.innerHTML = "— not in a room —"; return; }
+
+  sendHeartbeat();
+  // Force the conn-watch and game poll to fire immediately (also re-syncs state).
+  renderConnectionStatus();
+  await syncOnlineOnce();
+  renderGame(true);
+  if (winnerDeclared) showWinnerScreen();
+
+  const cur = game && players && players[current];
+  if (label) {
+    label.innerHTML = (game && cur && cur.seat === mySeat)
+      ? `✅ Connected — it's your turn. Tap ROLL.`
+      : (game && cur ? `✅ Connected — waiting for ${escapeHtml(cur.name)}…` :
+         connTimeCol ? "✅ Connection refreshed." : "✅ Refreshed (timestamps unavailable).");
   }
 }
 
