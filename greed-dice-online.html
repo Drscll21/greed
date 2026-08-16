@@ -1228,6 +1228,68 @@ async function refreshConnection() {
   }
 }
 
+// -------------------------------------------------------------------------
+// SESSION PERSISTENCE (Tier 1) — survives reloads & brief disconnects.
+// We remember "which lobby, which seat, my name" and the last turn_no we saw.
+// On boot we try to auto-rejoin so a refresh/drop lands you back in the game.
+// -------------------------------------------------------------------------
+const LS_ONLINE_SESSION = "greed-online-session-v1";
+function saveOnlineSession() {
+  if (!ONLINE || !myRoom || mySeat === null) return;
+  try {
+    localStorage.setItem(LS_ONLINE_SESSION, JSON.stringify({
+      room: myRoom, seat: mySeat, name: myOnlineName, isHost: myIsHost, turnNo: seenTurnNo
+    }));
+  } catch (e) {}
+}
+function clearOnlineSession() {
+  try { localStorage.removeItem(LS_ONLINE_SESSION); } catch (e) {}
+}
+async function autoRejoinSession() {
+  let s = null;
+  try { s = JSON.parse(localStorage.getItem(LS_ONLINE_SESSION) || "null"); } catch (e) {}
+  if (!s || !s.room) return false;
+  // Check the room still exists and (if started) grab its state.
+  const lobby = await sbGet("greed_lobbies", "select=id,status,host_name&id=eq." + s.room);
+  if (!lobby || !lobby.length) { clearOnlineSession(); return false; }
+  const isPlaying = lobby[0].status === "playing";
+  // If the room is gone or that seat is gone (new game), drop the session.
+  const pl = await sbGet("greed_lobby_players", "select=name,seat&lobby_id=eq." + s.room);
+  const seatTaken = (pl || []).some(p => p.seat === s.seat);
+  if (!seatTaken) { clearOnlineSession(); return false; }
+
+  // Re-establish identity.
+  myOnlineName = s.name || "Player";
+  mySeat = s.seat;
+  myRoom = s.room;
+  myIsHost = !!s.isHost;
+  ONLINE = true;
+  seenTurnNo = s.turnNo || 0;
+
+  // Hide the setup screen, show the right panel.
+  document.getElementById("setupScreen").classList.add("hidden");
+  document.getElementById("onlinePanel").classList.add("hidden");
+
+  if (isPlaying) {
+    // Game in progress → go straight to the game screen and start polling.
+    document.getElementById("lobbyPanel").classList.add("hidden");
+    document.getElementById("gameScreen").classList.remove("hidden");
+    startHeartbeat();
+    startConnWatch();
+    await syncOnlineOnce();
+    await renderGame(true);
+    const label = document.getElementById("connLabel");
+    const bar = document.getElementById("connBar");
+    if (bar) bar.style.display = "block";
+    if (label) label.innerHTML = "↻ Rejoined your game in progress.";
+  } else {
+    // Still in lobby → return to the lobby panel.
+    document.getElementById("lobbyPanel").classList.remove("hidden");
+    enterLobbyPanel(s.room);
+  }
+  return true;
+}
+
 function openOnline() {
   ONLINE = false; myRoom = null; mySeat = null; myIsHost = false; myOnlineName = "";
   clearOnlineTimers();
@@ -1254,6 +1316,7 @@ function leaveLobby(silent) {
   const rm = myRoom, seat = mySeat;
   clearOnlineTimers();
   ONLINE = false; myRoom = null; mySeat = null; myIsHost = false; myOnlineName = "";
+  clearOnlineSession();   // explicitly leaving = no auto-rejoin next load
   if (rm !== null && seat !== null) {
     sbPatch("greed_lobby_players", `lobby_id=eq.${rm}&seat=eq.${seat}`, { connected: false }).catch(() => {});
   }
@@ -1323,6 +1386,7 @@ function enterLobbyPanel(id) {
   renderOnlinePlayers([]);
   startHeartbeat();
   startConnWatch();
+  saveOnlineSession();
 }
 async function pollOnlineLobby(id) {
   const pl = await sbGet("greed_lobby_players", "select=name,seat,is_host&lobby_id=eq." + id + "&order=seat.asc");
@@ -3812,6 +3876,26 @@ document.addEventListener("DOMContentLoaded", () => {
   setupBackgroundParticles(); // v1.4.0: slow-drifting motes
   // Ask for the user's name on first open (sets the default Player 1).
   maybeShowNamePrompt();
+  // Tier 1: auto-rejoin any in-progress online session after a reload/refresh.
+  autoRejoinSession();
+  // Tier 2: react to network state changes so transient drops recover instead
+  // of aborting — when the browser regains a connection we re-assert presence
+  // and force a re-sync.
+  window.addEventListener("online", () => {
+    if (ONLINE && myRoom && mySeat !== null) {
+      sendHeartbeat();
+      startConnWatch();
+      syncOnlineOnce().then(() => renderGame(true));
+      const label = document.getElementById("connLabel");
+      if (label) label.innerHTML = "🌐 Network back — re-synced.";
+    }
+  });
+  window.addEventListener("offline", () => {
+    if (ONLINE && myRoom && mySeat !== null) {
+      const label = document.getElementById("connLabel");
+      if (label) label.innerHTML = "📴 Offline — waiting for network to return…";
+    }
+  });
 });
 
 // Version display
