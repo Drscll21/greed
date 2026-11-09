@@ -300,6 +300,17 @@
   .dice-row{ display:flex; flex-wrap:wrap; gap:16px; justify-content:center; min-height:72px; align-items:center; perspective:700px; }
   .dice-row.side{ min-height:64px; justify-content:flex-start; align-content:flex-start; }
   .dice-prompt{ color:var(--text-dim); font-size:14px; text-align:center; }
+
+  /* ---- physics throw stage (ported from dice-lab.html) ---- */
+  #diceRow{ height:200px; }
+  #diceRow.simming{ display:block; height:200px; perspective:none; }
+  .sim-fx{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+  .sim-die{
+    position:absolute; left:0; top:0; width:62px; height:62px;
+    perspective:600px; -webkit-perspective:600px;
+    will-change:transform;
+  }
+  .sim-die > .die{ will-change:transform; }
   /* 3D cube die structure */
   .die{ width:62px; height:62px; position:relative; transform-style:preserve-3d; }
   .die-face{
@@ -314,12 +325,15 @@
     box-shadow:0 4px 8px rgba(0,0,0,0.35);
     transition:background .2s, color .2s, border-color .2s;
   }
-  .die-face--front  { transform: translateZ(31px); }
-  .die-face--back   { transform: rotateY(180deg) translateZ(31px); }
-  .die-face--right  { transform: rotateY(90deg) translateZ(31px); }
-  .die-face--left   { transform: rotateY(-90deg) translateZ(31px); }
-  .die-face--top    { transform: rotateX(90deg) translateZ(31px); }
-  .die-face--bottom { transform: rotateX(-90deg) translateZ(31px); }
+  /* Corner radius matched to the plane inset: a rounded face can only reach the
+     cube's corner if it overhangs its plane, so R=8 with planes at 28.6 seals
+     the corners (10/31 left a hole through it). */
+  .die-face--front  { transform: translateZ(28.6px); }
+  .die-face--back   { transform: rotateY(180deg) translateZ(28.6px); }
+  .die-face--right  { transform: rotateY(90deg) translateZ(28.6px); }
+  .die-face--left   { transform: rotateY(-90deg) translateZ(28.6px); }
+  .die-face--top    { transform: rotateX(90deg) translateZ(28.6px); }
+  .die-face--bottom { transform: rotateX(-90deg) translateZ(28.6px); }
   /* Symbol color classes (same as existing) */
   .die-face.dollar{ background:#1e7a4d; color:#eafff0; border-color:#0f5130; }
   .die-face.g{ background:#ffd400; color:#1a1a1a; border-color:#e6b800; }
