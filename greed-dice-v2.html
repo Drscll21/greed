@@ -341,7 +341,8 @@
   .die-wrap{
     position:relative;
     width:62px; height:62px;
-    perspective:700px;
+    perspective:560px;
+    -webkit-perspective:560px;
     flex:0 0 auto;
   }
   /* Floor contact shadow: stays glued to the "table" while the die hops. The
@@ -359,7 +360,7 @@
     pointer-events:none;
     will-change:transform, opacity;
   }
-  .die{ width:62px; height:62px; position:relative; transform-style:preserve-3d; }
+  .die{ width:62px; height:62px; position:relative; transform-style:preserve-3d; -webkit-transform-style:preserve-3d; }
   .die-face{
     position:absolute; width:62px; height:62px;
     border:2px solid rgba(255,255,255,0.15);
@@ -368,6 +369,7 @@
     line-height:58px; text-align:center;
     display:flex; align-items:center; justify-content:center;
     backface-visibility:hidden;
+    -webkit-backface-visibility:hidden;
     user-select:none;
     /* v2 glossy-plastic look: beveled light top/left edges, inner bottom
        shade, a drop shadow under the cube, and embossed glyph shading */
@@ -377,6 +379,7 @@
     border-right-color:rgba(0,0,0,0.18);
     box-shadow:inset 0 1px 1px rgba(255,255,255,0.28),
                inset 0 -7px 12px -6px rgba(0,0,0,0.42),
+               3px 4px 0 -1px rgba(0,0,0,0.38),
                0 4px 8px rgba(0,0,0,0.35);
     text-shadow:0 1px 0 rgba(255,255,255,0.22), 0 -1px 1px rgba(0,0,0,0.35);
     transition:background .2s, color .2s, border-color .2s;
@@ -464,12 +467,11 @@
   body.pal-gold .score-guide .sg-legend .dot.e-blue{ background:#4c6fa8; }
   body.pal-gold .score-guide .sg-legend .dot.d{ background:#3b3b3b; }
   .die{ background:transparent; }
-  /* Settled look: only the outcome face is visible. When not tumbling we
-     flatten the cube and hide the other 5 faces so no edge slivers of the
-     adjacent faces peek through. The 3D tumble only plays while .rolling. */
-  .die:not(.rolling){ transform-style:flat; }
-  .die:not(.rolling) .die-face--front{ transform:none; position:relative; }
-  .die:not(.rolling) .die-face:not(.die-face--front){ visibility:hidden; }
+  /* Settled look, v2: the die stays a real 3D cube and rests at a gentle lean
+     (--sit) so resting dice read as chunky cubes scattered at slightly
+     different angles. The outcome face remains front-facing & dominant; the
+     other faces are legit (all six GREED symbols, one per face). */
+  .die:not(.rolling){ transform:var(--sit, rotateX(-12deg) rotateY(-18deg)); }
   /* ===== Psychedelic dice effect (Chromatic) =====
      A running, pulsating rainbow ring snakes around the die and a soft
      chromatic glow engulfs it. The die face colour stays readable. */
@@ -512,27 +514,34 @@
   }
   .die-wrap.selectable{ cursor:pointer; transition:box-shadow .1s ease; }
   .die-wrap.selectable:hover{ box-shadow:0 0 0 3px rgba(192,82,42,0.55), 0 6px 14px rgba(0,0,0,0.4); }
-  .die-wrap.selectable:hover .die{ transform:translateY(-3px) scale(1.05); }
+  .die-wrap.selectable:hover .die{ transform:var(--sit, rotateX(-12deg) rotateY(-18deg)) translateY(-3px) scale(1.05); }
   .die-wrap.banked{ outline:3px solid var(--green); outline-offset:1px; cursor:pointer; }
-  .die-wrap.banked:hover .die{ transform:scale(0.95); }
+  .die-wrap.banked:hover .die{ transform:var(--sit, rotateX(-12deg) rotateY(-18deg)) scale(0.95); }
   .die-wrap.selectable .die,
   .die-wrap.banked .die{ transition:transform .1s ease; }
   /* ---- v2 throw: positional hop+drift on the wrapper, spin + motion blur on
      the inner die, floor shadow counter-animated. All pieces run 1.15s and
      share --roll-delay so the JS settle timer stays in sync. ---- */
   .die-wrap.rolling{
-    animation:roll-hop 1.15s cubic-bezier(.3,.62,.3,1) forwards;
+    animation:roll-hop var(--roll-dur,1.15s) cubic-bezier(.3,.62,.3,1) forwards;
     animation-delay:var(--roll-delay,0s);
     will-change:transform;
   }
   .die-wrap.rolling::after{
-    animation:roll-shadow 1.15s cubic-bezier(.3,.62,.3,1) forwards;
+    animation:roll-shadow var(--roll-dur,1.15s) cubic-bezier(.3,.62,.3,1) forwards;
     animation-delay:var(--roll-delay,0s);
   }
   .die.rolling{
-    animation:tumble 1.15s cubic-bezier(.3,.62,.3,1) forwards;
+    animation:tumble var(--roll-dur,1.15s) cubic-bezier(.3,.62,.3,1) forwards;
     animation-delay:var(--roll-delay,0s);
-    will-change:transform, filter;
+    will-change:transform;
+    -webkit-transform-style:preserve-3d;
+  }
+  /* Motion blur runs on the FACES, never the cube — a filter on the 3D element
+     itself forces transform-style:flat and flattens the cube into 2D. */
+  .die.rolling .die-face{
+    animation:tumble-blur var(--roll-dur,1.15s) linear forwards;
+    animation-delay:var(--roll-delay,0s);
   }
   @keyframes roll-hop{
     0%  { transform:translate(var(--tx,0px), 0) scale(.92); }
@@ -551,11 +560,17 @@
     100%{ transform:translateX(-50%) translateY(0) scale(1); opacity:.55; }
   }
   @keyframes tumble{
-    0%  { transform:rotateX(0deg) rotateY(0deg) scale(.72); filter:blur(1.6px) brightness(1.07); }
-    30% { transform:rotateX(calc(var(--rx,380deg)*.8)) rotateY(calc(var(--ry,300deg)*.55)) scale(1); filter:blur(1.5px) brightness(1.09); }
-    60% { transform:rotateX(calc(var(--rx,380deg)*1.65)) rotateY(calc(var(--ry,300deg)*1.3)) scale(1); filter:blur(1px) brightness(1.05); }
-    85% { transform:rotateX(calc(var(--rx,380deg)*2.15)) rotateY(calc(var(--ry,300deg)*2.05)) scale(1); filter:blur(.6px) brightness(1.02); }
-    100%{ transform:rotateX(calc(var(--rx,380deg)*2.5)) rotateY(calc(var(--ry,300deg)*2.4)) scale(1); filter:blur(0) brightness(1); }
+    0%   { transform:rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(.72); }
+    30%  { transform:rotateX(calc(var(--rx,380deg)*.8)) rotateY(calc(var(--ry,300deg)*.55)) rotateZ(var(--rz,0deg)) scale(1); }
+    60%  { transform:rotateX(calc(var(--rx,380deg)*1.65)) rotateY(calc(var(--ry,300deg)*1.3)) rotateZ(calc(var(--rz,0deg)*-1)) scale(1); }
+    85%  { transform:rotateX(calc(var(--rx,380deg)*2.15)) rotateY(calc(var(--ry,300deg)*2.05)) rotateZ(calc(var(--rz,0deg)*.6)) scale(1); }
+    100% { transform:rotateX(calc(var(--rx,380deg)*2.5)) rotateY(calc(var(--ry,300deg)*2.4)) rotateZ(0deg) scale(1); }
+  }
+  @keyframes tumble-blur{
+    0%  { filter:blur(1.8px) brightness(1.08); }
+    40% { filter:blur(1.4px) brightness(1.08); }
+    75% { filter:blur(.8px) brightness(1.04); }
+    100%{ filter:blur(0) brightness(1); }
   }
   /* Landing: squash-stretch pop with a decaying rotational wobble. */
   .die-wrap.land{
@@ -945,7 +960,7 @@
 
 <!-- Version footer -->
 <div style="text-align:center; margin-top:16px; padding:8px; color:var(--text-dim); font-size:11px; opacity:0.7;">
-  $GREED Dice v2.0.0 DiceFX — Local Only
+  $GREED Dice v2.1.0 DiceFX — Local Only
 </div>
 </div>
 
@@ -1562,6 +1577,10 @@ function createCubeDie(cls, sym, randomFaces) {
     face.appendChild(glyphNode(faceCls));
     die.appendChild(face);
   });
+  // Per-die resting angle so settled dice lean at slightly different poses
+  const sitX = (8 + Math.random() * 8).toFixed(1);
+  const sitY = (12 + Math.random() * 10).toFixed(1);
+  wrap.style.setProperty("--sit", `rotateX(-${sitX}deg) rotateY(-${sitY}deg)`);
   wrap.appendChild(die);
   return wrap;
 }
@@ -1679,6 +1698,7 @@ function diceRoll() {
   // Randomize the start order for a more natural, less mechanical cascade
   const startOrder = [...Array(count).keys()];
   shuffleArray(startOrder);
+  let maxEnd = 0;
   for (let i = 0; i < count; i++) {
     // Create a 3D cube die with random face permutation, marked as rolling
     const wrap = createCubeDie(finalDice[i].cls, finalDice[i].sym, true);
@@ -1687,13 +1707,18 @@ function diceRoll() {
     dieEl.classList.add("rolling");
     // Stagger the animation start by randomized order, not left-to-right
     const orderIndex = startOrder.indexOf(i);
-    wrap.style.setProperty("--roll-delay", (orderIndex * 0.05) + "s");
+    const delay = orderIndex * 0.05;
+    const dur = 0.95 + Math.random() * 0.4; // each die rolls on its own clock
+    wrap.style.setProperty("--roll-delay", delay + "s");
+    wrap.style.setProperty("--roll-dur", dur + "s");
     // Per-die personality: how far it drifts sideways and how hard it spins
     wrap.style.setProperty("--tx", ((Math.random() * 150) - 75) + "px");
     wrap.style.setProperty("--rx", (260 + Math.random() * 240) + "deg");
     wrap.style.setProperty("--ry", (220 + Math.random() * 280) + "deg");
+    wrap.style.setProperty("--rz", ((Math.random() * 80) - 40) + "deg");
     row.appendChild(wrap);
     spinEls.push({ el: wrap, orderIndex });
+    if (delay + dur > maxEnd) maxEnd = delay + dur;
   }
   dicePhase = "rolling";
   document.getElementById("rollBtn").classList.add("hidden");
@@ -1712,8 +1737,7 @@ function diceRoll() {
   clearTimeout(diceAnimTimer);
   clearTimeout(diceSpinTimer);
   clearTimeout(diceWatchdog);
-  const maxStagger = (count - 1) * 0.05;
-  diceAnimTimer = setTimeout(() => settleDice(finalDice, fresh), 1150 + maxStagger * 1000 + 120);
+  diceAnimTimer = setTimeout(() => settleDice(finalDice, fresh), maxEnd * 1000 + 250);
   // Safety net: if for any reason the settle timer never fires, force a settle
   diceWatchdog = setTimeout(() => {
     if (dicePhase === "rolling") settleDice(finalDice, fresh);
@@ -3538,7 +3562,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // Version display
-const APP_VERSION = "2.0.0";
+const APP_VERSION = "2.1.0";
 console.log(`$GREED Dice v${APP_VERSION} loaded`);
 </script>
 </body>
