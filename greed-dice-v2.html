@@ -1346,9 +1346,9 @@ function setupBackgroundParticles() {
 // fixed-position clone at that rect and tweens it to `targetRect` via CSS
 // transform. Removes itself on transition end. Pure visual — the actual
 // data move happens in toggleDie() / unselectDie() as before.
-function tuckDieTo(sourceEl, targetRect, cls) {
+function tuckDieTo(sourceEl, targetRect, cls, startRectOverride) {
   if (prefersReducedMotion || !sourceEl) return false;
-  const startRect = sourceEl.getBoundingClientRect();
+  const startRect = startRectOverride || sourceEl.getBoundingClientRect();
   const clone = sourceEl.cloneNode(true);
   clone.classList.add("tuck-clone");
   // Inline styles to position at startRect, identity transform.
@@ -1802,6 +1802,9 @@ function toggleDie(index) {
   // die will appear in the side tray). Source die's element is at
   // #diceRow children[index]; target is bankedRow lastChild after re-render.
   const sourceEl = document.querySelectorAll("#diceRow .die")[index];
+  // v2: capture the die's on-screen rect BEFORE the re-render detaches it,
+  // so the tuck glide starts from where the die actually is on screen.
+  const dieStartRect = sourceEl ? sourceEl.getBoundingClientRect() : null;
   const d = turnDice.splice(index, 1)[0];
   rollGroups[rollGroups.length - 1].push(d); // current roll's group only
   recomputeTurnScore();
@@ -1815,7 +1818,7 @@ function toggleDie(index) {
     const tEl = targetEl[targetEl.length - 1];
     if (tEl) {
       // tuckDieTo clones sourceEl, so we must NOT use it after this point.
-      tuckDieTo(sourceEl, tEl.getBoundingClientRect(), d.cls);
+      tuckDieTo(sourceEl, tEl.getBoundingClientRect(), d.cls, dieStartRect);
     }
   }
 }
@@ -1833,6 +1836,8 @@ function unselectDie(index) {
   let offset = 0;
   for (let k = 0; k < rollGroups.length - 1; k++) offset += rollGroups[k].length;
   const sourceEl = bankedEls[offset + index];
+  // v2: capture the banked die's on-screen rect BEFORE the re-render detaches it.
+  const dieStartRect = sourceEl ? sourceEl.getBoundingClientRect() : null;
   const d = g.splice(index, 1)[0];
   turnDice.push(d);
   recomputeTurnScore();
@@ -1841,7 +1846,7 @@ function unselectDie(index) {
     // After re-render, turnDice last child is the freshly-added die in main tray.
     const diceEls = document.querySelectorAll("#diceRow .die");
     const targetEl = diceEls[diceEls.length - 1];
-    if (targetEl) tuckDieTo(sourceEl, targetEl.getBoundingClientRect(), d.cls);
+    if (targetEl) tuckDieTo(sourceEl, targetEl.getBoundingClientRect(), d.cls, dieStartRect);
     playPickup(); buzz([8]);
   }
 }
