@@ -133,10 +133,7 @@
   }
   .tile:hover::after,.tile:focus-visible::after{background-position:-80% 0}
 
-  .motif{
-    height:112px;display:flex;align-items:center;justify-content:center;
-    position:relative;margin-bottom:10px;
-  }
+  /* (.motif removed — replaced by .shot with a live page preview) */
   .tile h2{
     margin:0;font-size:17px;font-weight:900;letter-spacing:.4px;
   }
@@ -158,18 +155,117 @@
   .tile.score .accent{background:linear-gradient(180deg,#9fbe6a,var(--rank))}
   .tile.cards .accent{background:linear-gradient(180deg,#4fc3b4,var(--teal))}
 
-  /* ---------- motif 1: spinning die ---------- */
-  .die-scene{width:56px;height:56px;perspective:420px}
+  /* ---------- live page preview (real page, scaled + panned) ----------
+     Not a static image: each tile renders the ACTUAL page in a non-interactive
+     iframe, scaled down and slowly panned, so the thumbnail is always current. */
+  .shot{
+    position:relative;display:block;height:104px;margin-bottom:12px;
+    border-radius:12px;overflow:hidden;
+    border:1px solid rgba(232,147,90,.18);
+    background:#0a0604;
+    box-shadow:inset 0 0 26px rgba(0,0,0,.75),0 2px 10px rgba(0,0,0,.4);
+  }
+  .shot-view{position:absolute;inset:0;overflow:hidden}
+  .shot iframe{
+    position:absolute;left:0;top:0;width:1180px;height:1600px;border:0;
+    pointer-events:none;
+    transform:translateY(0) scale(.26);
+    transform-origin:0 0;
+    filter:brightness(.92) saturate(.96) contrast(1.02);
+    animation:shotPan 16s var(--ease-out) infinite;
+  }
+  /* translate comes first so the pan is measured in real pixels, not scaled */
+  @keyframes shotPan{
+    0%,  12%{ transform:translateY(0)     scale(.26) }
+    46%, 60%{ transform:translateY(-104px) scale(.26) }
+    100%    { transform:translateY(0)     scale(.26) }
+  }
+  /* a scrim so the page never fights the tile text */
+  .shot::after{
+    content:'';position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(180deg,rgba(10,6,4,.10) 0%,rgba(10,6,4,0) 42%,rgba(10,6,4,.55) 100%);
+  }
+  /* ---------- flashing text + symbols over the preview ----------
+     A stepped word reel (same technique as the counter), drifting glyphs and a
+     sweep line — so the tile is saying things, not just moving. */
+  .fx{position:absolute;inset:0;pointer-events:none;z-index:2;overflow:hidden}
+  .fx-words{
+    position:absolute;left:9px;bottom:11px;height:16px;overflow:hidden;
+    font-size:9px;font-weight:900;letter-spacing:1.4px;text-transform:uppercase;
+  }
+  .fx-words .reel{animation:fxWords 8s steps(4,end) infinite}
+  .fx-words b{
+    display:block;height:16px;line-height:16px;font-weight:900;
+    color:#ffd9a8;
+    text-shadow:0 0 9px rgba(255,140,60,.85),0 1px 3px rgba(0,0,0,.95);
+    white-space:nowrap;
+  }
+  @keyframes fxWords{
+    0%, 6%{transform:translateY(0)}
+    100%  {transform:translateY(-64px)}
+  }
+  .fx-glyphs span{
+    position:absolute;font-weight:900;font-size:14px;opacity:0;
+    color:#ffc98c;
+    text-shadow:0 0 10px rgba(255,150,70,.8);
+    animation:fxGlyph 6s linear infinite;
+  }
+  .fx-glyphs span:nth-child(1){left:16%;bottom:4px;animation-delay:.2s}
+  .fx-glyphs span:nth-child(2){left:42%;bottom:8px;animation-delay:1.5s}
+  .fx-glyphs span:nth-child(3){left:64%;bottom:2px;animation-delay:.9s}
+  .fx-glyphs span:nth-child(4){left:82%;bottom:6px;animation-delay:2.3s}
+  @keyframes fxGlyph{
+    0%  {opacity:0;transform:translateY(10px) scale(.8) rotate(-6deg)}
+    22% {opacity:.9}
+    100%{opacity:0;transform:translateY(-42px) scale(1.15) rotate(8deg)}
+  }
+  .fx-scan{
+    position:absolute;left:0;right:0;height:2px;
+    background:linear-gradient(90deg,transparent,rgba(255,190,120,.55),transparent);
+    animation:fxScan 4.5s linear infinite;
+  }
+  @keyframes fxScan{
+    0%  {top:-3%;opacity:0}
+    12% {opacity:.9}
+    85% {opacity:.5}
+    100%{top:103%;opacity:0}
+  }
+
+  /* the animated motif rides in the corner as an identity badge */
+  .badge{
+    position:absolute;right:8px;bottom:8px;z-index:2;
+    width:58px;height:46px;display:grid;place-items:center;
+    border-radius:10px;overflow:hidden;
+    background:rgba(10,6,4,.74);
+    border:1px solid rgba(232,147,90,.24);
+    box-shadow:0 4px 12px rgba(0,0,0,.55);
+    -webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);
+  }
+  .badge .die-stage{transform:scale(.58)}
+  .badge .tally{transform:scale(.44);transform-origin:center}
+  .badge .card-fan{transform:scale(.46);transform-origin:center}
+
+  /* ---------- motif 1: die that ACTUALLY tumbles ----------
+     Not a constant spin: it rests, hops, rolls 90deg onto a new face with a
+     little overshoot, rests again. Contact shadow shrinks while airborne. */
+  .die-stage{position:relative;display:flex;align-items:center;justify-content:center}
+  .die-shadow{
+    position:absolute;bottom:-6px;left:50%;margin-left:-23px;
+    width:46px;height:11px;border-radius:50%;
+    background:radial-gradient(ellipse at center,rgba(0,0,0,.6),rgba(0,0,0,0) 72%);
+    animation:dieShadow 7.2s linear infinite;
+  }
+  .die-scene{width:56px;height:56px;perspective:460px}
   .die-cube{
     width:56px;height:56px;position:relative;transform-style:preserve-3d;
-    animation:dieIdle 11s linear infinite;
+    animation:dieTumble 7.2s linear infinite;
   }
   .die-cube span{
     position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
     font-weight:900;font-size:22px;border-radius:7px;
     background:linear-gradient(160deg,#f7e7d0,#c9a877);color:#231106;
     border:1px solid rgba(0,0,0,.35);
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.9),inset 0 -4px 8px rgba(0,0,0,.25);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.92),inset 0 -4px 8px rgba(0,0,0,.25);
     backface-visibility:hidden;
   }
   .die-cube span:nth-child(1){transform:translateZ(28px)}
@@ -178,52 +274,93 @@
   .die-cube span:nth-child(4){transform:rotateY(-90deg) translateZ(28px)}
   .die-cube span:nth-child(5){transform:rotateX(90deg) translateZ(28px)}
   .die-cube span:nth-child(6){transform:rotateX(-90deg) translateZ(28px)}
-  @keyframes dieIdle{
-    0%{transform:rotateX(-16deg) rotateY(0)}
-    100%{transform:rotateX(-16deg) rotateY(360deg)}
+  @keyframes dieTumble{
+    0%,  14%  {transform:rotateX(-16deg) rotateY(0deg)}
+    22%       {transform:rotateX(-4deg)  rotateY(-40deg) translateY(-11px)}
+    28%       {transform:rotateX(-16deg) rotateY(-100deg)}
+    30%, 50%  {transform:rotateX(-16deg) rotateY(-90deg)}
+    58%       {transform:rotateX(-28deg) rotateY(-142deg) translateY(-13px)}
+    64%       {transform:rotateX(-16deg) rotateY(-192deg)}
+    66%, 84%  {transform:rotateX(-16deg) rotateY(-180deg)}
+    91%       {transform:rotateX(-6deg)  rotateY(-250deg) translateY(-9px)}
+    100%      {transform:rotateX(-16deg) rotateY(-360deg)}
+  }
+  @keyframes dieShadow{
+    0%,  14%  {transform:scale(1);opacity:.55}
+    22%       {transform:scale(.58);opacity:.2}
+    28%       {transform:scale(1.06);opacity:.6}
+    30%, 50%  {transform:scale(1);opacity:.55}
+    58%       {transform:scale(.54);opacity:.18}
+    64%       {transform:scale(1.06);opacity:.6}
+    66%, 84%  {transform:scale(1);opacity:.55}
+    91%       {transform:scale(.6);opacity:.22}
+    100%      {transform:scale(1);opacity:.55}
   }
 
-  /* ---------- motif 2: tally counter ---------- */
+  /* ---------- motif 2: mechanical counter ----------
+     The reel snaps one notch at a time (steps), and a marker beside it jumps to
+     the same notch on the identical clock — so the two are always in sync. */
   .tally{
-    height:56px;width:88px;overflow:hidden;position:relative;
-    -webkit-mask-image:linear-gradient(180deg,transparent,#000 22%,#000 78%,transparent);
-            mask-image:linear-gradient(180deg,transparent,#000 22%,#000 78%,transparent);
+    position:relative;height:56px;width:96px;padding-left:14px;
+    -webkit-mask-image:linear-gradient(180deg,transparent,#000 20%,#000 80%,transparent);
+            mask-image:linear-gradient(180deg,transparent,#000 20%,#000 80%,transparent);
   }
-  .tally ul{margin:0;padding:0;list-style:none;animation:tallyStep 6s steps(6,end) infinite}
-  .tally li{
-    height:56px;display:flex;align-items:center;justify-content:center;
+  .tally-reel{margin:0;padding:0;list-style:none;overflow:hidden;height:56px;
+    animation:tallyReel 6s steps(6,end) infinite}
+  .tally-reel li{
+    height:56px;display:flex;align-items:center;justify-content:flex-start;
     font-weight:900;font-size:26px;color:#a9c977;
     font-variant-numeric:tabular-nums;letter-spacing:-.5px;
   }
-  @keyframes tallyStep{
-    0%,8%{transform:translateY(0)}
-    100%{transform:translateY(-336px)}
+  @keyframes tallyReel{
+    0%,7%  {transform:translateY(0)}
+    100%   {transform:translateY(-336px)}
+  }
+  /* the notch marker: same duration, same steps, same distance */
+  .tally-mark{
+    position:absolute;left:0;top:0;width:3px;height:56px;border-radius:2px;
+    background:linear-gradient(180deg,#cfe6a3,#7d9d43);
+    box-shadow:0 0 8px rgba(169,201,119,.6);
+    animation:tallyMark 6s steps(6,end) infinite;
+  }
+  @keyframes tallyMark{
+    0%,7%  {transform:translateY(0)}
+    100%   {transform:translateY(-336px)}
   }
 
-  /* ---------- motif 3: flipping card ---------- */
-  .card-scene{width:46px;height:64px;perspective:520px}
-  .card3d{
-    width:100%;height:100%;position:relative;transform-style:preserve-3d;
-    animation:cardFlip 6s var(--ease-out) infinite;
+  /* ---------- motif 3: a hand of cards, not one lonely flip ---------- */
+  .card-fan{position:relative;width:92px;height:64px;perspective:560px}
+  .cf{position:absolute;top:0;width:42px;height:60px}
+  .cf.c1{left:2px;  transform:rotate(-10deg);z-index:1}
+  .cf.c2{left:24px; transform:rotate(0deg); z-index:2}
+  .cf.c3{left:46px; transform:rotate(10deg); z-index:1}
+  .cf-inner{
+    position:relative;width:100%;height:100%;transform-style:preserve-3d;
+    animation:cfFlip 6s var(--ease-out) infinite;
   }
-  .card-face{
-    position:absolute;inset:0;border-radius:8px;
+  .cf.c1 .cf-inner{animation-delay:0s}
+  .cf.c2 .cf-inner{animation-delay:.22s}
+  .cf.c3 .cf-inner{animation-delay:.44s}
+  .cf-face{
+    position:absolute;inset:0;border-radius:7px;
     display:flex;align-items:center;justify-content:center;
-    font-weight:900;font-size:20px;letter-spacing:1px;
+    font-weight:900;font-size:19px;
     backface-visibility:hidden;-webkit-backface-visibility:hidden;
-    border:1px solid rgba(0,0,0,.35);
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 6px 14px rgba(0,0,0,.5);
+    border:1px solid rgba(0,0,0,.4);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 5px 12px rgba(0,0,0,.5);
   }
-  .card-face.front{background:linear-gradient(160deg,#f9ecd8,#dcc09a);color:#2a1508}
-  .card-face.back{
+  .cf-face.front{background:linear-gradient(160deg,#f9ecd8,#dcc09a);color:#2a1508}
+  .cf-face.back{
     transform:rotateY(180deg);
-    background:linear-gradient(160deg,#3fb3a4,#16564d);color:#eafffb;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 6px 14px rgba(0,0,0,.5);
+    background:
+      radial-gradient(circle at 50% 34%,rgba(255,255,255,.22),transparent 55%),
+      linear-gradient(160deg,#3fb3a4,#12463f);
+    color:#eafffb;
   }
-  @keyframes cardFlip{
-    0%,34%{transform:rotateY(0deg)}
-    50%,84%{transform:rotateY(180deg)}
-    100%{transform:rotateY(360deg)}
+  @keyframes cfFlip{
+    0%,  26%{transform:rotateY(0deg)}
+    40%, 72%{transform:rotateY(180deg)}
+    86%,100%{transform:rotateY(360deg)}
   }
 
   /* ---------- footer ---------- */
@@ -235,22 +372,27 @@
   /* ---------- responsive ---------- */
   @media (max-width:820px){
     .tiles{grid-template-columns:1fr;gap:14px}
-    .tile{flex-direction:row;align-items:center;gap:16px;padding:16px}
-    .motif{height:76px;width:76px;flex:0 0 76px;margin:0}
+    .tile{flex-direction:row;align-items:center;gap:14px;padding:14px}
     .tile .accent{width:3px}
     .tile-body{display:flex;flex-direction:column;min-width:0}
     .go{margin-top:8px}
-    .tally{height:48px;width:76px}
-    .tally li{height:48px;font-size:22px}
-    .die-scene,.die-cube{width:48px;height:48px}
-    .die-cube span{border-radius:6px;font-size:19px}
-    .die-cube span:nth-child(1){transform:translateZ(24px)}
-    .die-cube span:nth-child(2){transform:rotateY(180deg) translateZ(24px)}
-    .die-cube span:nth-child(3){transform:rotateY(90deg) translateZ(24px)}
-    .die-cube span:nth-child(4){transform:rotateY(-90deg) translateZ(24px)}
-    .die-cube span:nth-child(5){transform:rotateX(90deg) translateZ(24px)}
-    .die-cube span:nth-child(6){transform:rotateX(-90deg) translateZ(24px)}
-    .card-scene{width:40px;height:56px}
+    /* a phone-sized page preview is illegible, so the badge takes over */
+    .shot{width:88px;height:88px;flex:0 0 88px;margin:0}
+    .shot-view{display:none}
+    /* keep the symbols, drop the words (no room at 88px) */
+    .fx-words{display:none}
+    .fx-scan{display:none}
+    .fx-glyphs span{font-size:10px}
+    .badge{position:static;width:100%;height:100%;border:none;background:transparent;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
+    .badge .die-stage{transform:scale(.72)}
+    .badge .tally{transform:scale(.6)}
+    .badge .card-fan{transform:scale(.62)}
+    .card-fan{width:80px;height:56px}
+    .cf{width:36px;height:52px}
+    .cf.c1{left:2px}
+    .cf.c2{left:21px}
+    .cf.c3{left:40px}
+    .cf-face{font-size:16px;border-radius:6px}
   }
 
   @media (prefers-reduced-motion: reduce){
@@ -337,10 +479,21 @@
 
     <a class="tile dice" href="greed-dice.html">
       <span class="accent" aria-hidden="true"></span>
-      <span class="motif" aria-hidden="true">
-        <span class="die-scene"><span class="die-cube">
-          <span>$</span><span>G</span><span>R</span><span>E</span><span>D</span><span>6</span>
-        </span></span>
+      <span class="shot" aria-hidden="true">
+        <span class="shot-view"><iframe src="greed-dice.html" title="" scrolling="no" tabindex="-1" loading="lazy"></iframe></span>
+        <span class="fx">
+          <span class="fx-scan"></span>
+          <span class="fx-words"><span class="reel"><b>HOT DICE</b><b>$5000</b><b>GREED OUT</b><b>BANK +600</b></span></span>
+          <span class="fx-glyphs"><span>$</span><span>6</span><span>&#9670;</span><span>&#9733;</span></span>
+        </span>
+        <span class="badge">
+          <span class="die-stage">
+            <span class="die-shadow"></span>
+            <span class="die-scene"><span class="die-cube">
+              <span>$</span><span>G</span><span>R</span><span>E</span><span>D</span><span>6</span>
+            </span></span>
+          </span>
+        </span>
       </span>
       <span class="tile-body">
         <h2>$GREED Dice</h2>
@@ -349,12 +502,23 @@
       </span>
     </a>
 
-    <a class="tile score" href="greed-scoreboard1.html">
+    <a class="tile score" href="greed-score.html">
       <span class="accent" aria-hidden="true"></span>
-      <span class="motif" aria-hidden="true">
-        <span class="tally"><ul>
-          <li>50</li><li>100</li><li>150</li><li>200</li><li>250</li><li>300</li>
-        </ul></span>
+      <span class="shot" aria-hidden="true">
+        <span class="shot-view"><iframe src="greed-score.html" title="" scrolling="no" tabindex="-1" loading="lazy"></iframe></span>
+        <span class="fx">
+          <span class="fx-scan"></span>
+          <span class="fx-words"><span class="reel"><b>+50</b><b>+150</b><b>ROUND 3</b><b>LEADER</b></span></span>
+          <span class="fx-glyphs"><span>&#9670;</span><span>&#9650;</span><span>&#9733;</span><span>&#9679;</span></span>
+        </span>
+        <span class="badge">
+          <span class="tally">
+            <span class="tally-mark"></span>
+            <ul class="tally-reel">
+              <li>50</li><li>100</li><li>150</li><li>200</li><li>250</li><li>300</li>
+            </ul>
+          </span>
+        </span>
       </span>
       <span class="tile-body">
         <h2>Scoreboard</h2>
@@ -365,11 +529,26 @@
 
     <a class="tile cards" href="you-go.html">
       <span class="accent" aria-hidden="true"></span>
-      <span class="motif" aria-hidden="true">
-        <span class="card-scene"><span class="card3d">
-          <span class="card-face front">Y</span>
-          <span class="card-face back">G</span>
-        </span></span>
+      <span class="shot" aria-hidden="true">
+        <span class="shot-view"><iframe src="you-go.html" title="" scrolling="no" tabindex="-1" loading="lazy"></iframe></span>
+        <span class="fx">
+          <span class="fx-scan"></span>
+          <span class="fx-words"><span class="reel"><b>WILD!</b><b>+2 DRAW</b><b>SKIP</b><b>YOU-GO!</b></span></span>
+          <span class="fx-glyphs"><span>&#9824;</span><span>&#9829;</span><span>&#9830;</span><span>&#9827;</span></span>
+        </span>
+        <span class="badge">
+          <span class="card-fan">
+            <span class="cf c1"><span class="cf-inner">
+              <span class="cf-face front">Y</span><span class="cf-face back">›</span>
+            </span></span>
+            <span class="cf c2"><span class="cf-inner">
+              <span class="cf-face front">G</span><span class="cf-face back">›</span>
+            </span></span>
+            <span class="cf c3"><span class="cf-inner">
+              <span class="cf-face front">O</span><span class="cf-face back">›</span>
+            </span></span>
+          </span>
+        </span>
       </span>
       <span class="tile-body">
         <h2>You-Go</h2>
@@ -405,6 +584,101 @@
     tile.addEventListener('pointerleave', reset);
     tile.addEventListener('pointercancel', reset);
     tile.addEventListener('blur', reset);
+  });
+})();
+</script>
+
+<!-- ================= GLOBAL NAV (hamburger) ================= -->
+<style>
+  body.nav-open{ overflow:hidden; }
+  .nav-toggle{
+    position:fixed; top:max(12px, env(safe-area-inset-top)); right:max(12px, env(safe-area-inset-right));
+    z-index:900; width:44px; height:44px; border-radius:12px; padding:0;
+    background:rgba(26,15,9,.84); border:1px solid rgba(232,147,90,.30);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;
+    cursor:pointer; box-shadow:0 4px 14px rgba(0,0,0,.45);
+    -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px);
+    transition:transform .12s cubic-bezier(.2,.8,.2,1), border-color .15s;
+  }
+  .nav-toggle:active{ transform:scale(.94); }
+  .nav-toggle span{ display:block; width:18px; height:2px; border-radius:2px; background:#e8935a; transition:transform .22s, opacity .18s; }
+  body.nav-open .nav-toggle span:nth-child(1){ transform:translateY(6px) rotate(45deg); }
+  body.nav-open .nav-toggle span:nth-child(2){ opacity:0; }
+  body.nav-open .nav-toggle span:nth-child(3){ transform:translateY(-6px) rotate(-45deg); }
+  .nav-scrim{
+    position:fixed; inset:0; z-index:880; background:rgba(0,0,0,.55);
+    opacity:0; pointer-events:none; transition:opacity .22s;
+  }
+  body.nav-open .nav-scrim{ opacity:1; pointer-events:auto; }
+  .nav-menu{
+    position:fixed; z-index:890; top:0; right:0; bottom:0; width:min(280px, 82vw);
+    background:linear-gradient(180deg, rgba(36,18,9,.985), rgba(12,7,4,.99));
+    border-left:1px solid rgba(232,147,90,.18);
+    box-shadow:-18px 0 50px rgba(0,0,0,.55);
+    transform:translateX(102%); transition:transform .26s cubic-bezier(.2,.8,.2,1);
+    display:flex; flex-direction:column;
+    padding:calc(18px + env(safe-area-inset-top)) 14px calc(18px + env(safe-area-inset-bottom));
+    overflow-y:auto;
+  }
+  body.nav-open .nav-menu{ transform:translateX(0); }
+  .nav-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; padding:0 4px; }
+  .nav-title{ font-weight:900; font-size:12px; letter-spacing:2.4px; text-transform:uppercase; color:var(--dim,#bda390); }
+  .nav-close{
+    width:34px; height:34px; border-radius:50%; cursor:pointer; font-size:15px; line-height:1;
+    background:rgba(255,255,255,.06); border:1px solid rgba(232,147,90,.22); color:#f7ede4;
+  }
+  .nav-close:active{ transform:scale(.94); }
+  .nav-item{
+    display:flex; align-items:center; gap:11px; padding:13px 12px; border-radius:12px;
+    color:#f7ede4; text-decoration:none; font-weight:700; font-size:14px;
+    border:1px solid transparent; transition:background .15s, border-color .15s;
+  }
+  .nav-item + .nav-item{ margin-top:4px; }
+  .nav-item:hover, .nav-item:focus-visible{ background:rgba(232,147,90,.10); border-color:rgba(232,147,90,.24); }
+  .nav-item:focus-visible{ outline:2px solid #2a9d8f; outline-offset:2px; }
+  .nav-ico{ width:22px; text-align:center; font-size:16px; }
+  .nav-item[aria-current="page"]{
+    background:linear-gradient(180deg, rgba(232,147,90,.20), rgba(217,114,74,.10));
+    border-color:rgba(232,147,90,.45); color:#ffd9a8;
+  }
+  @media (prefers-reduced-motion: reduce){ .nav-menu,.nav-scrim,.nav-toggle span{ transition:none !important; } }
+</style>
+
+<button class="nav-toggle" id="navToggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="navMenu">
+  <span></span><span></span><span></span>
+</button>
+<div class="nav-scrim" id="navScrim"></div>
+<nav class="nav-menu" id="navMenu" aria-label="Site menu">
+  <div class="nav-head">
+    <span class="nav-title">$GREED</span>
+    <button class="nav-close" id="navClose" type="button" aria-label="Close menu">&#10005;</button>
+  </div>
+  <a class="nav-item" href="index.html"><span class="nav-ico">&#8962;</span>Home</a>
+  <a class="nav-item" href="greed-dice.html"><span class="nav-ico">&#127922;</span>$GREED Dice</a>
+  <a class="nav-item" href="greed-score.html"><span class="nav-ico">&#128202;</span>Scoreboard</a>
+  <a class="nav-item" href="you-go.html"><span class="nav-ico">&#127924;</span>You-Go</a>
+</nav>
+<script>
+(function () {
+  var body = document.body;
+  var toggle = document.getElementById('navToggle');
+  var menu = document.getElementById('navMenu');
+  var scrim = document.getElementById('navScrim');
+  var closeBtn = document.getElementById('navClose');
+  if (!toggle || !menu) return;
+  function setOpen(open) {
+    body.classList.toggle('nav-open', open);
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open && closeBtn) closeBtn.focus();
+  }
+  toggle.addEventListener('click', function () { setOpen(!body.classList.contains('nav-open')); });
+  if (scrim) scrim.addEventListener('click', function () { setOpen(false); });
+  if (closeBtn) closeBtn.addEventListener('click', function () { setOpen(false); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') setOpen(false); });
+  // same snippet everywhere: work out which entry is us
+  var here = (location.pathname.split('/').pop() || 'index.html');
+  Array.prototype.forEach.call(menu.querySelectorAll('.nav-item'), function (a) {
+    if (a.getAttribute('href') === here) a.setAttribute('aria-current', 'page');
   });
 })();
 </script>
