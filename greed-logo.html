@@ -162,36 +162,56 @@
     -webkit-text-fill-color:transparent;color:transparent}
 
   /* ============================================================
-     D · STRUCK COIN — minted medallion with a specular sweep
+     D · SPINNING SPHYNX — hairless mascot on a two-faced disc
      ============================================================ */
-  .coin-lockup{display:flex;align-items:center;gap:12px}
-  .coin{
-    width:52px;height:52px;border-radius:50%;position:relative;flex:0 0 auto;
-    background:
-      conic-gradient(from 0deg, #f7d79a, #b3813f 18%, #f7e0b4 34%, #8a5f2a 52%, #ffe9c4 68%, #a3702f 84%, #f7d79a);
-    box-shadow:
-      0 0 0 2px rgba(255,236,200,.55), 0 0 22px rgba(232,147,90,.45),
-      inset 0 2px 3px rgba(255,255,255,.7), inset 0 -3px 6px rgba(0,0,0,.45);
+  .sphynx-lockup{display:flex;align-items:center;gap:12px}
+  .sphynx-disc{
+    width:68px;height:68px;position:relative;flex:0 0 auto;
+    transform-style:preserve-3d;
+    animation:sphynxBob 6s var(--ease-out) infinite;
+  }
+  .sphynx-face{
+    position:absolute;inset:0;border-radius:50%;overflow:hidden;
+    backface-visibility:hidden; -webkit-backface-visibility:hidden;
+    background:radial-gradient(circle at 34% 24%, #47301f, #150c07 72%);
+    box-shadow:inset 0 0 0 2px rgba(232,147,90,.6), 0 0 20px rgba(217,114,74,.4);
     display:flex;align-items:center;justify-content:center;
-    animation:coinTurn 6s linear infinite;
+    animation:sphynxSpin 6s var(--ease-out) infinite;
   }
-  .coin b{
-    font-size:24px;font-weight:900;color:#3a1f08;
-    text-shadow:0 1px 0 rgba(255,255,255,.65), 0 -1px 1px rgba(0,0,0,.35);
-  }
-  .coin::after{
-    content:'';position:absolute;inset:0;border-radius:50%;pointer-events:none;
-    background:linear-gradient(115deg,transparent 36%,rgba(255,255,255,.85) 50%,transparent 64%);
-    background-size:300% 100%;background-position:200% 0;
+  .sphynx-face.back{ transform:rotateY(180deg); animation-direction:reverse; }
+  /* specular sweep across the metal */
+  .sphynx-face::after{
+    content:''; position:absolute; inset:0; pointer-events:none;
+    background:linear-gradient(115deg, transparent 34%, rgba(255,236,200,.55) 50%, transparent 66%);
+    background-size:300% 100%; background-position:200% 0;
     mix-blend-mode:screen;
-    animation:coinSheen 3.4s var(--ease-out) infinite;
+    animation:sphynxSheen 3.4s var(--ease-out) infinite;
   }
-  @keyframes coinTurn{
-    0%,100%{transform:rotateY(0) rotateX(6deg)}
-    50%{transform:rotateY(180deg) rotateX(6deg)}
+  @keyframes sphynxSheen{ 0%{background-position:200% 0} 60%,100%{background-position:-120% 0} }
+  .sphynx{
+    height:82%; width:auto;
+    filter:drop-shadow(0 1px 3px rgba(0,0,0,.6));
   }
-  @keyframes coinSheen{0%{background-position:200% 0}60%,100%{background-position:-120% 0}}
-  .coin-word{
+  /* layered tones give the body form instead of one flat fill */
+  .sphynx .base  { fill:#e8935a; }
+  .sphynx .hi    { fill:#f8c79b; }
+  .sphynx .sh    { fill:#a95a2c; opacity:.5; }
+  .sphynx .inner { fill:#7d3f1d; opacity:.78; }
+  .sphynx .wr    { fill:none; stroke:#8a4a28; stroke-width:1.1; stroke-linecap:round; opacity:.5; }
+  .sphynx .eye   { fill:#2a1206; }
+  .sphynx .iris  { fill:#c98a3f; }
+  .sphynx .pupil { fill:#120a05; }
+  .sphynx .glint { fill:#fff3da; opacity:.95; }
+  .sphynx .nose  { fill:#2a1206; }
+  @keyframes sphynxSpin{
+    0%, 40%  { transform:rotateY(0deg); }
+    58%, 100%{ transform:rotateY(360deg); }
+  }
+  @keyframes sphynxBob{
+    0%,100%{ transform:translateY(0) rotate(-1deg); }
+    50%    { transform:translateY(-3px) rotate(1deg); }
+  }
+  .sphynx-word{
     font-weight:900;font-size:clamp(22px,5.6vw,30px);letter-spacing:3px;
     background:linear-gradient(180deg,#ffe9c4,#c98a3f);
     -webkit-background-clip:text;background-clip:text;
@@ -210,9 +230,7 @@
   .mini .m-word{font-weight:900;font-size:17px;letter-spacing:1px}
   .mini .m-cube{width:18px;height:18px;border-radius:4px;background:linear-gradient(160deg,#f7e7d0,#c9a877);
     box-shadow:inset 0 1px 0 #fff,0 2px 5px rgba(0,0,0,.5)}
-  .mini .m-coin{width:18px;height:18px;border-radius:50%;
-    background:conic-gradient(from 0deg,#f7d79a,#b3813f 22%,#ffe9c4 48%,#8a5f2a 72%,#f7d79a);
-    box-shadow:0 0 0 1px rgba(255,236,200,.6), 0 0 8px rgba(232,147,90,.5)}
+  .mini .m-sphynx{width:20px;height:26px;fill:var(--amber)}
   .mini.a .m-word{color:var(--amber)}
   .mini.b .m-word{color:#fff;text-shadow:0 0 6px rgba(255,86,178,.9),0 0 14px rgba(255,86,178,.5)}
   .mini.c .m-word{color:var(--amber)}
@@ -284,14 +302,123 @@
     <!-- D -->
     <div class="card">
       <div class="stage">
-        <div class="tag">D · Struck coin</div>
-        <div class="coin-lockup">
-          <div class="coin"><b>$</b></div>
-          <div class="coin-word">GREED</div>
+        <div class="tag">D · Spinning sphinx</div>
+        <div class="sphynx-lockup">
+          <div class="sphynx-disc">
+            <div class="sphynx-face">
+              <svg class="sphynx" viewBox="0 0 120 160" aria-hidden="true">
+                <g class="inner">
+                  <path d="M44 27C39 20 35 11 32 5C40 10 48 17 52 24Z"/>
+                  <path d="M76 27C81 20 85 11 88 5C80 10 72 17 68 24Z"/>
+                </g>
+                <g class="base">
+                  <path d="M42 30C36 22 31 10 27 2C38 6 49 15 55 25Z"/>
+                  <path d="M78 30C84 22 89 10 93 2C82 6 71 15 65 25Z"/>
+                  <path d="M50 60h20l3 12c0 6-7 10-13 10s-13-4-13-10z"/>
+                  <path d="M60 16C71 16 79 23 81 33L82 45C82 54 75 62 67 64L60 66 53 64C45 62 38 54 38 45L39 33C41 23 49 16 60 16Z"/>
+                  <path d="M60 76C47 76 37 85 35 97C33 111 31 129 31 141C31 147 34 151 40 151H80C86 151 89 147 89 141C89 129 87 111 85 97C83 85 73 76 60 76Z"/>
+                  <path d="M45 110h13v34c0 3-2 5-5 5h-3c-3 0-5-2-5-5z"/>
+                  <path d="M62 110h13v34c0 3-2 5-5 5h-3c-3 0-5-2-5-5z"/>
+                  <path d="M87 140C99 145 111 137 111 124C111 115 105 110 99 112C105 115 108 119 108 124C108 132 100 137 88 134Z"/>
+                </g>
+                <g class="sh">
+                  <path d="M37 97C43 89 51 85 58 85L58 110C48 108 40 104 37 97Z"/>
+                  <path d="M83 97C77 89 69 85 62 85L62 110C72 108 80 104 83 97Z"/>
+                  <path d="M58 110h4v39h-4z"/>
+                </g>
+                <g class="hi">
+                  <path d="M47 29C52 25 57 24 60 24C63 24 68 25 73 29C68 31 63 32 60 32C57 32 52 31 47 29Z"/>
+                  <path d="M41 41C44 39 47 40 48 44C46 48 43 49 41 47Z"/>
+                  <path d="M79 41C76 39 73 40 72 44C74 48 77 49 79 47Z"/>
+                  <path d="M53 48C56 46 58 45 60 45C62 45 64 46 67 48C64 52 62 54 60 54C58 54 56 52 53 48Z"/>
+                </g>
+                <circle class="iris" cx="49.5" cy="38" r="2.7"/>
+                <circle class="iris" cx="70.5" cy="38" r="2.7"/>
+                <circle class="pupil" cx="49.5" cy="38" r="1.2"/>
+                <circle class="pupil" cx="70.5" cy="38" r="1.2"/>
+                <circle class="glint" cx="50.5" cy="37" r="0.75"/>
+                <circle class="glint" cx="71.5" cy="37" r="0.75"/>
+                <path class="eye" d="M44 38C47 34.5 52 34.5 55 38C52 41.5 47 41.5 44 38ZM76 38C73 34.5 68 34.5 65 38C68 41.5 73 41.5 76 38Z"/>
+                <path class="nose" d="M56.5 51h7l-3.5 3.6z"/>
+                <g class="wr">
+                  <path d="M51 21C55 19 58 18.5 60 18.5C62 18.5 65 19 69 21"/>
+                  <path d="M49 25C54 22.5 57 22 60 22C63 22 66 22.5 71 25"/>
+                  <path d="M53 34h14"/>
+                  <path d="M60 55v4"/>
+                  <path d="M48 71C54 75 66 75 72 71"/>
+                  <path d="M49 87C55 91 65 91 71 87"/>
+                  <path d="M47 93C54 97 66 97 73 93"/>
+                  <path d="M46 99C53 103 67 103 74 99"/>
+                  <path d="M44 104C50 107 70 107 76 104"/>
+                  <path d="M35 120C41 124 47 126 53 127"/>
+                  <path d="M85 120C79 124 73 126 67 127"/>
+                  <path d="M34 134C40 138 46 140 51 140"/>
+                  <path d="M86 134C80 138 74 140 69 140"/>
+                  <path d="M48 145v4M53 145v4M67 145v4M72 145v4"/>
+                  <path d="M97 132C103 133 107 129 107 124"/>
+                </g>
+              </svg>
+            </div>
+            <div class="sphynx-face back">
+              <svg class="sphynx" viewBox="0 0 120 160" aria-hidden="true">
+                <g class="inner">
+                  <path d="M44 27C39 20 35 11 32 5C40 10 48 17 52 24Z"/>
+                  <path d="M76 27C81 20 85 11 88 5C80 10 72 17 68 24Z"/>
+                </g>
+                <g class="base">
+                  <path d="M42 30C36 22 31 10 27 2C38 6 49 15 55 25Z"/>
+                  <path d="M78 30C84 22 89 10 93 2C82 6 71 15 65 25Z"/>
+                  <path d="M50 60h20l3 12c0 6-7 10-13 10s-13-4-13-10z"/>
+                  <path d="M60 16C71 16 79 23 81 33L82 45C82 54 75 62 67 64L60 66 53 64C45 62 38 54 38 45L39 33C41 23 49 16 60 16Z"/>
+                  <path d="M60 76C47 76 37 85 35 97C33 111 31 129 31 141C31 147 34 151 40 151H80C86 151 89 147 89 141C89 129 87 111 85 97C83 85 73 76 60 76Z"/>
+                  <path d="M45 110h13v34c0 3-2 5-5 5h-3c-3 0-5-2-5-5z"/>
+                  <path d="M62 110h13v34c0 3-2 5-5 5h-3c-3 0-5-2-5-5z"/>
+                  <path d="M87 140C99 145 111 137 111 124C111 115 105 110 99 112C105 115 108 119 108 124C108 132 100 137 88 134Z"/>
+                </g>
+                <g class="sh">
+                  <path d="M37 97C43 89 51 85 58 85L58 110C48 108 40 104 37 97Z"/>
+                  <path d="M83 97C77 89 69 85 62 85L62 110C72 108 80 104 83 97Z"/>
+                  <path d="M58 110h4v39h-4z"/>
+                </g>
+                <g class="hi">
+                  <path d="M47 29C52 25 57 24 60 24C63 24 68 25 73 29C68 31 63 32 60 32C57 32 52 31 47 29Z"/>
+                  <path d="M41 41C44 39 47 40 48 44C46 48 43 49 41 47Z"/>
+                  <path d="M79 41C76 39 73 40 72 44C74 48 77 49 79 47Z"/>
+                  <path d="M53 48C56 46 58 45 60 45C62 45 64 46 67 48C64 52 62 54 60 54C58 54 56 52 53 48Z"/>
+                </g>
+                <circle class="iris" cx="49.5" cy="38" r="2.7"/>
+                <circle class="iris" cx="70.5" cy="38" r="2.7"/>
+                <circle class="pupil" cx="49.5" cy="38" r="1.2"/>
+                <circle class="pupil" cx="70.5" cy="38" r="1.2"/>
+                <circle class="glint" cx="50.5" cy="37" r="0.75"/>
+                <circle class="glint" cx="71.5" cy="37" r="0.75"/>
+                <path class="eye" d="M44 38C47 34.5 52 34.5 55 38C52 41.5 47 41.5 44 38ZM76 38C73 34.5 68 34.5 65 38C68 41.5 73 41.5 76 38Z"/>
+                <path class="nose" d="M56.5 51h7l-3.5 3.6z"/>
+                <g class="wr">
+                  <path d="M51 21C55 19 58 18.5 60 18.5C62 18.5 65 19 69 21"/>
+                  <path d="M49 25C54 22.5 57 22 60 22C63 22 66 22.5 71 25"/>
+                  <path d="M53 34h14"/>
+                  <path d="M60 55v4"/>
+                  <path d="M48 71C54 75 66 75 72 71"/>
+                  <path d="M49 87C55 91 65 91 71 87"/>
+                  <path d="M47 93C54 97 66 97 73 93"/>
+                  <path d="M46 99C53 103 67 103 74 99"/>
+                  <path d="M44 104C50 107 70 107 76 104"/>
+                  <path d="M35 120C41 124 47 126 53 127"/>
+                  <path d="M85 120C79 124 73 126 67 127"/>
+                  <path d="M34 134C40 138 46 140 51 140"/>
+                  <path d="M86 134C80 138 74 140 69 140"/>
+                  <path d="M48 145v4M53 145v4M67 145v4M72 145v4"/>
+                  <path d="M97 132C103 133 107 129 107 124"/>
+                </g>
+              </svg>
+            </div>
+          </div>
+          <div class="sphynx-word">$GREED</div>
         </div>
       </div>
-      <h2>D · Struck Coin</h2>
-      <p class="note">A minted medallion that <b>turns to show its metal</b>, with a specular highlight raking across it. <b>Reads as value</b> — money-first, good for a currency/token angle. Least "dice".</p>
+      <h2>D · Spinning Sphinx</h2>
+      <p class="note">A <b>hairless sphinx cat</b> struck into a two-faced medallion: it holds facing you, then <b>spins a full turn</b> with the mark on both sides, a sheen raking across the metal. <b>A mascot with attitude</b> — the sphinx is a guardian, which suits a game about hoarding.</p>
     </div>
 
   </div>
@@ -302,7 +429,7 @@
       <div class="mini a"><span class="m-cube"></span><span class="m-word">$GREED</span></div>
       <div class="mini b"><span class="m-word">$GREED</span></div>
       <div class="mini c"><span class="m-cube"></span><span class="m-word">$GREED</span></div>
-      <div class="mini d"><span class="m-coin"></span><span class="m-word">$GREED</span></div>
+      <div class="mini d"><svg class="m-sphynx" viewBox="0 0 100 130" aria-hidden="true"><path d="M38 24 24 3l22 10zM62 24 76 3 54 13zM50 11l14 11 3 15-8 13-9 4-9-4-8-13 3-15zM50 58c-12 0-20 9-21 21-1 11-1 25 0 34 0 2 2 4 4 4h34c2 0 4-2 4-4 1-9 1-23 0-34-1-12-9-21-21-21z"/></svg><span class="m-word">$GREED</span></div>
     </div>
   </div>
 
