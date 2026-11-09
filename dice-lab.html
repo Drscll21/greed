@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>DiceFX Lab — $GREED dice animation sandbox</title>
+<style>
+  :root{
+    --bg-1:#241610;
+    --bg-2:#140c09;
+    --gold:#d9724a;
+    --gold-2:#c0522a;
+    --hot-pink:#e8935a;
+    --electric:#2a9d8f;
+    --card-bg:#2e1c14;
+    --card-border:#4a3021;
+    --text:#f7ede4;
+    --text-dim:#c2a58f;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100dvh;
+    display:flex; align-items:center; justify-content:center;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(192,82,42,0.3), transparent 45%),
+      radial-gradient(circle at 85% 90%, rgba(42,157,143,0.2), transparent 45%),
+      linear-gradient(160deg,var(--bg-1),var(--bg-2));
+    color:var(--text);
+    font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+    padding:20px;
+  }
+  button{font-family:inherit; cursor:pointer; border:none;}
+  ::selection{background:var(--gold); color:#000;}
+
+  .lab{
+    width:100%; max-width:560px;
+    background:rgba(36,18,56,0.7);
+    border:1px solid var(--card-border);
+    border-radius:22px;
+    padding:26px 22px 30px;
+    backdrop-filter:blur(6px);
+    text-align:center;
+  }
+  .title{
+    margin:0;
+    font-size:clamp(26px,6vw,38px);
+    font-weight:900; letter-spacing:2px;
+    background:linear-gradient(90deg,var(--gold),var(--hot-pink),var(--electric));
+    background-size:200% auto;
+    -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent;
+    animation:shine 6s linear infinite;
+    text-transform:uppercase;
+  }
+  .title span{ -webkit-text-fill-color:var(--text-dim); font-size:.45em; letter-spacing:4px; display:block; margin-top:4px;}
+  @keyframes shine{ to{ background-position:200% center; } }
+  .sub{
+    font-size:12px; letter-spacing:2px; text-transform:uppercase;
+    color:var(--text-dim); margin:4px 0 18px;
+  }
+
+  /* ================= DICE (same engine as greed-dice-v2.html) ================= */
+  .dice-row{
+    display:flex; flex-wrap:wrap; gap:16px;
+    justify-content:center; align-items:center;
+    min-height:96px;
+    perspective:700px;
+    padding:18px 6px 6px;
+    border:1px dashed rgba(192,82,42,0.4);
+    border-radius:16px;
+    background:rgba(0,0,0,0.18);
+    cursor:pointer;
+    user-select:none;
+  }
+  .die-wrap{
+    position:relative;
+    width:62px; height:62px;
+    perspective:700px;
+    flex:0 0 auto;
+  }
+  /* Floor contact shadow — counter-animated by roll-shadow so it stays on the
+     table while the die hops. Size/opacity track the die's height. */
+  .die-wrap::after{
+    content:'';
+    position:absolute;
+    left:50%; bottom:-14px;
+    width:78%; height:18px;
+    transform:translateX(-50%);
+    border-radius:50%;
+    background:radial-gradient(ellipse at center, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.32) 45%, rgba(0,0,0,0) 72%);
+    opacity:.55;
+    pointer-events:none;
+    will-change:transform, opacity;
+  }
+  .die{ width:62px; height:62px; position:relative; transform-style:preserve-3d; }
+  .die-face{
+    position:absolute; width:62px; height:62px;
+    border:2px solid rgba(255,255,255,0.15);
+    border-radius:10px;
+    font-size:30px; font-weight:900;
+    line-height:58px; text-align:center;
+    display:flex; align-items:center; justify-content:center;
+    backface-visibility:hidden;
+    user-select:none;
+    border-top-color:rgba(255,255,255,0.32);
+    border-left-color:rgba(255,255,255,0.22);
+    border-bottom-color:rgba(0,0,0,0.28);
+    border-right-color:rgba(0,0,0,0.18);
+    box-shadow:inset 0 1px 1px rgba(255,255,255,0.28),
+               inset 0 -7px 12px -6px rgba(0,0,0,0.42),
+               0 4px 8px rgba(0,0,0,0.35);
+    text-shadow:0 1px 0 rgba(255,255,255,0.22), 0 -1px 1px rgba(0,0,0,0.35);
+  }
+  .die-face--front  { transform: translateZ(31px); }
+  .die-face--back   { transform: rotateY(180deg) translateZ(31px); }
+  .die-face--right  { transform: rotateY(90deg) translateZ(31px); }
+  .die-face--left   { transform: rotateY(-90deg) translateZ(31px); }
+  .die-face--top    { transform: rotateX(90deg) translateZ(31px); }
+  .die-face--bottom { transform: rotateX(-90deg) translateZ(31px); }
+
+  /* Symbol colour classes (classic) */
+  .die-face.dollar{ background:#1e7a4d; color:#eafff0; border-color:#0f5130; }
+  .die-face.g{ background:#ffd400; color:#1a1a1a; border-color:#e6b800; }
+  .die-face.r{ background:#c0392b; color:#fff5ee; border-color:#8c1f15; }
+  .die-face.e-green{ background:#7bb661; color:#10240c; border-color:#5a9447; }
+  .die-face.e-blue{ background:#3b6fb5; color:#fff; border-color:#2a527f; }
+  .die-face.d{ background:#0a0a0a; color:#f5f5f5; border-color:#3a3a3a; }
+
+  /* Palette variants — body.pal-* (visual only, matches the main game) */
+  body.pal-fluoro .die-face.dollar{ background:#39ff14; color:#001f00; border-color:#0f9d0f; }
+  body.pal-fluoro .die-face.g{ background:#ff8c00; color:#2a0a00; border-color:#b36400; }
+  body.pal-fluoro .die-face.r{ background:#ff2a2a; color:#fff; border-color:#a00000; }
+  body.pal-fluoro .die-face.e-green{ background:#0dff9f; color:#003322; border-color:#00915c; }
+  body.pal-fluoro .die-face.e-blue{ background:#00c3ff; color:#00121a; border-color:#007099; }
+  body.pal-fluoro .die-face.d{ background:#ea00ff; color:#fff; border-color:#9a00ad; }
+  body.pal-pastel .die-face.dollar{ background:#a8e6cf; color:#123; border-color:#6fbf9a; }
+  body.pal-pastel .die-face.g{ background:#ffb6a3; color:#501; border-color:#d98a72; }
+  body.pal-pastel .die-face.r{ background:#ffd3b6; color:#622; border-color:#e59a6f; }
+  body.pal-pastel .die-face.e-green{ background:#c4e8a3; color:#241; border-color:#8fbe64; }
+  body.pal-pastel .die-face.e-blue{ background:#a0e0ff; color:#123; border-color:#6fb6de; }
+  body.pal-pastel .die-face.d{ background:#dcd6f7; color:#332; border-color:#a99cd6; }
+  body.pal-ocean .die-face.dollar{ background:#009688; color:#eafff8; border-color:#00695c; }
+  body.pal-ocean .die-face.g{ background:#ff7043; color:#2a0a00; border-color:#c25030; }
+  body.pal-ocean .die-face.r{ background:#e53935; color:#fff; border-color:#a92f2b; }
+  body.pal-ocean .die-face.e-green{ background:#26c6da; color:#00212a; border-color:#1a8ea0; }
+  body.pal-ocean .die-face.e-blue{ background:#1e88e5; color:#fff; border-color:#155fa6; }
+  body.pal-ocean .die-face.d{ background:#283593; color:#eef0ff; border-color:#1a2369; }
+  body.pal-candy .die-face.dollar{ background:#f48fb1; color:#3a0a1e; border-color:#c26284; }
+  body.pal-candy .die-face.g{ background:#ffab73; color:#3a1200; border-color:#c9803f; }
+  body.pal-candy .die-face.r{ background:#ff8a65; color:#3a1003; border-color:#c26040; }
+  body.pal-candy .die-face.e-green{ background:#a5d6a7; color:#102; border-color:#74a576; }
+  body.pal-candy .die-face.e-blue{ background:#90caf9; color:#0a1a2a; border-color:#608ec4; }
+  body.pal-candy .die-face.d{ background:#b39ddb; color:#120; border-color:#826fa8; }
+  body.pal-gold .die-face.dollar{ background:#c9a227; color:#fff8e0; border-color:#8a6d14; }
+  body.pal-gold .die-face.g{ background:#b87333; color:#fff6e0; border-color:#8a5420; }
+  body.pal-gold .die-face.r{ background:#c2572b; color:#fff5ec; border-color:#8a3a17; }
+  body.pal-gold .die-face.e-green{ background:#7da453; color:#0f1803; border-color:#557536; }
+  body.pal-gold .die-face.e-blue{ background:#4c6fa8; color:#eef4ff; border-color:#34507d; }
+  body.pal-gold .die-face.d{ background:#3b3b3b; color:#fff0cc; border-color:#141414; }
+
+  /* Settled: only the outcome face is visible; 3D tumble only plays while .rolling */
+  .die:not(.rolling){ transform-style:flat; }
+  .die:not(.rolling) .die-face--front{ transform:none; position:relative; }
+  .die:not(.rolling) .die-face:not(.die-face--front){ visibility:hidden; }
+
+  /* ---- Throw: wrapper hops + drifts, inner die spins + blurs, shadow
+     counter-animates. All 1.15s and share --roll-delay. ---- */
+  .die-wrap.rolling{
+    animation:roll-hop 1.15s cubic-bezier(.3,.62,.3,1) forwards;
+    animation-delay:var(--roll-delay,0s);
+    will-change:transform;
+  }
+  .die-wrap.rolling::after{
+    animation:roll-shadow 1.15s cubic-bezier(.3,.62,.3,1) forwards;
+    animation-delay:var(--roll-delay,0s);
+  }
+  .die.rolling{
+    animation:tumble 1.15s cubic-bezier(.3,.62,.3,1) forwards;
+    animation-delay:var(--roll-delay,0s);
+    will-change:transform, filter;
+  }
+  @keyframes roll-hop{
+    0%  { transform:translate(var(--tx,0px), 0) scale(.92); }
+    18% { transform:translate(var(--tx,0px), -24px) scale(1.02); }
+    45% { transform:translate(calc(var(--tx,0px)*.72), -10px) scale(1); }
+    68% { transform:translate(calc(var(--tx,0px)*.4), -18px) scale(1); }
+    88% { transform:translate(calc(var(--tx,0px)*.12), -4px) scale(1); }
+    100%{ transform:translate(0,0) scale(1); }
+  }
+  @keyframes roll-shadow{
+    0%  { transform:translateX(-50%) translateY(0) scale(1); opacity:.55; }
+    18% { transform:translateX(-50%) translateY(24px) scale(.45); opacity:.15; }
+    45% { transform:translateX(-50%) translateY(10px) scale(.75); opacity:.32; }
+    68% { transform:translateX(-50%) translateY(18px) scale(.58); opacity:.2; }
+    88% { transform:translateX(-50%) translateY(4px) scale(.9); opacity:.42; }
+    100%{ transform:translateX(-50%) translateY(0) scale(1); opacity:.55; }
+  }
+  @keyframes tumble{
+    0%  { transform:rotateX(0deg) rotateY(0deg) scale(.72); filter:blur(1.6px) brightness(1.07); }
+    30% { transform:rotateX(calc(var(--rx,380deg)*.8)) rotateY(calc(var(--ry,300deg)*.55)) scale(1); filter:blur(1.5px) brightness(1.09); }
+    60% { transform:rotateX(calc(var(--rx,380deg)*1.65)) rotateY(calc(var(--ry,300deg)*1.3)) scale(1); filter:blur(1px) brightness(1.05); }
+    85% { transform:rotateX(calc(var(--rx,380deg)*2.15)) rotateY(calc(var(--ry,300deg)*2.05)) scale(1); filter:blur(.6px) brightness(1.02); }
+    100%{ transform:rotateX(calc(var(--rx,380deg)*2.5)) rotateY(calc(var(--ry,300deg)*2.4)) scale(1); filter:blur(0) brightness(1); }
+  }
+  /* Landing: squash-stretch pop with a decaying rotational wobble */
+  .die-wrap.land{
+    animation:landpop .45s cubic-bezier(.18,.89,.32,1.28) var(--roll-delay,0s);
+    will-change:transform;
+  }
+  @keyframes landpop{
+    0%  { transform:scale(1.38) translateY(-6px) rotate(var(--wob,0deg)); }
+    55% { transform:scale(.92) translateY(2px) rotate(var(--wob,0deg)); }
+    75% { transform:scale(1.05) translateY(-1px) rotate(calc(var(--wob,0deg)*-.6)); }
+    92% { transform:scale(.99) translateY(0) rotate(calc(var(--wob,0deg)*.3)); }
+    100%{ transform:scale(1) translateY(0) rotate(0deg); }
+  }
+
+  /* ================= Controls ================= */
+  .status{
+    min-height:22px;
+    margin:14px 0 6px;
+    font-size:16px; font-weight:800; letter-spacing:8px;
+    color:var(--text-dim);
+    font-variant-numeric:tabular-nums;
+  }
+  .status.busy{ color:var(--electric); animation:pulse 1s ease-in-out infinite; }
+  @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:.4;} }
+  .controls{
+    display:flex; flex-wrap:wrap; gap:8px;
+    justify-content:center; align-items:center;
+    margin:12px 0 18px;
+  }
+  .ctl{ display:inline-flex; align-items:center; gap:6px; background:rgba(0,0,0,0.25); border:1px solid var(--card-border); border-radius:12px; padding:5px 8px; }
+  .ctl-btn{
+    min-width:38px; height:38px;
+    border-radius:10px;
+    background:linear-gradient(135deg,#4a3021,#331f15);
+    color:var(--text); font-size:16px; font-weight:800;
+    display:inline-flex; align-items:center; justify-content:center;
+  }
+  .ctl-btn:active{ transform:scale(.92); }
+  .ctl-label{ font-size:12px; font-weight:700; color:var(--text-dim); min-width:52px; text-align:center; text-transform:capitalize; }
+  .roll-btn{
+    width:100%;
+    padding:16px;
+    border-radius:16px;
+    font-weight:900; font-size:18px; letter-spacing:2px; text-transform:uppercase;
+    background:linear-gradient(135deg,var(--gold),var(--gold-2));
+    box-shadow:0 4px 0 #7a3117, 0 8px 18px rgba(192,82,42,0.35);
+    color:#fff5ee;
+    transition:transform .1s ease;
+  }
+  .roll-btn:active{ transform:scale(.97); }
+  .roll-btn:disabled{ opacity:.45; transform:none !important; }
+  .roll-btn small{ display:block; font-size:10px; letter-spacing:1px; opacity:.8; font-weight:600; }
+  .foot{ margin-top:14px; font-size:11px; color:var(--text-dim); opacity:.8; line-height:1.5; }
+
+  @media (prefers-reduced-motion: reduce){
+    .die-wrap.rolling, .die-wrap.land, .die.rolling,
+    .die-wrap.rolling::after{ animation:none !important; transition:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="lab">
+  <div class="title">DiceFX <span>LAB — $GREED dice sandbox</span></div>
+  <p class="sub">animation &amp; physics only · no game logic</p>
+
+  <div id="diceRow" class="dice-row" title="Tap to roll"></div>
+  <div id="statusLine" class="status">…</div>
+
+  <div class="controls">
+    <div class="ctl">
+      <button class="ctl-btn" onclick="changeCount(-1)" aria-label="fewer dice">−</button>
+      <span class="ctl-label" id="countLabel">6 dice</span>
+      <button class="ctl-btn" onclick="changeCount(1)" aria-label="more dice">+</button>
+    </div>
+    <button class="ctl-btn" id="soundBtn" onclick="toggleSound()" title="Sound">🔊</button>
+    <button class="ctl-btn" id="hapticBtn" onclick="toggleHaptics()" title="Haptics">📳</button>
+    <div class="ctl">
+      <button class="ctl-btn" onclick="changePalette(-1)" aria-label="previous palette">‹</button>
+      <span class="ctl-label" id="palLabel">classic</span>
+      <button class="ctl-btn" onclick="changePalette(1)" aria-label="next palette">›</button>
+    </div>
+  </div>
+
+  <button class="roll-btn" id="rollBtn" onclick="doRoll()">🎲 ROLL <small>SPACE · OR TAP THE TRAY</small></button>
+  <p class="foot">Opens straight into a roll. Tune the throw in <strong>dice-lab.html</strong>:<br>
+  — <strong>--tx</strong> (±75px) drift · <strong>roll-hop</strong> height (-24px) · <strong>--rx/--ry</strong> spin (deg) · <strong>tumble</strong> blur &amp; speed · <strong>landpop</strong> wobble · <strong>playRattle/playThunk</strong> gains.</p>
+</div>
+
+<script>
+/* =========================================================================
+   DiceFX Lab — a single-page sandbox for the $GREED dice throw.
+   Physics/visual engine lifted verbatim from greed-dice-v2.html; all game
+   logic (players, scoring, banking) is intentionally absent.
+   ========================================================================= */
+
+// ---------------- Dice data ----------------
+const DICE_SYMS = [
+  { sym: "$", cls: "dollar" },
+  { sym: "G", cls: "g" },
+  { sym: "R", cls: "r" },
+  { sym: "E", cls: "e-green", color: "green" },
+  { sym: "E", cls: "e-blue", color: "blue" },
+  { sym: "D", cls: "d" }
+];
+const LETTER_MAPS = { greed: { dollar: "$", g: "G", r: "R", "e-green": "E", "e-blue": "E", d: "D" } };
+function displayLetter(cls) {
+  const m = LETTER_MAPS.greed;
+  return (m && m[cls]) || (DICE_SYMS.find(s => s.cls === cls) || {}).sym || "";
+}
+function glyphNode(cls) { return document.createTextNode(displayLetter(cls)); }
+
+function rollDie() {
+  const base = DICE_SYMS[Math.floor(Math.random() * DICE_SYMS.length)];
+  return { sym: base.sym, cls: base.cls, color: base.color || null };
+}
+function shuffleArray(arr) {
+  for (let j = arr.length - 1; j > 0; j--) {
+    const k = Math.floor(Math.random() * (j + 1));
+    [arr[j], arr[k]] = [arr[k], arr[j]];
+  }
+  return arr;
+}
+
+// Build one die: a .die-wrap (perspective + shadow + positional hop) around a
+// 3D cube whose faces show symbols. Front face = outcome when settled.
+function createCubeDie(cls, sym, randomFaces) {
+  const wrap = document.createElement("div");
+  wrap.className = "die-wrap";
+  const die = document.createElement("div");
+  die.className = "die " + cls;
+  die.dataset.outcomeSym = sym;
+  die.dataset.outcomeCls = cls;
+  const sides = ['front', 'back', 'right', 'left', 'top', 'bottom'];
+  const symbols = [...DICE_SYMS];
+  if (randomFaces) shuffleArray(symbols);
+  sides.forEach((side, index) => {
+    const face = document.createElement("div");
+    let faceCls;
+    if (randomFaces) faceCls = symbols[index].cls;
+    else if (side === 'front') faceCls = cls;
+    else faceCls = symbols[index].cls;
+    face.className = "die-face die-face--" + side + " " + faceCls;
+    face.appendChild(glyphNode(faceCls));
+    die.appendChild(face);
+  });
+  wrap.appendChild(die);
+  return wrap;
+}
+
+// ---------------- Audio (same synth as v2) ----------------
+let actx = null;
+let noiseBuf = null;
+function ensureAudio() {
+  try {
+    if (!actx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return false;
+      actx = new AC();
+    }
+    if (actx.state === "suspended") actx.resume();
+    return true;
+  } catch (e) { return false; }
+}
+function getNoiseBuffer(c) {
+  if (noiseBuf) return noiseBuf;
+  const len = Math.floor(c.sampleRate * 0.3);
+  noiseBuf = c.createBuffer(1, len, c.sampleRate);
+  const d = noiseBuf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+  return noiseBuf;
+}
+function playRattle(dur = 0.9, gain = 0.1) {
+  if (!soundOn || !ensureAudio()) return;
+  try {
+    const c = actx, t = c.currentTime;
+    const src = c.createBufferSource();
+    src.buffer = getNoiseBuffer(c);
+    src.loop = true;
+    const hp = c.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 1100;
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(gain, t + 0.12);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    src.connect(hp); hp.connect(g); g.connect(c.destination);
+    src.start(t); src.stop(t + dur + 0.05);
+  } catch (e) {}
+}
+function playThunk(weight = 0.6) {
+  if (!soundOn || !ensureAudio()) return;
+  try {
+    const c = actx, t = c.currentTime;
+    const o = c.createOscillator();
+    o.type = "sine";
+    o.frequency.setValueAtTime(200 + Math.random() * 50, t);
+    o.frequency.exponentialRampToValueAtTime(78, t + 0.11);
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.26 * weight, t + 0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.14);
+    o.connect(g); g.connect(c.destination);
+    o.start(t); o.stop(t + 0.16);
+  } catch (e) {}
+}
+function buzz(pattern) {
+  if (!hapticsOn) return;
+  try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (e) {}
+}
+
+// ---------------- Lab state & UI ----------------
+let diceCount = 6;
+let busy = false;
+let soundOn = true;
+let hapticsOn = true;
+const PALETTES = ["classic", "fluoro", "pastel", "ocean", "candy", "gold"];
+const pals = ["#d9724a","#ff2a2a","#ffb6a3","#1e88e5","#f48fb1","#c9a227"];
+let palIdx = 0;
+const REDUCED = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function changeCount(d) {
+  diceCount = Math.min(8, Math.max(1, diceCount + d));
+  document.getElementById("countLabel").textContent = diceCount + " dice";
+  if (!busy) doRoll();
+}
+function toggleSound() {
+  soundOn = !soundOn;
+  const b = document.getElementById("soundBtn");
+  b.textContent = soundOn ? "🔊" : "🔇";
+}
+function toggleHaptics() {
+  hapticsOn = !hapticsOn;
+  const b = document.getElementById("hapticBtn");
+  b.textContent = hapticsOn ? "📳" : "🚫📳";
+}
+function changePalette(d) {
+  palIdx = (palIdx + d + PALETTES.length) % PALETTES.length;
+  const name = PALETTES[palIdx];
+  document.body.className = name === "classic" ? "" : "pal-" + name;
+  document.getElementById("palLabel").textContent = name;
+  document.getElementById("palLabel").style.color = pals[palIdx];
+}
+
+// ---------------- The throw ----------------
+function doRoll() {
+  if (busy) return;
+  busy = true;
+  document.getElementById("rollBtn").disabled = true;
+
+  const count = diceCount;
+  const finalDice = [];
+  for (let i = 0; i < count; i++) finalDice.push(rollDie());
+
+  const row = document.getElementById("diceRow");
+  row.innerHTML = "";
+  // Randomize start order for a natural cascade
+  const startOrder = [...Array(count).keys()];
+  shuffleArray(startOrder);
+  for (let i = 0; i < count; i++) {
+    const wrap = createCubeDie(finalDice[i].cls, finalDice[i].sym, true);
+    wrap.classList.add("rolling");
+    wrap.firstChild.classList.add("rolling");
+    const orderIndex = startOrder.indexOf(i);
+    // Stagger + per-die personality (tune these!)
+    wrap.style.setProperty("--roll-delay", (orderIndex * 0.05) + "s");
+    wrap.style.setProperty("--tx", ((Math.random() * 150) - 75) + "px"); // ±75px drift
+    wrap.style.setProperty("--rx", (260 + Math.random() * 240) + "deg");  // spin X ~1.5 turns
+    wrap.style.setProperty("--ry", (220 + Math.random() * 280) + "deg");  // spin Y ~1.5 turns
+    row.appendChild(wrap);
+  }
+
+  const status = document.getElementById("statusLine");
+  status.textContent = "Rolling…";
+  status.className = "status busy";
+  playRattle(1.0, 0.10);
+  buzz([10]);
+
+  const settleIn = REDUCED ? 260 : 1150 + (count - 1) * 0.05 * 1000 + 120;
+  setTimeout(() => settle(finalDice), settleIn);
+}
+
+function settle(finalDice) {
+  const row = document.getElementById("diceRow");
+  row.innerHTML = "";
+  finalDice.forEach((d, i) => {
+    const wrap = createCubeDie(d.cls, d.sym);
+    wrap.classList.add("land");
+    wrap.style.setProperty("--roll-delay", (i * 0.075) + "s");
+    wrap.style.setProperty("--wob", ((Math.random() * 10) - 5).toFixed(1) + "deg");
+    row.appendChild(wrap);
+    const tLand = 520 + i * 75;
+    setTimeout(() => playThunk(0.5 + (i / Math.max(1, finalDice.length - 1)) * 0.35), tLand);
+  });
+  const status = document.getElementById("statusLine");
+  status.className = "status";
+  status.textContent = finalDice.map(d => displayLetter(d.cls)).join(" · ");
+
+  const tLast = 520 + (finalDice.length - 1) * 75 + 30;
+  setTimeout(() => {
+    playThunk(0.9);
+    buzz([12, 30, 12]);
+    busy = false;
+    document.getElementById("rollBtn").disabled = false;
+  }, tLast);
+}
+
+// ---------------- Interaction ----------------
+document.getElementById("diceRow").addEventListener("click", doRoll);
+document.addEventListener("keydown", (e) => {
+  if (e.code === "Space" || e.key === " ") {
+    e.preventDefault();
+    doRoll();
+  }
+});
+// Straight to roll on open
+window.addEventListener("load", () => setTimeout(doRoll, 300));
+</script>
+</body>
+</html>
