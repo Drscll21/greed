@@ -930,5 +930,100 @@
   renderLeaderboard();
 })();
 </script>
+
+<!-- ================= GLOBAL NAV (hamburger) ================= -->
+<style>
+  body.nav-open{ overflow:hidden; }
+  .nav-toggle{
+    position:fixed; top:max(12px, env(safe-area-inset-top)); right:max(12px, env(safe-area-inset-right));
+    z-index:900; width:44px; height:44px; border-radius:12px; padding:0;
+    background:rgba(26,15,9,.84); border:1px solid rgba(232,147,90,.30);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;
+    cursor:pointer; box-shadow:0 4px 14px rgba(0,0,0,.45);
+    -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px);
+    transition:transform .12s cubic-bezier(.2,.8,.2,1), border-color .15s;
+  }
+  .nav-toggle:active{ transform:scale(.94); }
+  .nav-toggle span{ display:block; width:18px; height:2px; border-radius:2px; background:#e8935a; transition:transform .22s, opacity .18s; }
+  body.nav-open .nav-toggle span:nth-child(1){ transform:translateY(6px) rotate(45deg); }
+  body.nav-open .nav-toggle span:nth-child(2){ opacity:0; }
+  body.nav-open .nav-toggle span:nth-child(3){ transform:translateY(-6px) rotate(-45deg); }
+  .nav-scrim{
+    position:fixed; inset:0; z-index:880; background:rgba(0,0,0,.55);
+    opacity:0; pointer-events:none; transition:opacity .22s;
+  }
+  body.nav-open .nav-scrim{ opacity:1; pointer-events:auto; }
+  .nav-menu{
+    position:fixed; z-index:890; top:0; right:0; bottom:0; width:min(280px, 82vw);
+    background:linear-gradient(180deg, rgba(36,18,9,.985), rgba(12,7,4,.99));
+    border-left:1px solid rgba(232,147,90,.18);
+    box-shadow:-18px 0 50px rgba(0,0,0,.55);
+    transform:translateX(102%); transition:transform .26s cubic-bezier(.2,.8,.2,1);
+    display:flex; flex-direction:column;
+    padding:calc(18px + env(safe-area-inset-top)) 14px calc(18px + env(safe-area-inset-bottom));
+    overflow-y:auto;
+  }
+  body.nav-open .nav-menu{ transform:translateX(0); }
+  .nav-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; padding:0 4px; }
+  .nav-title{ font-weight:900; font-size:12px; letter-spacing:2.4px; text-transform:uppercase; color:var(--dim,#bda390); }
+  .nav-close{
+    width:34px; height:34px; border-radius:50%; cursor:pointer; font-size:15px; line-height:1;
+    background:rgba(255,255,255,.06); border:1px solid rgba(232,147,90,.22); color:#f7ede4;
+  }
+  .nav-close:active{ transform:scale(.94); }
+  .nav-item{
+    display:flex; align-items:center; gap:11px; padding:13px 12px; border-radius:12px;
+    color:#f7ede4; text-decoration:none; font-weight:700; font-size:14px;
+    border:1px solid transparent; transition:background .15s, border-color .15s;
+  }
+  .nav-item + .nav-item{ margin-top:4px; }
+  .nav-item:hover, .nav-item:focus-visible{ background:rgba(232,147,90,.10); border-color:rgba(232,147,90,.24); }
+  .nav-item:focus-visible{ outline:2px solid #2a9d8f; outline-offset:2px; }
+  .nav-ico{ width:22px; text-align:center; font-size:16px; }
+  .nav-item[aria-current="page"]{
+    background:linear-gradient(180deg, rgba(232,147,90,.20), rgba(217,114,74,.10));
+    border-color:rgba(232,147,90,.45); color:#ffd9a8;
+  }
+  @media (prefers-reduced-motion: reduce){ .nav-menu,.nav-scrim,.nav-toggle span{ transition:none !important; } }
+</style>
+
+<button class="nav-toggle" id="navToggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="navMenu">
+  <span></span><span></span><span></span>
+</button>
+<div class="nav-scrim" id="navScrim"></div>
+<nav class="nav-menu" id="navMenu" aria-label="Site menu">
+  <div class="nav-head">
+    <span class="nav-title">$GREED</span>
+    <button class="nav-close" id="navClose" type="button" aria-label="Close menu">&#10005;</button>
+  </div>
+  <a class="nav-item" href="index.html"><span class="nav-ico">&#8962;</span>Home</a>
+  <a class="nav-item" href="greed-dice.html"><span class="nav-ico">&#127922;</span>$GREED Dice</a>
+  <a class="nav-item" href="greed-score.html"><span class="nav-ico">&#128202;</span>Scoreboard</a>
+  <a class="nav-item" href="you-go.html"><span class="nav-ico">&#127924;</span>You-Go</a>
+</nav>
+<script>
+(function () {
+  var body = document.body;
+  var toggle = document.getElementById('navToggle');
+  var menu = document.getElementById('navMenu');
+  var scrim = document.getElementById('navScrim');
+  var closeBtn = document.getElementById('navClose');
+  if (!toggle || !menu) return;
+  function setOpen(open) {
+    body.classList.toggle('nav-open', open);
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open && closeBtn) closeBtn.focus();
+  }
+  toggle.addEventListener('click', function () { setOpen(!body.classList.contains('nav-open')); });
+  if (scrim) scrim.addEventListener('click', function () { setOpen(false); });
+  if (closeBtn) closeBtn.addEventListener('click', function () { setOpen(false); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') setOpen(false); });
+  // same snippet everywhere: work out which entry is us
+  var here = (location.pathname.split('/').pop() || 'index.html');
+  Array.prototype.forEach.call(menu.querySelectorAll('.nav-item'), function (a) {
+    if (a.getAttribute('href') === here) a.setAttribute('aria-current', 'page');
+  });
+})();
+</script>
 </body>
 </html>
