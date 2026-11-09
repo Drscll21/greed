@@ -784,6 +784,266 @@ function resetDice() {
   if (hint) hint.textContent = "";
 }
 
+// =========================================================================
+// PHYSICS THROW — ported from dice-lab.html
+// Same integrator that drives the sandbox: gravity, restitution, tray walls,
+// die-vs-die collisions, and a settle that rolls each die onto a flat face as
+// it slows. Purely presentational — it throws the already-decided finalDice and
+// hands them to settleDice(), so scoring/players/CPU are untouched.
+// =========================================================================
+const SIM = {
+  gravity:2600, rest:0.46, friction:0.82, airdrag:0.6, spindrag:0.5,
+  dropY:120, throwPower:530, spread:240, spin:840,
+  camTilt:58, depth:0.46, DIE_R:30, DIE_H:28.6
+};
+const SIM_REDUCED = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+const simRand = (a,b) => a + Math.random()*(b-a);
+const simClamp = (v,a,b) => v < a ? a : (v > b ? b : v);
+
+let simRAF = null, simBodies = [], simOnDone = null;
+let simTW = 0, simTH = 0, simY0 = 0, simLast = 0;
+let simCanvas = null, simCtx = null;
+
+function simProjHalf(){
+  const p = SIM.camTilt * Math.PI/180;
+  return SIM.DIE_H * (Math.cos(p) + Math.sin(p));
+}
+function simDepthScale(b){ return 0.9 + (b.z / simTH) * 0.24; }
+// screenY() already subtracts the die's height, so it IS the die's base on screen.
+function simScreenY(b){ return simY0 + b.z * SIM.depth - b.y; }
+
+// Nearest orientation that lies FLAT with the outcome face up: rx/rz snap to
+// multiples of 180 whose parities match, while yaw is left as rolled.
+function simFlatTarget(b){
+  let best = null;
+  const cand = v => [Math.floor(v/180), Math.ceil(v/180)];
+  for (const a of cand(b.rx)){
+    for (const c of cand(b.rz)){
+      if (((a - c) % 2 + 2) % 2 !== 0) continue;
+      const tRx = a*180, tRz = c*180;
+      const cost = Math.abs(b.rx - tRx) + Math.abs(b.rz - tRz);
+      if (!best || cost < best.cost) best = { rx:tRx, rz:tRz, cost };
+    }
+  }
+  return { rx: best.rx, ry: b.ry, rz: best.rz };
+}
+
+function simBeginSettle(b){
+  if (b.settled) return;
+  b.settled = true;
+  b.y = SIM.DIE_R;
+  b.vx = b.vy = b.vz = 0;
+  b.wx = b.wy = b.wz = 0;
+  if (!b.aligned){
+    const t = simFlatTarget(b);
+    b.rx = t.rx; b.ry = t.ry; b.rz = t.rz;
+    b.aligned = true;
+  }
+}
+
+function simStep(b, dt){
+  if (b.settled) return;
+  b.vy -= SIM.gravity * dt;
+  b.x += b.vx * dt; b.y += b.vy * dt; b.z += b.vz * dt;
+  const ad = Math.pow(0.5, dt * SIM.airdrag); b.vx *= ad; b.vz *= ad;
+  const sd = Math.pow(0.5, dt * SIM.spindrag); b.wx *= sd; b.wy *= sd; b.wz *= sd;
+  b.rx += b.wx * dt; b.ry += b.wy * dt; b.rz += b.wz * dt;
+
+  if (b.y < SIM.DIE_R){
+    const impact = -b.vy;
+    b.y = SIM.DIE_R;
+    if (impact > 55){
+      b.bounces++;
+      b.vy = impact * SIM.rest;
+      b.vx *= SIM.friction; b.vz *= SIM.friction;
+      b.wx *= 0.72; b.wy *= 0.72; b.wz *= 0.72;
+    } else {
+      b.vy = 0;
+      const f = Math.pow(0.02, dt);
+      b.vx *= f; b.vz *= f; b.wx *= f; b.wy *= f; b.wz *= f;
+    }
+  }
+  if (b.x < SIM.DIE_R){ b.x = SIM.DIE_R; b.vx = Math.abs(b.vx)*SIM.rest; }
+  else if (b.x > simTW - SIM.DIE_R){ b.x = simTW - SIM.DIE_R; b.vx = -Math.abs(b.vx)*SIM.rest; }
+  if (b.z < SIM.DIE_R){ b.z = SIM.DIE_R; b.vz = Math.abs(b.vz)*SIM.rest; }
+  else if (b.z > simTH - SIM.DIE_R){ b.z = simTH - SIM.DIE_R; b.vz = -Math.abs(b.vz)*SIM.rest; }
+
+  // settle steering — roll onto a flat face while it is still moving, timed to
+  // finish as the die stops (no spin left once it is at rest)
+  if (!b.aligning){
+    const spin0 = Math.hypot(b.wx, b.wy, b.wz);
+    const sinking = (b.y <= SIM.DIE_R + 2.5) || (b.vy < 0);
+    if (b.bounces > 0 && spin0 < 520 && sinking){
+      b.aligning = true; b.aT = 0; b.aP = 0;
+      b.aSpeed0 = Math.max(Math.hypot(b.vx, b.vy, b.vz), 60);
+      b.aFrom = { rx:b.rx, ry:b.ry, rz:b.rz };
+      b.aTo = simFlatTarget(b);
+      b.wx = b.wy = b.wz = 0;
+    }
+  }
+  if (b.aligning && !b.aligned){
+    b.aT += dt;
+    const timeP  = b.aT / 0.26;
+    const speedP = 1 - simClamp(Math.hypot(b.vx, b.vy, b.vz) / b.aSpeed0, 0, 1);
+    const minP   = b.aT / 0.10;
+    b.aP = simClamp(Math.max(b.aP, timeP, speedP, minP), 0, 1);
+    const e = b.aP*b.aP*(3 - 2*b.aP);
+    b.rx = b.aFrom.rx + (b.aTo.rx - b.aFrom.rx)*e;
+    b.ry = b.aFrom.ry + (b.aTo.ry - b.aFrom.ry)*e;
+    b.rz = b.aFrom.rz + (b.aTo.rz - b.aFrom.rz)*e;
+    if (b.aP >= 1) b.aligned = true;
+  }
+
+  const speed = Math.hypot(b.vx, b.vy, b.vz);
+  if (b.aligned && b.y <= SIM.DIE_R + 0.8 && speed < 60) b.restT += dt; else b.restT = 0;
+  if (b.restT > 0.08) simBeginSettle(b);
+}
+
+function simCollide(){
+  const D = SIM.depth;
+  const min = SIM.DIE_R*2 + 6;
+  for (let i=0;i<simBodies.length;i++){
+    for (let j=i+1;j<simBodies.length;j++){
+      const a = simBodies[i], b = simBodies[j];
+      let dx = b.x-a.x, dy = b.y-a.y, dz = (b.z-a.z)*D;
+      let dist = Math.hypot(dx, dy, dz);
+      if (dist >= min) continue;
+      let nx, ny, nz;
+      if (dist < 0.0001){ nx = 1; ny = 0; nz = 0; dist = 0.0001; }
+      else { nx = dx/dist; ny = dy/dist; nz = dz/dist; }
+      const push = Math.min(min - dist, 7);
+      const aw = a.settled ? 0 : (b.settled ? 1 : 0.5);
+      const bw = b.settled ? 0 : (a.settled ? 1 : 0.5);
+      a.x -= nx*push*aw; a.y -= ny*push*aw; a.z -= (nz*push*aw)/D;
+      b.x += nx*push*bw; b.y += ny*push*bw; b.z += (nz*push*bw)/D;
+      let wx = nx, wy = ny, wz = nz/D;
+      const wl = Math.hypot(wx, wy, wz) || 1;
+      wx /= wl; wy /= wl; wz /= wl;
+      const vn = (b.vx-a.vx)*wx + (b.vy-a.vy)*wy + (b.vz-a.vz)*wz;
+      if (vn < 0){
+        const jimp = -(1 + SIM.rest) * vn / ((a.settled?0:1) + (b.settled?0:1) || 1);
+        if (!a.settled){ a.vx -= jimp*wx; a.vy -= jimp*wy; a.vz -= jimp*wz;
+          a.wx += simRand(-90,90); a.wy += simRand(-90,90); }
+        if (!b.settled){ b.vx += jimp*wx; b.vy += jimp*wy; b.vz += jimp*wz;
+          b.wx += simRand(-90,90); b.wy += simRand(-90,90); }
+      }
+    }
+  }
+}
+
+function simRender(){
+  const hy0 = simProjHalf();
+  simBodies.forEach(b => {
+    const lift = simClamp((b.y - SIM.DIE_R) / 1400, 0, 0.18);
+    const sc = simDepthScale(b) * (1 + lift);
+    const hy = hy0 * sc;
+    const centreY = simScreenY(b) + SIM.DIE_R - hy;
+    b.wrap.style.transform = `translate(${(b.x - 31).toFixed(1)}px, ${(centreY - 31).toFixed(1)}px) scale(${sc.toFixed(3)})`;
+    b.die.style.transform = `rotateX(${(-SIM.camTilt).toFixed(1)}deg) rotateZ(${b.rz.toFixed(1)}deg) rotateX(${b.rx.toFixed(1)}deg) rotateY(${b.ry.toFixed(1)}deg)`;
+  });
+  // contact shadows, sized by how high each die is
+  if (!simCtx) return;
+  simCtx.clearRect(0, 0, simTW, simTH);
+  const sinP = Math.sin(SIM.camTilt * Math.PI/180);
+  simBodies.forEach(b => {
+    const sc = simDepthScale(b);
+    const gy = simY0 + b.z * SIM.depth;
+    const lift = simClamp(b.y / 300, 0, 1);
+    const rx = SIM.DIE_H * sc * (1 + lift * 0.8);
+    const a = 0.42 * (1 - lift * 0.75);
+    const g = simCtx.createRadialGradient(b.x, gy, 0, b.x, gy, rx);
+    g.addColorStop(0, `rgba(0,0,0,${a.toFixed(3)})`);
+    g.addColorStop(1, "rgba(0,0,0,0)");
+    simCtx.fillStyle = g;
+    simCtx.beginPath(); simCtx.ellipse(b.x, gy, rx, rx*sinP, 0, 0, Math.PI*2); simCtx.fill();
+  });
+}
+
+function simEnd(){
+  cancelAnimationFrame(simRAF); simRAF = null;
+  if (simCanvas && simCanvas.parentNode) simCanvas.parentNode.removeChild(simCanvas);
+  simCanvas = null; simCtx = null;
+  simBodies = [];
+}
+
+function simTick(now){
+  const dt = Math.min(0.034, (now - simLast)/1000);
+  simLast = now;
+  simBodies.forEach(b => simStep(b, dt));
+  simCollide();
+  simRender();
+  if (simBodies.every(b => b.settled)){
+    simEnd();
+    const cb = simOnDone; simOnDone = null;
+    if (cb) cb();
+    return;
+  }
+  simRAF = requestAnimationFrame(simTick);
+}
+
+// Throw `finalDice` across the dice row, then hand back to settleDice().
+function simThrow(row, finalDice, onDone){
+  cancelAnimationFrame(simRAF);
+  simOnDone = onDone;
+  simBodies = [];
+  row.classList.add("simming");
+  row.innerHTML = "";
+  const rect = row.getBoundingClientRect();
+  simTW = Math.max(140, rect.width);
+  simTH = Math.max(140, rect.height);
+  simY0 = simTH * 0.42;
+
+  simCanvas = document.createElement("canvas");
+  simCanvas.className = "sim-fx";
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  simCanvas.width = Math.round(simTW*dpr);
+  simCanvas.height = Math.round(simTH*dpr);
+  row.appendChild(simCanvas);
+  simCtx = simCanvas.getContext("2d");
+  simCtx.setTransform(dpr,0,0,dpr,0,0);
+
+  finalDice.forEach(d => {
+    // random faces while tumbling — the outcome is only revealed on settle
+    const die = createCubeDie(d.cls, d.sym, true);
+    const wrap = document.createElement("div");
+    wrap.className = "sim-die";
+    wrap.appendChild(die);
+    row.appendChild(wrap);
+
+    const z = simClamp(simTH*0.5 + simRand(-70,70), SIM.DIE_R, Math.max(SIM.DIE_R+1, simTH - SIM.DIE_R));
+    let y  = simRand(SIM.dropY*0.75, SIM.dropY*1.25);
+    let vy = simRand(SIM.throwPower*0.72, SIM.throwPower*1.28);
+    // keep the arc inside the row: cap the apex so nothing sails out of view
+    const gy = simY0 + z*SIM.depth;
+    const sc0 = 0.9 + (z/simTH)*0.24;
+    const limit = gy - 2*simProjHalf()*sc0 - 12;
+    const apex = y + (vy*vy)/(2*SIM.gravity);
+    if (apex > limit) vy = Math.sqrt(Math.max(0, 2*SIM.gravity*(limit - y)));
+
+    simBodies.push({
+      cls:d.cls, sym:d.sym, wrap, die,
+      x: simTW/2 + simRand(-70,70), z, y,
+      vx: simRand(-1,1)*simRand(SIM.spread*0.4, SIM.spread), vy,
+      vz: simRand(-1,1)*simRand(SIM.spread*0.4, SIM.spread),
+      rx: simRand(0,360), ry: simRand(0,360), rz: simRand(0,360),
+      wx: simRand(-1,1)*simRand(SIM.spin*0.5, SIM.spin),
+      wy: simRand(-1,1)*simRand(SIM.spin*0.5, SIM.spin),
+      wz: simRand(-1,1)*simRand(SIM.spin*0.35, SIM.spin*0.85),
+      settled:false, restT:0, aligning:false, aligned:false, bounces:0, aT:0, aP:0
+    });
+  });
+
+  if (SIM_REDUCED){
+    simBodies.forEach(b => { b.settled = true; b.aligned = true; });
+    simEnd();
+    const cb = simOnDone; simOnDone = null;
+    if (cb) cb();
+    return;
+  }
+  simLast = performance.now();
+  simRAF = requestAnimationFrame(simTick);
+}
+
 function diceRoll() {
   if (winnerDeclared) return;
   if (dicePhase === "rolling") return; // ignore clicks while a roll is animating
