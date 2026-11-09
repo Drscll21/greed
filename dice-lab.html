@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>DiceFX Lab — $GREED dice animation sandbox</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>DiceFX Lab — physics sandbox</title>
 <style>
   :root{
     --bg-1:#241610;
@@ -12,7 +12,6 @@
     --gold-2:#c0522a;
     --hot-pink:#e8935a;
     --electric:#2a9d8f;
-    --card-bg:#2e1c14;
     --card-border:#4a3021;
     --text:#f7ede4;
     --text-dim:#c2a58f;
@@ -23,28 +22,76 @@
     min-height:100dvh;
     display:flex; align-items:center; justify-content:center;
     background:
-      radial-gradient(circle at 15% 10%, rgba(192,82,42,0.3), transparent 45%),
+      radial-gradient(circle at 15% 10%, rgba(192,82,42,0.28), transparent 45%),
       radial-gradient(circle at 85% 90%, rgba(42,157,143,0.2), transparent 45%),
       linear-gradient(160deg,var(--bg-1),var(--bg-2));
     color:var(--text);
     font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
-    padding:20px;
+    padding:18px;
+    overflow-x:hidden;
   }
   button{font-family:inherit; cursor:pointer; border:none;}
-  ::selection{background:var(--gold); color:#000;}
+
+  /* ================= Ambient room (fixed, behind the panel) ================= */
+  .room{ position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+  .room::after{                 /* room vignette */
+    content:''; position:absolute; inset:0;
+    background:radial-gradient(125% 95% at 50% 38%, transparent 42%, rgba(0,0,0,0.66) 100%);
+  }
+  .glow{ position:absolute; border-radius:50%; will-change:transform; }
+  .g-a{
+    width:78vw; height:78vw; left:-20vw; top:-22vw; opacity:.55;
+    background:radial-gradient(circle, rgba(217,114,74,0.5), transparent 66%);
+    animation:drift-a 26s ease-in-out infinite;
+  }
+  .g-b{
+    width:70vw; height:70vw; right:-22vw; bottom:-20vw; opacity:.5;
+    background:radial-gradient(circle, rgba(42,157,143,0.42), transparent 66%);
+    animation:drift-b 34s ease-in-out infinite;
+  }
+  .g-c{
+    width:56vw; height:56vw; left:28vw; top:48vh; opacity:.4;
+    background:radial-gradient(circle, rgba(255,196,120,0.2), transparent 70%);
+    animation:drift-c 42s ease-in-out infinite;
+  }
+  @keyframes drift-a{ 0%,100%{ transform:translate3d(0,0,0) scale(1); }     50%{ transform:translate3d(7vw,5vh,0) scale(1.16); } }
+  @keyframes drift-b{ 0%,100%{ transform:translate3d(0,0,0) scale(1.07); }  50%{ transform:translate3d(-6vw,-7vh,0) scale(1); } }
+  @keyframes drift-c{ 0%,100%{ transform:translate3d(-5vw,0,0) scale(1); }  50%{ transform:translate3d(6vw,-4vh,0) scale(1.2); } }
+  /* faint overhead light cone */
+  .beam{
+    position:absolute; left:50%; top:-30%; width:160%; height:130%;
+    transform:translateX(-50%);
+    background:radial-gradient(58% 58% at 50% 0%, rgba(255,238,205,0.13), transparent 72%);
+  }
+  /* drifting dust motes */
+  .motes{ position:absolute; inset:0; }
+  .mote{
+    position:absolute; bottom:-6vh; border-radius:50%;
+    background:rgba(255,228,186,0.85);
+    animation:mote-rise linear infinite;
+    will-change:transform, opacity;
+  }
+  @keyframes mote-rise{
+    0%  { transform:translate3d(0,0,0) scale(.6);                     opacity:0; }
+    10% { opacity:.6; }
+    80% { opacity:.35; }
+    100%{ transform:translate3d(var(--dx,20px),-112vh,0) scale(1);    opacity:0; }
+  }
 
   .lab{
     width:100%; max-width:560px;
-    background:rgba(36,18,56,0.7);
+    background:rgba(30,16,48,0.66);
     border:1px solid var(--card-border);
     border-radius:22px;
-    padding:26px 22px 30px;
-    backdrop-filter:blur(6px);
+    padding:20px 18px 24px;
+    backdrop-filter:blur(7px);
     text-align:center;
+    position:relative;
+    z-index:1;
   }
   .title{
     margin:0;
-    font-size:clamp(26px,6vw,38px);
+    font-size:clamp(24px,6vw,34px);
     font-weight:900; letter-spacing:2px;
     background:linear-gradient(90deg,var(--gold),var(--hot-pink),var(--electric));
     background-size:200% auto;
@@ -53,73 +100,321 @@
     animation:shine 6s linear infinite;
     text-transform:uppercase;
   }
-  .title span{ -webkit-text-fill-color:var(--text-dim); font-size:.45em; letter-spacing:4px; display:block; margin-top:4px;}
+  .title span{ -webkit-text-fill-color:var(--text-dim); font-size:.42em; letter-spacing:3px; display:block; margin-top:3px;}
   @keyframes shine{ to{ background-position:200% center; } }
-  .sub{
-    font-size:12px; letter-spacing:2px; text-transform:uppercase;
-    color:var(--text-dim); margin:4px 0 18px;
-  }
+  .sub{ font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--text-dim); margin:3px 0 14px; }
 
-  /* ================= DICE (same engine as greed-dice-v2.html) ================= */
-  .dice-row{
-    display:flex; flex-wrap:wrap; gap:16px;
-    justify-content:center; align-items:center;
-    min-height:96px;
-    perspective:700px;
-    padding:18px 6px 6px;
-    border:1px dashed rgba(192,82,42,0.4);
-    border-radius:16px;
-    background:rgba(0,0,0,0.18);
-    cursor:pointer;
-    user-select:none;
-  }
-  .die-wrap{
+  /* ---------- The table ----------
+     The dice render themselves with a camera pitch of --cam-tilt (90deg = looking
+     straight down). A table surface seen by that camera is foreshortened by
+     sin(pitch), so the felt is tilted by (90deg - pitch) inside a perspective
+     container and the contact-shadow ellipses use the same sin(pitch) factor.
+     Everything therefore sits on ONE plane. */
+  .table{
     position:relative;
-    width:62px; height:62px;
-    perspective:700px;
-    flex:0 0 auto;
+    border-radius:18px;
+    box-shadow:0 28px 55px rgba(0,0,0,0.55);
   }
-  /* Floor contact shadow — counter-animated by roll-shadow so it stays on the
-     table while the die hops. Size/opacity track the die's height. */
-  .die-wrap::after{
-    content:'';
-    position:absolute;
-    left:50%; bottom:-14px;
-    width:78%; height:18px;
-    transform:translateX(-50%);
-    border-radius:50%;
-    background:radial-gradient(ellipse at center, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.32) 45%, rgba(0,0,0,0) 72%);
-    opacity:.55;
-    pointer-events:none;
+  /* the camera dolly / close-up / hitstop move the whole view */
+  .table.zooming{ transform:scale(1.035); }
+  .table.closeup{ transform:scale(1.075); }
+  .table.hitstop{ transform:scale(1.10); }
+
+  .stage{
+    position:relative;
+    width:100%;
+    height:clamp(300px, 54vh, 440px);
+    border-radius:18px;
+    overflow:hidden;
+    /* the bar beyond the counter (mostly covered by .barback) */
+    background:radial-gradient(120% 80% at 50% 6%, #2a1710 0%, #170c07 52%, #0a0503 100%);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,0.06);
+    cursor:pointer;
+    touch-action:manipulation;
+    perspective:1300px;
+    perspective-origin:50% 34%;
+    transition:transform .45s cubic-bezier(.2,.8,.2,1);
+  }
+  /* ---------- the busy bar behind the counter (out of focus) ---------- */
+  .barback{
+    position:absolute; left:0; right:0; top:0; height:32%;
+    overflow:hidden;
+    background:
+      radial-gradient(120% 100% at 50% 0%, rgba(255,186,110,0.20), transparent 62%),
+      linear-gradient(180deg, #140b07 0%, #241209 58%, #0d0603 100%);
+    /* depth of field: the back bar is out of focus, as it would be */
+    filter:blur(2.4px) saturate(1.15) brightness(0.95);
+    transform:scale(1.04);
+  }
+  .bb-haze{
+    position:absolute; inset:0;
+    background:radial-gradient(85% 130% at 50% 115%, rgba(255,168,88,0.22), transparent 62%);
+  }
+  /* bare back wall — vertical panelling, no bottles or ornaments */
+  .bb-wall{
+    position:absolute; inset:0;
+    background:
+      repeating-linear-gradient(90deg,
+        rgba(255,222,180,0.045) 0 1px, rgba(0,0,0,0.16) 1px 3px, transparent 3px 26px),
+      linear-gradient(180deg, #1b0f09 0%, #2a160c 62%, #150a05 100%);
+  }
+  /* the sign's colour washing across the wall */
+  .bb-neonglow{
+    position:absolute; left:50%; top:-4%; width:74%; height:120%;
+    transform:translateX(-50%); border-radius:50%;
+    background:radial-gradient(50% 46% at 50% 30%, rgba(255,86,178,0.34), rgba(255,86,178,0) 72%);
+    animation:neonBreathe 5.5s ease-in-out infinite;
+  }
+  /* a slow, wide band of coloured bar light sweeping the shelves */
+  .bb-spill{
+    position:absolute; inset:-10% -30%;
+    background:linear-gradient(100deg,
+      rgba(64,196,255,0) 6%, rgba(64,196,255,0.16) 26%,
+      rgba(255,86,178,0.20) 46%, rgba(255,176,96,0.18) 62%,
+      rgba(64,196,255,0) 84%);
+    mix-blend-mode:screen;
+    animation:spillSweep 11s ease-in-out infinite alternate;
+  }
+  @keyframes spillSweep{
+    0%   { transform:translateX(-14%) skewX(-6deg); opacity:.55; }
+    100% { transform:translateX(14%)  skewX(6deg);  opacity:.9; }
+  }
+  /* people passing behind the bar — the room is in use */
+  .bb-figures{ position:absolute; inset:0; }
+  .bb-figures i{
+    position:absolute; bottom:-10%; width:15%; height:104%;
+    border-radius:48% 48% 8% 8% / 30% 30% 10% 10%;
+    background:
+      radial-gradient(44% 20% at 50% 11%, rgba(0,0,0,0.94), rgba(0,0,0,0) 74%),
+      radial-gradient(58% 58% at 50% 64%, rgba(0,0,0,0.96), rgba(0,0,0,0) 78%);
+    filter:blur(4.5px);
+    opacity:0;
+    animation:figCross linear infinite;
     will-change:transform, opacity;
   }
-  .die{ width:62px; height:62px; position:relative; transform-style:preserve-3d; }
+  /* a warm edge so the silhouette is lit by the bar, not just black */
+  .bb-figures i::after{
+    content:''; position:absolute; inset:0; border-radius:inherit;
+    background:linear-gradient(100deg, rgba(255,196,130,0.30), rgba(255,196,130,0) 42%);
+    mix-blend-mode:screen;
+  }
+  .bb-figures i:nth-child(1){ animation-duration:13s; animation-delay:-2s;  }
+  .bb-figures i:nth-child(2){ animation-duration:17s; animation-delay:-9s;  }
+  .bb-figures i:nth-child(3){ animation-duration:15s; animation-delay:-6.5s; }
+  @keyframes figCross{
+    0%   { transform:translateX(-140%) translateY(2%)  scaleY(1);   opacity:0; }
+    6%   { opacity:.92; }
+    48%  { transform:translateX(280%)  translateY(-1%) scaleY(1.01); opacity:.98; }
+    94%  { opacity:.72; }
+    100% { transform:translateX(720%)  translateY(2%)  scaleY(1);   opacity:0; }
+  }
+  @keyframes neonBreathe{
+    0%,100%{ opacity:.72; transform:translateX(-50%) scale(1); }
+    50%    { opacity:1;   transform:translateX(-50%) scale(1.06); }
+  }
+  .bb-bokeh{ position:absolute; inset:0; }
+  .bb-bokeh i{
+    position:absolute; border-radius:50%;
+    background:radial-gradient(circle, rgba(255,206,140,0.6), rgba(255,170,90,0) 70%);
+    animation:bokehDrift linear infinite;
+  }
+  @keyframes bokehDrift{
+    0%,100%{ transform:translate3d(0,0,0) scale(1); opacity:.45; }
+    50%{ transform:translate3d(6px,-8px,0) scale(1.3); opacity:.85; }
+  }
+  /* the big neon sign — white core, layered pink halo, plus its own wall bounce */
+  .bb-neon{
+    position:absolute; left:50%; top:2%; transform:translateX(-50%);
+    font:900 clamp(20px,7vw,34px)/1 'Segoe UI',system-ui,sans-serif;
+    letter-spacing:5px; color:#fff;
+    text-shadow:
+      0 0 2px #fff,
+      0 0 7px rgba(255,120,200,0.95),
+      0 0 16px rgba(255,86,178,0.85),
+      0 0 30px rgba(255,86,178,0.6),
+      0 0 54px rgba(255,60,160,0.42),
+      0 0 86px rgba(255,60,160,0.26);
+    animation:neonFlicker 5s linear infinite;
+  }
+  /* the sign's reflection in the wall below it */
+  .bb-neon::after{
+    content:'$GREED';
+    position:absolute; left:0; right:0; top:118%;
+    transform:scaleY(-0.55); transform-origin:50% 0%;
+    color:rgba(255,120,200,0.30);
+    text-shadow:0 0 18px rgba(255,86,178,0.5);
+    -webkit-mask-image:linear-gradient(180deg, rgba(0,0,0,0.7), transparent 78%);
+            mask-image:linear-gradient(180deg, rgba(0,0,0,0.7), transparent 78%);
+  }
+  @keyframes neonFlicker{
+    0%,86%,100%{opacity:1;}  87%{opacity:.34;} 88%{opacity:.95;}
+    90%{opacity:.5;} 91%{opacity:1;} 95%{opacity:.62;} 96%{opacity:1;}
+  }
+  .bb-pendants{ position:absolute; inset:0; }
+  .bb-pendants i{
+    position:absolute; top:0; width:3px;
+    background:linear-gradient(180deg, rgba(30,18,10,0.95), rgba(30,18,10,0.1));
+  }
+  .bb-pendants i::before{      /* the shade */
+    content:''; position:absolute; left:50%; bottom:-3px;
+    width:30px; height:15px; margin-left:-15px;
+    border-radius:50% 50% 5px 5px / 74% 74% 20% 20%;
+    background:linear-gradient(180deg, #241610, #4d3220 62%, #6b4a2c);
+    box-shadow:inset 0 2px 0 rgba(255,222,175,0.4), 0 3px 9px rgba(0,0,0,0.65);
+  }
+  .bb-pendants i::after{       /* bulb + the pool of light it throws */
+    content:''; position:absolute; left:50%; bottom:-14px;
+    width:74px; height:74px; margin-left:-37px; border-radius:50%;
+    background:radial-gradient(circle at 50% 26%,
+      rgba(255,248,226,0.95), rgba(255,196,118,0.5) 36%, rgba(255,170,80,0) 72%);
+  }
+  .bb-pendants i:nth-child(1){ left:12%; height:19%; }
+  .bb-pendants i:nth-child(2){ left:31%; height:27%; }
+  .bb-pendants i:nth-child(3){ left:50%; height:15%; }
+  .bb-pendants i:nth-child(4){ left:69%; height:25%; }
+  .bb-pendants i:nth-child(5){ left:88%; height:18%; }
+
+  /* ---------- the counter top (the playing surface) ---------- */
+  .tablebed{
+    position:absolute;
+    left:50%; top:30%;
+    width:190%; height:160%;
+    transform-origin:50% 0%;
+    transform:translateX(-50%) rotateX(calc(90deg - var(--cam-tilt, 58deg)));
+    pointer-events:none;
+  }
+  /* polished mahogany — the grain is real fractal noise, not stripes */
+  .bed-top{
+    position:relative; width:100%; height:100%;
+    overflow:hidden;
+    border-radius:10px 10px 0 0;
+    background:
+      /* pools of lamp light lying on the varnish */
+      radial-gradient(26% 40% at 12% 4%, rgba(255,198,124,0.26), transparent 72%),
+      radial-gradient(28% 44% at 50% 2%, rgba(255,204,136,0.30), transparent 72%),
+      radial-gradient(26% 40% at 88% 5%, rgba(255,198,124,0.24), transparent 72%),
+      /* one long specular streak from the pendants */
+      linear-gradient(103deg, rgba(255,238,205,0) 16%, rgba(255,238,205,0.13) 33%, rgba(255,238,205,0.03) 43%, rgba(255,238,205,0) 58%),
+      /* darkening toward the viewer */
+      linear-gradient(180deg, rgba(0,0,0,0) 34%, rgba(0,0,0,0.34) 72%, rgba(0,0,0,0.58) 100%),
+      /* the wood itself: turbulence-induced grain in real timber tones */
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='700' height='260'><filter id='w'><feTurbulence type='fractalNoise' baseFrequency='0.004 0.30' numOctaves='5' seed='11'/><feColorMatrix type='matrix' values='0.34 0 0 0 0.20  0.20 0 0 0 0.12  0.09 0 0 0 0.05  0 0 0 0 1'/></filter><rect width='700' height='260' filter='url(%23w)'/></svg>");
+    background-size:auto, auto, auto, auto, auto, cover;
+    box-shadow:inset 0 0 130px rgba(0,0,0,0.7);
+  }
+  /* knots + wear sitting in the grain, under the props */
+  .bed-top::before{
+    content:''; position:absolute; inset:0; pointer-events:none;
+    background-image:
+      radial-gradient(7% 18% at 21% 38%, rgba(0,0,0,0.42), transparent 68%),
+      radial-gradient(5% 14% at 72% 66%, rgba(0,0,0,0.36), transparent 68%),
+      radial-gradient(4% 11% at 44% 84%, rgba(0,0,0,0.3), transparent 70%);
+  }
+  /* vignette */
+  .stage::after{
+    content:''; position:absolute; inset:0; pointer-events:none; border-radius:16px;
+    background:radial-gradient(120% 90% at 50% 45%, transparent 55%, rgba(0,0,0,0.5) 100%);
+  }
+  #fx{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+  .dice-layer{ position:absolute; inset:0; pointer-events:none; }
+
+  /* white flash + combo label overlays */
+  .flash{
+    position:absolute; inset:0; pointer-events:none; border-radius:18px;
+    background:radial-gradient(circle at 50% 50%, #fff, rgba(255,255,255,0) 70%);
+    opacity:0; transition:opacity .5s ease-out;
+  }
+  .flash.on{ opacity:.85; transition:none; }
+  .combo{
+    position:absolute; left:50%; top:38%;
+    transform:translate(-50%,-50%) scale(.4);
+    pointer-events:none; opacity:0;
+    font-weight:900; font-size:clamp(24px,7vw,40px); letter-spacing:2px;
+    text-transform:uppercase; white-space:nowrap;
+    color:#fff;
+    text-shadow:0 0 18px var(--gold),0 0 40px var(--gold-2),0 4px 10px rgba(0,0,0,.7);
+    transition:opacity .2s ease-out;
+  }
+  .combo.on{ opacity:1; animation:comboPop .7s cubic-bezier(.2,1.4,.3,1); }
+  @keyframes comboPop{
+    0%{ transform:translate(-50%,-50%) scale(.3) rotate(-6deg); }
+    55%{ transform:translate(-50%,-50%) scale(1.14) rotate(2deg); }
+    100%{ transform:translate(-50%,-50%) scale(1) rotate(0); }
+  }
+
+  /* ---------- Dice cube ---------- */
+  .die-wrap{
+    position:absolute; left:0; top:0;
+    width:62px; height:62px;
+    perspective:600px; -webkit-perspective:600px;
+    will-change:transform;
+  }
+  .die{ width:62px; height:62px; position:relative; transform-style:preserve-3d; -webkit-transform-style:preserve-3d; will-change:transform; }
+  /* Moulded-plastic die face: beveled edge, inner falloff, soft drop shadow,
+     a fixed sheen overlay (::before) and a moving specular hot-spot (::after)
+     whose strength is driven per-face per-frame by the --gloss custom prop. */
   .die-face{
     position:absolute; width:62px; height:62px;
     border:2px solid rgba(255,255,255,0.15);
-    border-radius:10px;
-    font-size:30px; font-weight:900;
+    /* Corner radius is deliberately matched to the plane inset below: a rounded
+       face can only reach the cube's corner if it overhangs its own plane, so
+       R=8 with planes at 28.6 makes the three faces meeting at each corner
+       overlap and seal the gap (13/31 left a real hole — see the transforms). */
+    border-radius:8px;
+    font-size:31px; font-weight:900;
     line-height:58px; text-align:center;
     display:flex; align-items:center; justify-content:center;
-    backface-visibility:hidden;
+    backface-visibility:hidden; -webkit-backface-visibility:hidden;
     user-select:none;
-    border-top-color:rgba(255,255,255,0.32);
-    border-left-color:rgba(255,255,255,0.22);
-    border-bottom-color:rgba(0,0,0,0.28);
-    border-right-color:rgba(0,0,0,0.18);
-    box-shadow:inset 0 1px 1px rgba(255,255,255,0.28),
-               inset 0 -7px 12px -6px rgba(0,0,0,0.42),
-               0 4px 8px rgba(0,0,0,0.35);
-    text-shadow:0 1px 0 rgba(255,255,255,0.22), 0 -1px 1px rgba(0,0,0,0.35);
+    overflow:hidden;
+    box-shadow:
+      inset 1px 1px 0 rgba(255,255,255,0.42),
+      inset -1px -1px 0 rgba(0,0,0,0.40),
+      inset 0 0 0 1px rgba(0,0,0,0.10),
+      inset 0 -11px 16px -11px rgba(0,0,0,0.55),
+      3px 4px 0 -1px rgba(0,0,0,0.38),
+      0 4px 9px rgba(0,0,0,0.38);
+    transition:background .2s, color .2s, border-color .2s;
   }
-  .die-face--front  { transform: translateZ(31px); }
-  .die-face--back   { transform: rotateY(180deg) translateZ(31px); }
-  .die-face--right  { transform: rotateY(90deg) translateZ(31px); }
-  .die-face--left   { transform: rotateY(-90deg) translateZ(31px); }
-  .die-face--top    { transform: rotateX(90deg) translateZ(31px); }
-  .die-face--bottom { transform: rotateX(-90deg) translateZ(31px); }
+  /* fixed sheen: top-left light falloff + a touch of top-down shading */
+  .die-face::before{
+    content:''; position:absolute; inset:0; border-radius:inherit;
+    z-index:1; pointer-events:none;
+    background:
+      radial-gradient(130% 120% at 28% 16%, rgba(255,255,255,0.28), rgba(255,255,255,0) 58%),
+      linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0) 46%, rgba(0,0,0,0.18));
+  }
+  /* specular hot-spot — opacity follows --gloss set by the lighting pass */
+  .die-face::after{
+    content:''; position:absolute; inset:0; border-radius:inherit;
+    z-index:1; pointer-events:none;
+    background:radial-gradient(46% 40% at 33% 24%,
+                 rgba(255,255,255,0.95), rgba(255,255,255,0.35) 44%, rgba(255,255,255,0) 72%);
+    opacity:var(--gloss,0);
+  }
+  /* the symbol paints above both overlays */
+  .die-face > *{ position:relative; z-index:2; }
+  /* carved "pip" symbol: four stacked copies of the glyph build the relief —
+     a dark copy above (cavity wall shadow), a bright copy below (lit lower
+     lip), the painted symbol, and a top-down shade inside it. */
+  .die-face .pip{ width:40px; height:40px; display:block; overflow:visible; }
+  .pip text{
+    font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+    font-weight:900; font-size:31px;
+  }
+  .pip .pip-up  { fill:rgba(0,0,0,0.55); }
+  .pip .pip-dn  { fill:rgba(255,255,255,0.45); }
+  .pip .pip-fill{ fill:currentColor; }
+  .pip .pip-shade{ fill:url(#pipShade); }
+  /* Planes sit at 28.6 (not 31), so each 62px face overhangs ~2.4px past its
+     neighbours' planes and the rounded corners seal instead of leaving holes. */
+  .die-face--front  { transform: translateZ(28.6px); }
+  .die-face--back   { transform: rotateY(180deg) translateZ(28.6px); }
+  .die-face--right  { transform: rotateY(90deg) translateZ(28.6px); }
+  .die-face--left   { transform: rotateY(-90deg) translateZ(28.6px); }
+  .die-face--top    { transform: rotateX(90deg) translateZ(28.6px); }
+  .die-face--bottom { transform: rotateX(-90deg) translateZ(28.6px); }
 
-  /* Symbol colour classes (classic) */
   .die-face.dollar{ background:#1e7a4d; color:#eafff0; border-color:#0f5130; }
   .die-face.g{ background:#ffd400; color:#1a1a1a; border-color:#e6b800; }
   .die-face.r{ background:#c0392b; color:#fff5ee; border-color:#8c1f15; }
@@ -127,7 +422,7 @@
   .die-face.e-blue{ background:#3b6fb5; color:#fff; border-color:#2a527f; }
   .die-face.d{ background:#0a0a0a; color:#f5f5f5; border-color:#3a3a3a; }
 
-  /* Palette variants — body.pal-* (visual only, matches the main game) */
+  /* palettes */
   body.pal-fluoro .die-face.dollar{ background:#39ff14; color:#001f00; border-color:#0f9d0f; }
   body.pal-fluoro .die-face.g{ background:#ff8c00; color:#2a0a00; border-color:#b36400; }
   body.pal-fluoro .die-face.r{ background:#ff2a2a; color:#fff; border-color:#a00000; }
@@ -159,82 +454,19 @@
   body.pal-gold .die-face.e-blue{ background:#4c6fa8; color:#eef4ff; border-color:#34507d; }
   body.pal-gold .die-face.d{ background:#3b3b3b; color:#fff0cc; border-color:#141414; }
 
-  /* Settled: only the outcome face is visible; 3D tumble only plays while .rolling */
-  .die:not(.rolling){ transform-style:flat; }
-  .die:not(.rolling) .die-face--front{ transform:none; position:relative; }
-  .die:not(.rolling) .die-face:not(.die-face--front){ visibility:hidden; }
-
-  /* ---- Throw: wrapper hops + drifts, inner die spins + blurs, shadow
-     counter-animates. All 1.15s and share --roll-delay. ---- */
-  .die-wrap.rolling{
-    animation:roll-hop 1.15s cubic-bezier(.3,.62,.3,1) forwards;
-    animation-delay:var(--roll-delay,0s);
-    will-change:transform;
-  }
-  .die-wrap.rolling::after{
-    animation:roll-shadow 1.15s cubic-bezier(.3,.62,.3,1) forwards;
-    animation-delay:var(--roll-delay,0s);
-  }
-  .die.rolling{
-    animation:tumble 1.15s cubic-bezier(.3,.62,.3,1) forwards;
-    animation-delay:var(--roll-delay,0s);
-    will-change:transform, filter;
-  }
-  @keyframes roll-hop{
-    0%  { transform:translate(var(--tx,0px), 0) scale(.92); }
-    18% { transform:translate(var(--tx,0px), -24px) scale(1.02); }
-    45% { transform:translate(calc(var(--tx,0px)*.72), -10px) scale(1); }
-    68% { transform:translate(calc(var(--tx,0px)*.4), -18px) scale(1); }
-    88% { transform:translate(calc(var(--tx,0px)*.12), -4px) scale(1); }
-    100%{ transform:translate(0,0) scale(1); }
-  }
-  @keyframes roll-shadow{
-    0%  { transform:translateX(-50%) translateY(0) scale(1); opacity:.55; }
-    18% { transform:translateX(-50%) translateY(24px) scale(.45); opacity:.15; }
-    45% { transform:translateX(-50%) translateY(10px) scale(.75); opacity:.32; }
-    68% { transform:translateX(-50%) translateY(18px) scale(.58); opacity:.2; }
-    88% { transform:translateX(-50%) translateY(4px) scale(.9); opacity:.42; }
-    100%{ transform:translateX(-50%) translateY(0) scale(1); opacity:.55; }
-  }
-  @keyframes tumble{
-    0%  { transform:rotateX(0deg) rotateY(0deg) scale(.72); filter:blur(1.6px) brightness(1.07); }
-    30% { transform:rotateX(calc(var(--rx,380deg)*.8)) rotateY(calc(var(--ry,300deg)*.55)) scale(1); filter:blur(1.5px) brightness(1.09); }
-    60% { transform:rotateX(calc(var(--rx,380deg)*1.65)) rotateY(calc(var(--ry,300deg)*1.3)) scale(1); filter:blur(1px) brightness(1.05); }
-    85% { transform:rotateX(calc(var(--rx,380deg)*2.15)) rotateY(calc(var(--ry,300deg)*2.05)) scale(1); filter:blur(.6px) brightness(1.02); }
-    100%{ transform:rotateX(calc(var(--rx,380deg)*2.5)) rotateY(calc(var(--ry,300deg)*2.4)) scale(1); filter:blur(0) brightness(1); }
-  }
-  /* Landing: squash-stretch pop with a decaying rotational wobble */
-  .die-wrap.land{
-    animation:landpop .45s cubic-bezier(.18,.89,.32,1.28) var(--roll-delay,0s);
-    will-change:transform;
-  }
-  @keyframes landpop{
-    0%  { transform:scale(1.38) translateY(-6px) rotate(var(--wob,0deg)); }
-    55% { transform:scale(.92) translateY(2px) rotate(var(--wob,0deg)); }
-    75% { transform:scale(1.05) translateY(-1px) rotate(calc(var(--wob,0deg)*-.6)); }
-    92% { transform:scale(.99) translateY(0) rotate(calc(var(--wob,0deg)*.3)); }
-    100%{ transform:scale(1) translateY(0) rotate(0deg); }
-  }
-
-  /* ================= Controls ================= */
+  /* ---------- Controls ---------- */
   .status{
-    min-height:22px;
-    margin:14px 0 6px;
-    font-size:16px; font-weight:800; letter-spacing:8px;
-    color:var(--text-dim);
-    font-variant-numeric:tabular-nums;
+    min-height:22px; margin:12px 0 4px;
+    font-size:15px; font-weight:800; letter-spacing:4px;
+    color:var(--text-dim); font-variant-numeric:tabular-nums;
   }
   .status.busy{ color:var(--electric); animation:pulse 1s ease-in-out infinite; }
+  .status .pts{ color:var(--gold); }
   @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:.4;} }
-  .controls{
-    display:flex; flex-wrap:wrap; gap:8px;
-    justify-content:center; align-items:center;
-    margin:12px 0 18px;
-  }
+  .controls{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; align-items:center; margin:10px 0 14px; }
   .ctl{ display:inline-flex; align-items:center; gap:6px; background:rgba(0,0,0,0.25); border:1px solid var(--card-border); border-radius:12px; padding:5px 8px; }
   .ctl-btn{
-    min-width:38px; height:38px;
-    border-radius:10px;
+    min-width:38px; height:38px; border-radius:10px;
     background:linear-gradient(135deg,#4a3021,#331f15);
     color:var(--text); font-size:16px; font-weight:800;
     display:inline-flex; align-items:center; justify-content:center;
@@ -242,34 +474,183 @@
   .ctl-btn:active{ transform:scale(.92); }
   .ctl-label{ font-size:12px; font-weight:700; color:var(--text-dim); min-width:52px; text-align:center; text-transform:capitalize; }
   .roll-btn{
-    width:100%;
-    padding:16px;
-    border-radius:16px;
+    width:100%; padding:16px; border-radius:16px;
     font-weight:900; font-size:18px; letter-spacing:2px; text-transform:uppercase;
     background:linear-gradient(135deg,var(--gold),var(--gold-2));
     box-shadow:0 4px 0 #7a3117, 0 8px 18px rgba(192,82,42,0.35);
-    color:#fff5ee;
-    transition:transform .1s ease;
+    color:#fff5ee; transition:transform .1s ease;
   }
   .roll-btn:active{ transform:scale(.97); }
-  .roll-btn:disabled{ opacity:.45; transform:none !important; }
+  .roll-btn:disabled{ opacity:.5; transform:none !important; }
   .roll-btn small{ display:block; font-size:10px; letter-spacing:1px; opacity:.8; font-weight:600; }
-  .foot{ margin-top:14px; font-size:11px; color:var(--text-dim); opacity:.8; line-height:1.5; }
+  .foot{ margin-top:12px; font-size:11px; color:var(--text-dim); opacity:.82; line-height:1.55; }
+
+  /* ---------- set-aside tray ---------- */
+  .tray{
+    display:flex; align-items:center; gap:10px;
+    margin:10px 0 4px; padding:8px 10px; min-height:56px;
+    background:linear-gradient(180deg, rgba(0,0,0,0.36), rgba(0,0,0,0.18));
+    border:1px solid var(--card-border); border-radius:14px;
+    box-shadow:inset 0 2px 10px rgba(0,0,0,0.55);
+  }
+  .tray-label{
+    flex:0 0 auto; width:44px; text-align:center;
+    font-size:9px; line-height:1.35; letter-spacing:1.2px;
+    text-transform:uppercase; color:var(--text-dim);
+  }
+  .tray-count{ display:block; font-size:11px; font-weight:800; color:var(--electric); letter-spacing:0; }
+  .tray-slots{ display:flex; align-items:center; gap:2px; flex:1; flex-wrap:wrap; min-height:44px; }
+  .tray-empty{ font-size:11px; color:var(--text-dim); opacity:.6; padding-left:4px; }
+  .tray-die{
+    width:62px; height:62px; perspective:600px;
+    transform:scale(.58); margin:-12px -8px;
+    cursor:pointer; transition:transform .12s ease;
+  }
+  .tray-die:hover{ transform:scale(.68); }
+  .tray-info{
+    flex:0 0 auto; min-width:74px; text-align:right; padding-left:10px;
+    border-left:1px solid rgba(255,255,255,0.08);
+  }
+  .tray-score{
+    font-size:17px; font-weight:900; line-height:1.1;
+    color:var(--gold); font-variant-numeric:tabular-nums;
+  }
+  .tray-score.dead{ color:var(--text-dim); opacity:.6; }
+  .tray-combo{
+    font-size:8.5px; letter-spacing:1.1px; text-transform:uppercase;
+    color:var(--text-dim); margin-top:2px; min-height:11px;
+  }
+  /* a valid combo in the tray lights it up */
+  .tray.combo-glow{
+    border-color:rgba(42,157,143,0.55);
+    box-shadow:inset 0 2px 10px rgba(0,0,0,0.55),
+               0 0 0 1px rgba(42,157,143,0.3),
+               0 0 22px rgba(42,157,143,0.22);
+  }
+  .tray.combo-glow .tray-combo{ color:var(--electric); }
+  .tray.pop{ animation:trayPop .45s cubic-bezier(.2,1.3,.3,1); }
+  @keyframes trayPop{ 0%{transform:scale(1);} 40%{transform:scale(1.035);} 100%{transform:scale(1);} }
+  /* dice on the table become tappable once the roll has settled */
+  .die-wrap.pickable{ pointer-events:auto; cursor:pointer; }
+  .die-wrap.pickable::before{
+    content:''; position:absolute; inset:-7px; border-radius:18px;
+    pointer-events:none; transition:box-shadow .15s ease;
+  }
+  .die-wrap.pickable:hover::before{
+    box-shadow:0 0 0 2px rgba(217,114,74,0.8), 0 0 20px rgba(217,114,74,0.45);
+  }
+  /* the clone that flies from the table into the tray */
+  .die-fly{
+    position:fixed; z-index:80; pointer-events:none;
+    transition:transform .34s cubic-bezier(.2,.8,.2,1), opacity .34s ease-out;
+  }
+  .hidden{ display:none !important; }
+  .roll-btn.roll-alt{
+    margin-top:8px; padding:13px; font-size:14px;
+    background:linear-gradient(135deg,#2a9d8f,#1f766b);
+    box-shadow:0 4px 0 #14504a, 0 8px 18px rgba(42,157,143,0.3);
+  }
+
+  /* ---------- On-page tuner ---------- */
+  .tune-toggle{
+    width:100%; margin-top:12px; padding:11px; border-radius:12px;
+    background:rgba(0,0,0,0.25); border:1px solid var(--card-border);
+    color:var(--text-dim); font-weight:700; font-size:12px; letter-spacing:1px; text-transform:uppercase;
+  }
+  .tune-toggle:active{ transform:scale(.98); }
+  .tune{
+    display:none; margin-top:10px; text-align:left;
+    background:rgba(0,0,0,0.24); border:1px solid var(--card-border); border-radius:14px;
+    padding:12px; max-height:48vh; overflow-y:auto;
+  }
+  .tune.open{ display:block; }
+  .tune h4{ margin:15px 0 6px; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--gold); }
+  .tune h4:first-child{ margin-top:0; }
+  .trow{ display:grid; grid-template-columns:106px 1fr 50px; gap:8px; align-items:center; padding:3px 0; }
+  .trow label{ font-size:11px; color:var(--text-dim); }
+  .trow input[type=range]{ width:100%; height:22px; accent-color:var(--gold); }
+  .trow .tv{ font-size:11px; color:var(--text); text-align:right; font-variant-numeric:tabular-nums; }
+  .trow-toggle{ display:flex; justify-content:space-between; align-items:center; }
+  .trow-toggle input[type=checkbox]{ width:18px; height:18px; accent-color:var(--gold); }
+  .tune-actions{ display:flex; gap:8px; margin-top:14px; align-items:center; }
+  .tune-actions button{
+    flex:1; padding:9px; border-radius:10px; background:rgba(255,255,255,0.07);
+    color:var(--text); font-size:12px; font-weight:700; border:1px solid var(--card-border);
+  }
+  #copyMsg{ font-size:11px; color:var(--electric); min-width:46px; }
 
   @media (prefers-reduced-motion: reduce){
-    .die-wrap.rolling, .die-wrap.land, .die.rolling,
-    .die-wrap.rolling::after{ animation:none !important; transition:none !important; }
+    .stage, .table, .combo, .flash{ transition:none !important; animation:none !important; }
+    .glow, .mote, .beam, .bb-bokeh i, .bb-neon,
+    .bb-neonglow, .bb-spill, .bb-figures i{ animation:none !important; }
+    .bb-figures{ display:none !important; }
+    .motes{ display:none !important; }
   }
 </style>
 </head>
 <body>
 
-<div class="lab">
-  <div class="title">DiceFX <span>LAB — $GREED dice sandbox</span></div>
-  <p class="sub">animation &amp; physics only · no game logic</p>
+<!-- Shared paint servers for the moulded "pip" glyphs. Defined once; every
+     die face references them, so the recess shading costs nothing per die. -->
+<svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
+  <defs>
+    <!-- upper wall of the carved cavity: dark at the top, fading out -->
+    <linearGradient id="pipShade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0"   stop-color="#000" stop-opacity="0.55"/>
+      <stop offset="0.55" stop-color="#000" stop-opacity="0"/>
+    </linearGradient>
 
-  <div id="diceRow" class="dice-row" title="Tap to roll"></div>
+  </defs>
+</svg>
+
+<!-- ambient room: drifting glows, a light cone and floating motes -->
+<div class="room" aria-hidden="true">
+  <div class="glow g-a"></div>
+  <div class="glow g-b"></div>
+  <div class="glow g-c"></div>
+  <div class="beam"></div>
+  <div class="motes" id="motes"></div>
+</div>
+
+<div class="lab">
+  <div class="title">DiceFX <span>LAB — rigid-body dice sandbox</span></div>
+  <p class="sub">real physics · lit faces · particles</p>
+
+  <div class="table">
+    <div class="stage" id="stage">
+      <!-- the busy bar behind the counter -->
+      <div class="barback" aria-hidden="true">
+        <div class="bb-wall"></div>
+        <div class="bb-haze"></div>
+        <div class="bb-neonglow"></div>
+        <div class="bb-spill"></div>
+        <div class="bb-bokeh" id="bbBokeh"></div>
+        <div class="bb-neon">$GREED</div>
+        <div class="bb-figures"><i></i><i></i><i></i></div>
+        <div class="bb-pendants"><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+
+      <!-- the counter top, turned to the dice's camera plane -->
+      <div class="tablebed">
+        <div class="bed-top"></div>
+      </div>
+      <canvas id="fx"></canvas>
+      <div class="dice-layer" id="diceLayer"></div>
+      <div class="flash" id="flash"></div>
+      <div class="combo" id="combo"></div>
+    </div>
+  </div>
+
   <div id="statusLine" class="status">…</div>
+
+  <div class="tray" id="tray">
+    <div class="tray-label">set<br>aside<span class="tray-count" id="trayCount">0/6</span></div>
+    <div class="tray-slots" id="traySlots"></div>
+    <div class="tray-info">
+      <div class="tray-score" id="trayScore">0</div>
+      <div class="tray-combo" id="trayCombo"></div>
+    </div>
+  </div>
 
   <div class="controls">
     <div class="ctl">
@@ -286,19 +667,51 @@
     </div>
   </div>
 
-  <button class="roll-btn" id="rollBtn" onclick="doRoll()">🎲 ROLL <small>SPACE · OR TAP THE TRAY</small></button>
-  <p class="foot">Opens straight into a roll. Tune the throw in <strong>dice-lab.html</strong>:<br>
-  — <strong>--tx</strong> (±75px) drift · <strong>roll-hop</strong> height (-24px) · <strong>--rx/--ry</strong> spin (deg) · <strong>tumble</strong> blur &amp; speed · <strong>landpop</strong> wobble · <strong>playRattle/playThunk</strong> gains.</p>
+  <button class="roll-btn" id="rollBtn" onclick="doRoll()">🎲 ROLL <small>SPACE · OR TAP THE TABLE</small></button>
+  <button class="roll-btn roll-alt hidden" id="rollRemainBtn" onclick="rollRemaining()">🎲 ROLL REMAINING</button>
+  <button class="tune-toggle" id="tuneToggle" onclick="toggleTune()">⚙︎ Tune physics &amp; FX</button>
+  <div class="tune" id="tunePanel">
+    <div id="tuneBody"></div>
+    <div class="tune-actions">
+      <button onclick="resetTune()">↺ Reset</button>
+      <button onclick="copyTune()">⧉ Copy values</button>
+      <span id="copyMsg"></span>
+    </div>
+  </div>
+
+  <p class="foot">
+    Every value is live — tweak, then hit ROLL. <strong>Copy values</strong> grabs a snippet of your
+    current settings to paste back into the file later.
+  </p>
 </div>
 
 <script>
 /* =========================================================================
-   DiceFX Lab — a single-page sandbox for the $GREED dice throw.
-   Physics/visual engine lifted verbatim from greed-dice-v2.html; all game
-   logic (players, scoring, banking) is intentionally absent.
+   DiceFX Lab — a single-page rigid-body dice sandbox.
+   Physics: hand-rolled rAF integrator (gravity, restitution, friction,
+   tray walls, die-vs-die collisions, sleep). Rendering: the DOM cubes from
+   the game (matrix-free Euler rotation) + a canvas FX layer (shadows,
+   trails, dust, impact rings). Outcome is still pre-decided — the sim only
+   drives the motion; the final rotation eases to the identity pose so the
+   pre-rolled face always lands up.
    ========================================================================= */
 
-// ---------------- Dice data ----------------
+// ------------------------- TUNABLES (live-editable in the panel) -------------------------
+const DIE_R = 30;                            // collision radius (die half-size)
+const DIE_H = 28.6;                          // cube half-size in CSS px (planes at 28.6)
+const LIGHT = norm3(-0.42, -0.6, 0.68);      // upper-left, toward viewer
+const HALF  = norm3(LIGHT.x, LIGHT.y, LIGHT.z + 1); // light/view half-vector (view = +Z)
+const DEFAULTS = {
+  gravity:2600, rest:0.46, friction:0.82, airdrag:0.6, spindrag:0.5, slowmo:0.42,
+  dropY:120, throwPower:530, spread:240, spin:840,
+  depth:0.46, faceAmb:0.58, faceGain:0.52, glossGain:0.9, dust:9, maxRoll:3600, camTilt:58,
+  shadows:true, trails:true, dustFx:true, slowmoOn:true, zoomOn:true
+};
+const S = Object.assign({}, DEFAULTS);       // live settings (mutated by the tuner UI)
+// ------------------------------------------------------------
+
+const REDUCED = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
 const DICE_SYMS = [
   { sym: "$", cls: "dollar" },
   { sym: "G", cls: "g" },
@@ -308,215 +721,989 @@ const DICE_SYMS = [
   { sym: "D", cls: "d" }
 ];
 const LETTER_MAPS = { greed: { dollar: "$", g: "G", r: "R", "e-green": "E", "e-blue": "E", d: "D" } };
-function displayLetter(cls) {
-  const m = LETTER_MAPS.greed;
-  return (m && m[cls]) || (DICE_SYMS.find(s => s.cls === cls) || {}).sym || "";
+const FACE_COLOR = { dollar:"#37c47f", g:"#ffd400", r:"#e2574a", "e-green":"#8fd07a", "e-blue":"#5a8fe0", d:"#8a8a8a" };
+function displayLetter(cls){ const m = LETTER_MAPS.greed; return (m && m[cls]) || (DICE_SYMS.find(s=>s.cls===cls)||{}).sym || ""; }
+const SVGNS = "http://www.w3.org/2000/svg";
+function pipText(letter, cls, dy){
+  const t = document.createElementNS(SVGNS, "text");
+  t.setAttribute("x", "20");
+  t.setAttribute("y", "30");
+  t.setAttribute("text-anchor", "middle");
+  t.setAttribute("class", cls);
+  if (dy) t.setAttribute("transform", "translate(0," + dy + ")");
+  t.textContent = letter;
+  return t;
 }
-function glyphNode(cls) { return document.createTextNode(displayLetter(cls)); }
+// A symbol rendered as a moulded, recessed "pip" carved into the face: four
+// stacked copies of the glyph build the relief — a dark copy above (cavity
+// wall shadow), a bright copy below (lit lower lip), the painted symbol, and a
+// top-down shade inside it.
+function glyphNode(cls){
+  const letter = displayLetter(cls);
+  const svg = document.createElementNS(SVGNS, "svg");
+  svg.setAttribute("viewBox", "0 0 40 40");
+  svg.setAttribute("class", "pip");
+  svg.setAttribute("aria-hidden", "true");
+  svg.appendChild(pipText(letter, "pip-up",  -1.4));
+  svg.appendChild(pipText(letter, "pip-dn",   1.4));
+  svg.appendChild(pipText(letter, "pip-fill", 0));
+  svg.appendChild(pipText(letter, "pip-shade", 0));
+  return svg;
+}
+function rollDie(){ const b = DICE_SYMS[Math.floor(Math.random()*DICE_SYMS.length)]; return { sym:b.sym, cls:b.cls, color:b.color||null }; }
+function rand(a,b){ return a + Math.random()*(b-a); }
+function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
+function norm3(x,y,z){ const l=Math.hypot(x,y,z)||1; return {x:x/l,y:y/l,z:z/l}; }
 
-function rollDie() {
-  const base = DICE_SYMS[Math.floor(Math.random() * DICE_SYMS.length)];
-  return { sym: base.sym, cls: base.cls, color: base.color || null };
-}
-function shuffleArray(arr) {
-  for (let j = arr.length - 1; j > 0; j--) {
-    const k = Math.floor(Math.random() * (j + 1));
-    [arr[j], arr[k]] = [arr[k], arr[j]];
+// ------------------------- Scoring (from the game) -------------------------
+function evalRoll(dice){
+  if (dice.length === 6 && new Set(dice.map(d=>d.sym+(d.color||""))).size === 1) return { score:5000, kind:"six" };
+  let score = 0; const idx = { "$":[], "G":[], "R":[], "E":[], "D":[] };
+  dice.forEach((d,i)=>idx[d.sym].push(i));
+  if (idx["$"].length>=1 && idx["G"].length>=1 && idx["R"].length>=1 && idx["D"].length>=1 && idx["E"].length>=2){
+    if (new Set(idx["E"].map(i=>dice[i].color)).size>=2) return { score:1000, kind:"greed" };
   }
-  return arr;
+  if (idx["D"].length>=4){ score += Math.floor(idx["D"].length/4)*1000 + (idx["D"].length%4)*100; }
+  else if (idx["D"].length>0){ score += idx["D"].length*100; }
+  if (idx["$"].length>=3) score += 600;
+  if (idx["G"].length>=3){ score += 500; score += (idx["G"].length-3)*50; }
+  else if (idx["G"].length>0) score += idx["G"].length*50;
+  if (idx["R"].length>=3) score += 400;
+  const eg = idx["E"].filter(i=>dice[i].color==="green").length;
+  const eb = idx["E"].filter(i=>dice[i].color==="blue").length;
+  if (eg>=3) score += 300;
+  if (eb>=3) score += 300;
+  // combo kind for FX
+  let kind = "none";
+  const counts = {};
+  dice.forEach(d=>{ const k=d.sym+(d.color||""); counts[k]=(counts[k]||0)+1; });
+  const most = Math.max(...Object.values(counts));
+  if (score>0){ kind = (most>=3 && ["$","G","R","E","D"].some(s=>idx[s].length>=3)) ? "multi" : "plain"; }
+  return { score, kind };
 }
 
-// Build one die: a .die-wrap (perspective + shadow + positional hop) around a
-// 3D cube whose faces show symbols. Front face = outcome when settled.
-function createCubeDie(cls, sym, randomFaces) {
+// ------------------------- Audio -------------------------
+let actx=null, noiseBuf=null, soundOn=true, hapticsOn=true, lastThunk=0;
+function ensureAudio(){
+  try{ if(!actx){ const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return false; actx=new AC(); }
+    if(actx.state==="suspended") actx.resume(); return true; }catch(e){ return false; }
+}
+function getNoise(c){ if(noiseBuf) return noiseBuf; const n=Math.floor(c.sampleRate*0.3);
+  noiseBuf=c.createBuffer(1,n,c.sampleRate); const d=noiseBuf.getChannelData(0);
+  for(let i=0;i<n;i++) d[i]=Math.random()*2-1; return noiseBuf; }
+function playRattle(dur=0.9,gain=0.09){
+  if(!soundOn||!ensureAudio()) return;
+  try{ const c=actx,t=c.currentTime,src=c.createBufferSource(); src.buffer=getNoise(c); src.loop=true;
+    const hp=c.createBiquadFilter(); hp.type="highpass"; hp.frequency.value=1100;
+    const g=c.createGain(); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(gain,t+0.12);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    src.connect(hp); hp.connect(g); g.connect(c.destination); src.start(t); src.stop(t+dur+0.05);
+  }catch(e){}
+}
+function playThunk(weight=0.6){
+  if(!soundOn||!ensureAudio()) return;
+  const now=performance.now(); if(now-lastThunk<55) return; lastThunk=now;
+  try{ const c=actx,t=c.currentTime,o=c.createOscillator(); o.type="sine";
+    o.frequency.setValueAtTime(200+Math.random()*60,t); o.frequency.exponentialRampToValueAtTime(76,t+0.11);
+    const g=c.createGain(); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.24*weight,t+0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+0.14);
+    o.connect(g); g.connect(c.destination); o.start(t); o.stop(t+0.16);
+  }catch(e){}
+}
+function playChink(){
+  if(!soundOn||!ensureAudio()) return;
+  try{ const c=actx,t=c.currentTime; [880,1318].forEach((f,i)=>{ const o=c.createOscillator(); o.type="triangle";
+    o.frequency.value=f; const g=c.createGain(); const t0=t+i*0.07;
+    g.gain.setValueAtTime(0.0001,t0); g.gain.exponentialRampToValueAtTime(0.15,t0+0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001,t0+0.3);
+    o.connect(g); g.connect(c.destination); o.start(t0); o.stop(t0+0.32); }); }catch(e){}
+}
+function playFanfare(){
+  if(!soundOn||!ensureAudio()) return;
+  try{ const c=actx,t=c.currentTime; [523.25,659.25,783.99,1046.5,1318.5].forEach((f,i)=>{
+    const o=c.createOscillator(); o.type="triangle"; o.frequency.value=f; const g=c.createGain(); const t0=t+i*0.1;
+    g.gain.setValueAtTime(0.0001,t0); g.gain.exponentialRampToValueAtTime(0.14,t0+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001,t0+0.5);
+    o.connect(g); g.connect(c.destination); o.start(t0); o.stop(t0+0.52); }); }catch(e){}
+}
+function buzz(p){ if(!hapticsOn) return; try{ if(navigator.vibrate) navigator.vibrate(p); }catch(e){} }
+
+// ------------------------- DOM builders -------------------------
+function createCubeDie(cls){
   const wrap = document.createElement("div");
   wrap.className = "die-wrap";
   const die = document.createElement("div");
   die.className = "die " + cls;
-  die.dataset.outcomeSym = sym;
-  die.dataset.outcomeCls = cls;
-  const sides = ['front', 'back', 'right', 'left', 'top', 'bottom'];
-  const symbols = [...DICE_SYMS];
-  if (randomFaces) shuffleArray(symbols);
-  sides.forEach((side, index) => {
+  const sides = ['front','back','right','left','top','bottom'];
+  // ONE symbol per face (a real die). The OUTCOME sits on the TOP face so it
+  // reads as the upward face once the die has lain down flat.
+  const others = DICE_SYMS.filter(s => s.cls !== cls);
+  for(let i=others.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [others[i],others[j]]=[others[j],others[i]]; }
+  const faceEls = [];
+  let oi = 0;
+  sides.forEach((side) => {
     const face = document.createElement("div");
-    let faceCls;
-    if (randomFaces) faceCls = symbols[index].cls;
-    else if (side === 'front') faceCls = cls;
-    else faceCls = symbols[index].cls;
+    const faceCls = (side === 'top') ? cls : others[oi++ % others.length].cls;
     face.className = "die-face die-face--" + side + " " + faceCls;
     face.appendChild(glyphNode(faceCls));
     die.appendChild(face);
+    faceEls.push(face);
   });
   wrap.appendChild(die);
-  return wrap;
+  return { wrap, die, faceEls };
 }
 
-// ---------------- Audio (same synth as v2) ----------------
-let actx = null;
-let noiseBuf = null;
-function ensureAudio() {
-  try {
-    if (!actx) {
-      const AC = window.AudioContext || window.webkitAudioContext;
-      if (!AC) return false;
-      actx = new AC();
-    }
-    if (actx.state === "suspended") actx.resume();
-    return true;
-  } catch (e) { return false; }
-}
-function getNoiseBuffer(c) {
-  if (noiseBuf) return noiseBuf;
-  const len = Math.floor(c.sampleRate * 0.3);
-  noiseBuf = c.createBuffer(1, len, c.sampleRate);
-  const d = noiseBuf.getChannelData(0);
-  for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
-  return noiseBuf;
-}
-function playRattle(dur = 0.9, gain = 0.1) {
-  if (!soundOn || !ensureAudio()) return;
-  try {
-    const c = actx, t = c.currentTime;
-    const src = c.createBufferSource();
-    src.buffer = getNoiseBuffer(c);
-    src.loop = true;
-    const hp = c.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 1100;
-    const g = c.createGain();
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(gain, t + 0.12);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    src.connect(hp); hp.connect(g); g.connect(c.destination);
-    src.start(t); src.stop(t + dur + 0.05);
-  } catch (e) {}
-}
-function playThunk(weight = 0.6) {
-  if (!soundOn || !ensureAudio()) return;
-  try {
-    const c = actx, t = c.currentTime;
-    const o = c.createOscillator();
-    o.type = "sine";
-    o.frequency.setValueAtTime(200 + Math.random() * 50, t);
-    o.frequency.exponentialRampToValueAtTime(78, t + 0.11);
-    const g = c.createGain();
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(0.26 * weight, t + 0.008);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.14);
-    o.connect(g); g.connect(c.destination);
-    o.start(t); o.stop(t + 0.16);
-  } catch (e) {}
-}
-function buzz(pattern) {
-  if (!hapticsOn) return;
-  try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (e) {}
-}
+// local-space face normals (matches the CSS side transforms; +Y is screen-down)
+const FACE_N = [
+  [0,0,1], [0,0,-1], [1,0,0], [-1,0,0], [0,-1,0], [0,1,0]
+];
 
-// ---------------- Lab state & UI ----------------
+// ------------------------- Lab state -------------------------
 let diceCount = 6;
 let busy = false;
-let soundOn = true;
-let hapticsOn = true;
-const PALETTES = ["classic", "fluoro", "pastel", "ocean", "candy", "gold"];
+let dice = [];          // physics bodies
+let TW = 0, TH = 0;     // table px
+let Y0 = 0;             // screen y of the far table edge
+let rafId = null;
+let rollStart = 0, lastT = 0, lightFrame = 0;
+let landedFired = false, lastSettleAt = 0;
+let particles = [], rings = [];
+let asideDice = [];          // dice lifted off the felt into the set-aside tray
+const stage = document.getElementById("stage");   // the felt (physics rect + tap target)
+const dolly = document.querySelector(".table");  // wrapper that takes the camera transforms
+
+// ---- one camera for the whole scene ----
+// camTilt is the view's pitch above the table (90deg = looking straight down).
+// Anything that must agree with the dice uses sin(pitch) as its foreshortening:
+// the felt is tilted by (90 - pitch) in CSS via --cam-tilt, and the contact
+// shadows are squashed by sin(pitch). Change camTilt and the table follows.
+let SP = Math.sin(58*Math.PI/180);
+function applyCam(){
+  SP = Math.sin(S.camTilt * Math.PI/180);
+  if (stage) stage.style.setProperty("--cam-tilt", S.camTilt + "deg");
+}
+// A cube of half-size h tilted by the camera projects to a half-HEIGHT of
+// h*(cos p + sin p) — noticeably taller than h. Anchoring dice by the box half
+// (31px) instead of this made every die sink into the counter by 4-14px.
+function projHalfY(){
+  const p = S.camTilt * Math.PI/180;
+  return DIE_H * (Math.cos(p) + Math.sin(p));
+}
+const diceLayer = document.getElementById("diceLayer");
+const canvas = document.getElementById("fx");
+const ctx = canvas.getContext("2d");
+let DPR = 1;
+
+const PALETTES = ["classic","fluoro","pastel","ocean","candy","gold"];
 const pals = ["#d9724a","#ff2a2a","#ffb6a3","#1e88e5","#f48fb1","#c9a227"];
 let palIdx = 0;
-const REDUCED = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-function changeCount(d) {
-  diceCount = Math.min(8, Math.max(1, diceCount + d));
+function resize(){
+  const r = stage.getBoundingClientRect();
+  TW = r.width; TH = r.height;
+  Y0 = TH * 0.46;   // dice sit a little lower, leaving the bar's far end clear
+  DPR = Math.min(2, window.devicePixelRatio || 1);
+  canvas.width = Math.round(TW * DPR);
+  canvas.height = Math.round(TH * DPR);
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+}
+window.addEventListener("resize", resize);
+
+function changeCount(d){
+  diceCount = clamp(diceCount + d, 1, 8);
   document.getElementById("countLabel").textContent = diceCount + " dice";
   if (!busy) doRoll();
 }
-function toggleSound() {
-  soundOn = !soundOn;
-  const b = document.getElementById("soundBtn");
-  b.textContent = soundOn ? "🔊" : "🔇";
-}
-function toggleHaptics() {
-  hapticsOn = !hapticsOn;
-  const b = document.getElementById("hapticBtn");
-  b.textContent = hapticsOn ? "📳" : "🚫📳";
-}
-function changePalette(d) {
+function toggleSound(){ soundOn = !soundOn; document.getElementById("soundBtn").textContent = soundOn ? "🔊" : "🔇"; }
+function toggleHaptics(){ hapticsOn = !hapticsOn; document.getElementById("hapticBtn").textContent = hapticsOn ? "📳" : "🚫"; }
+function changePalette(d){
   palIdx = (palIdx + d + PALETTES.length) % PALETTES.length;
   const name = PALETTES[palIdx];
   document.body.className = name === "classic" ? "" : "pal-" + name;
-  document.getElementById("palLabel").textContent = name;
-  document.getElementById("palLabel").style.color = pals[palIdx];
+  const el = document.getElementById("palLabel");
+  el.textContent = name; el.style.color = pals[palIdx];
 }
 
-// ---------------- The throw ----------------
-function doRoll() {
+// ------------------------- Layout helpers -------------------------
+function screenX(b){ return b.x; }
+function screenY(b){ return Y0 + b.z * S.depth - b.y; }
+function depthScale(b){ return 0.9 + (b.z / TH) * 0.24; }
+
+// ------------------------- Roll -------------------------
+// One body builder, shared by a fresh roll, a reroll of the remainder, and a
+// die coming back out of the tray — so all three are physically identical.
+function makeBody(d){
+  const { wrap, die, faceEls } = createCubeDie(d.cls);
+  diceLayer.appendChild(wrap);
+
+  // --- launch geometry -------------------------------------------------
+  // Work out the throw first so we can guarantee the arc fits the frame. A die
+  // that spawns on-screen must not sail out of the top of it: that was clipping
+  // dice away mid-flight and read as broken physics.
+  const z = clamp(TH*0.5 + rand(-90,90), DIE_R, TH-DIE_R);
+  let y = rand(S.dropY*0.75, S.dropY*1.25);
+  let vy = rand(S.throwPower*0.72, S.throwPower*1.28);
+  const floorY = Y0 + z * S.depth;                 // screen y of the floor under it
+  const sc0 = 0.9 + (z / TH) * 0.24;
+  const dieTop = 2 * projHalfY() * sc0;            // projected height of the cube
+  const apexLimit = floorY - dieTop - 14;          // highest the base may reach, on screen
+  // Always cap the apex: a die that spawns near the top just falls in (vy → 0),
+  // one with room to spare still gets a real throw. Either way it never sails
+  // out of the top of the frame.
+  const apex = y + (vy*vy) / (2*S.gravity);
+  if (apex > apexLimit){
+    vy = Math.sqrt(Math.max(0, 2*S.gravity*(apexLimit - y)));
+  }
+
+  const b = {
+    cls: d.cls, sym: d.sym, color: d.color,
+    wrap, die, faceEls,
+    x: TW/2 + rand(-90,90),
+    z,
+    y,
+    vx: rand(-1,1) * rand(S.spread*0.4, S.spread),
+    vy,
+    vz: rand(-1,1) * rand(S.spread*0.4, S.spread),
+    rx: rand(0,360), ry: rand(0,360), rz: rand(0,360),
+    wx: rand(-1,1) * rand(S.spin*0.5, S.spin),
+    wy: rand(-1,1) * rand(S.spin*0.5, S.spin),
+    wz: rand(-1,1) * rand(S.spin*0.35, S.spin*0.85),
+    settled:false, restT:0, aligning:false, aligned:false, bounces:0, aP:0,
+    trail:[]
+  };
+  wrap.__body = b;
+  return b;
+}
+
+// Throw n dice. Clears whatever is on the table; the tray is untouched.
+function launch(n){
   if (busy) return;
   busy = true;
   document.getElementById("rollBtn").disabled = true;
+  const rb = document.getElementById("rollRemainBtn");
+  if (rb){ rb.disabled = true; rb.classList.add("hidden"); }
+  resize();
+  dolly.classList.remove("closeup","hitstop");
+  if (S.zoomOn) dolly.classList.add("zooming");
+  hideCombo();
+  document.querySelectorAll(".die-wrap.pickable").forEach(el => el.classList.remove("pickable"));
 
-  const count = diceCount;
-  const finalDice = [];
-  for (let i = 0; i < count; i++) finalDice.push(rollDie());
+  diceLayer.innerHTML = "";
+  dice = [];
+  for (let i = 0; i < n; i++) dice.push(makeBody(rollDie()));
+  const finalDice = dice.map(b => ({ sym:b.sym, cls:b.cls, color:b.color }));
 
-  const row = document.getElementById("diceRow");
-  row.innerHTML = "";
-  // Randomize start order for a natural cascade
-  const startOrder = [...Array(count).keys()];
-  shuffleArray(startOrder);
-  for (let i = 0; i < count; i++) {
-    const wrap = createCubeDie(finalDice[i].cls, finalDice[i].sym, true);
-    wrap.classList.add("rolling");
-    wrap.firstChild.classList.add("rolling");
-    const orderIndex = startOrder.indexOf(i);
-    // Stagger + per-die personality (tune these!)
-    wrap.style.setProperty("--roll-delay", (orderIndex * 0.05) + "s");
-    wrap.style.setProperty("--tx", ((Math.random() * 150) - 75) + "px"); // ±75px drift
-    wrap.style.setProperty("--rx", (260 + Math.random() * 240) + "deg");  // spin X ~1.5 turns
-    wrap.style.setProperty("--ry", (220 + Math.random() * 280) + "deg");  // spin Y ~1.5 turns
-    row.appendChild(wrap);
+  // Reduced-motion: skip the sim, drop them into their resting poses instantly.
+  if (REDUCED){
+    dice.forEach(b=>{ b.y = DIE_R; b.settled = true; b.aligned = true;
+      b.rx = 0; b.ry = rand(0,360); b.rz = 0; });
+    dice.forEach(shadeFaces);
+    render(); fxFrame(0.016);
+    dolly.classList.remove("zooming","closeup");
+    busy = false; document.getElementById("rollBtn").disabled = false;
+    afterSettle(finalDice); return;
   }
 
-  const status = document.getElementById("statusLine");
-  status.textContent = "Rolling…";
-  status.className = "status busy";
-  playRattle(1.0, 0.10);
+  const st = document.getElementById("statusLine");
+  st.textContent = "Rolling…"; st.className = "status busy";
+  playRattle(1.0, 0.09);
   buzz([10]);
 
-  const settleIn = REDUCED ? 260 : 1150 + (count - 1) * 0.05 * 1000 + 120;
-  setTimeout(() => settle(finalDice), settleIn);
+  rollStart = performance.now(); lastT = rollStart; lightFrame = 0;
+  landedFired = false; lastSettleAt = rollStart;
+  cancelAnimationFrame(rafId);
+  rafId = requestAnimationFrame(tick);
 }
 
-function settle(finalDice) {
-  const row = document.getElementById("diceRow");
-  row.innerHTML = "";
-  finalDice.forEach((d, i) => {
-    const wrap = createCubeDie(d.cls, d.sym);
-    wrap.classList.add("land");
-    wrap.style.setProperty("--roll-delay", (i * 0.075) + "s");
-    wrap.style.setProperty("--wob", ((Math.random() * 10) - 5).toFixed(1) + "deg");
-    row.appendChild(wrap);
-    const tLand = 520 + i * 75;
-    setTimeout(() => playThunk(0.5 + (i / Math.max(1, finalDice.length - 1)) * 0.35), tLand);
-  });
-  const status = document.getElementById("statusLine");
-  status.className = "status";
-  status.textContent = finalDice.map(d => displayLetter(d.cls)).join(" · ");
-
-  const tLast = 520 + (finalDice.length - 1) * 75 + 30;
-  setTimeout(() => {
-    playThunk(0.9);
-    buzz([12, 30, 12]);
-    busy = false;
-    document.getElementById("rollBtn").disabled = false;
-  }, tLast);
+// A fresh roll starts over: tray emptied, all dice back on the table.
+function doRoll(){
+  if (busy) return;
+  asideDice = [];
+  renderTray();
+  launch(diceCount);
 }
 
-// ---------------- Interaction ----------------
-document.getElementById("diceRow").addEventListener("click", doRoll);
-document.addEventListener("keydown", (e) => {
-  if (e.code === "Space" || e.key === " ") {
-    e.preventDefault();
-    doRoll();
+// Reroll only what is still on the felt — the set-aside dice stay set aside.
+// With nothing left on the table this becomes a hot roll of the full set.
+function rollRemaining(){
+  if (busy) return;
+  launch(dice.length === 0 ? diceCount : dice.length);
+}
+
+// ------------------------- Set aside -------------------------
+function renderTray(){
+  const slots = document.getElementById("traySlots");
+  const count = document.getElementById("trayCount");
+  if (count) count.textContent = asideDice.length + "/" + diceCount;
+  if (!slots) return;
+  slots.innerHTML = "";
+  if (!asideDice.length){
+    const e = document.createElement("span");
+    e.className = "tray-empty";
+    e.textContent = "tap a die to set it aside";
+    slots.appendChild(e);
+  } else {
+    asideDice.forEach((d, i) => {
+      const holder = document.createElement("div");
+      holder.className = "tray-die";
+      holder.title = "put back on the table";
+      const { die, faceEls } = createCubeDie(d.cls);
+      const ry = rand(-28, 28);
+      die.style.transform = `rotateX(${(-S.camTilt).toFixed(1)}deg) rotateY(${ry.toFixed(0)}deg)`;
+      // same lighting maths as the table, so tray dice match the scene
+      shadeFaces({ rx:0, ry:ry, rz:0, faceEls });
+      holder.appendChild(die);
+      holder.addEventListener("click", () => returnDie(i));
+      slots.appendChild(holder);
+    });
   }
+  const rb = document.getElementById("rollRemainBtn");
+  if (rb){
+    rb.textContent = dice.length === 0
+      ? `🎲 HOT ROLL · ALL ${diceCount}`
+      : `🎲 ROLL REMAINING (${dice.length})`;
+  }
+  scoreTray();
+}
+
+// ---- Option 1: live scoring | Option 6: combo highlight ----
+const COMBO_LABEL = {
+  six:   "SIX OF A KIND",
+  greed: "$GREED · FULL SET",
+  multi: "TRIPLE",
+  plain: "SCORING",
+  none:  ""
+};
+let lastAsideSig = "";
+
+// Scores the set-aside dice and the whole turn (aside + still on the felt), so
+// you can see a combo form as you build it rather than only after banking.
+function scoreTray(){
+  const tray   = document.getElementById("tray");
+  const scoreEl= document.getElementById("trayScore");
+  const comboEl= document.getElementById("trayCombo");
+  if (!scoreEl || !comboEl) return;
+
+  const aside = asideDice.map(d => ({ sym:d.sym, cls:d.cls, color:d.color }));
+  const table = dice.map(b => ({ sym:b.sym, cls:b.cls, color:b.color }));
+  const asideRes = evalRoll(aside);
+  const turnRes  = evalRoll(aside.concat(table));
+
+  scoreEl.textContent = turnRes.score > 0 ? "+" + turnRes.score : "0";
+  scoreEl.classList.toggle("dead", turnRes.score === 0);
+  comboEl.textContent = COMBO_LABEL[asideRes.kind] || "";
+  if (tray) tray.classList.toggle("combo-glow", asideRes.score > 0);
+
+  // celebrate only when a NEW combo appears, so it can't spam
+  const sig = asideRes.score > 0 ? asideRes.kind + ":" + asideRes.score : "";
+  if (sig && sig !== lastAsideSig){
+    if (tray){
+      tray.classList.remove("pop");
+      void tray.offsetWidth;          // restart the animation
+      tray.classList.add("pop");
+    }
+    if (asideRes.kind === "six" || asideRes.kind === "greed") playFanfare();
+    else playChink();
+  }
+  lastAsideSig = sig;
+}
+
+// Tap a die on the felt to lift it into the tray.
+function setAside(b){
+  if (busy) return;
+  const i = dice.indexOf(b);
+  if (i < 0) return;
+  const rect = b.wrap.getBoundingClientRect();
+  dice.splice(i, 1);
+  asideDice.push({ cls:b.cls, sym:b.sym, color:b.color });
+  b.wrap.remove();
+  renderTray();
+  flyToTray(b.cls, rect);
+  playThunk(0.45); buzz([8]);
+}
+
+// Tap a tray die to drop it back onto the counter.
+function returnDie(i){
+  if (busy) return;
+  const d = asideDice.splice(i, 1)[0];
+  if (!d) return;
+  dice.push(makeBody(d));
+  renderTray();
+  busy = true;
+  rollStart = performance.now(); lastT = rollStart;
+  landedFired = false; lastSettleAt = rollStart;
+  cancelAnimationFrame(rafId);
+  rafId = requestAnimationFrame(tick);
+  playThunk(0.5); buzz([10]);
+}
+
+// A clone sails from the die's old screen position into the tray.
+function flyToTray(cls, fromRect){
+  if (REDUCED || !fromRect) return;
+  const slots = document.getElementById("traySlots");
+  const target = slots && slots.lastElementChild ? slots.lastElementChild.getBoundingClientRect() : null;
+  if (!target) return;
+  const holder = document.createElement("div");
+  holder.className = "die-fly";
+  const { die } = createCubeDie(cls);
+  die.style.transform = `rotateX(${(-S.camTilt).toFixed(1)}deg)`;
+  holder.appendChild(die);
+  holder.style.left = fromRect.left + "px";
+  holder.style.top  = fromRect.top + "px";
+  holder.style.width  = fromRect.width + "px";
+  holder.style.height = fromRect.height + "px";
+  document.body.appendChild(holder);
+  void holder.offsetWidth;
+  const dx = (target.left + target.width/2) - (fromRect.left + fromRect.width/2);
+  const dy = (target.top + target.height/2) - (fromRect.top + fromRect.height/2);
+  holder.style.transform = `translate(${dx}px, ${dy}px) scale(${(target.width / fromRect.width).toFixed(2)})`;
+  holder.style.opacity = "0.1";
+  setTimeout(() => holder.remove(), 400);
+}
+
+// ------------------------- Physics step -------------------------
+function step(b, dt){
+  if (b.settled) return;
+  b.vy -= S.gravity * dt;
+  b.x += b.vx * dt; b.y += b.vy * dt; b.z += b.vz * dt;
+  const ad = Math.pow(0.5, dt * S.airdrag);
+  b.vx *= ad; b.vz *= ad;
+  const sd = Math.pow(0.5, dt * S.spindrag);
+  b.wx *= sd; b.wy *= sd; b.wz *= sd;
+  b.rx += b.wx * dt; b.ry += b.wy * dt; b.rz += b.wz * dt;
+
+  // floor
+  if (b.y < DIE_R){
+    const impact = -b.vy;
+    b.y = DIE_R;
+    if (impact > 55){
+      b.bounces++;
+      b.vy = impact * S.rest;
+      b.vx *= S.friction; b.vz *= S.friction;
+      b.wx *= 0.72; b.wy *= 0.72; b.wz *= 0.72;
+      if (!REDUCED) spawnDust(b, clamp(impact/700, 0.2, 1));
+      playThunk(clamp(impact/900, 0.25, 1));
+    } else {
+      b.vy = 0;
+      const f = Math.pow(0.02, dt);
+      b.vx *= f; b.vz *= f; b.wx *= f; b.wy *= f; b.wz *= f;
+    }
+  }
+  // walls
+  if (b.x < DIE_R){ b.x = DIE_R; b.vx = Math.abs(b.vx) * S.rest; wallHit(b); }
+  else if (b.x > TW - DIE_R){ b.x = TW - DIE_R; b.vx = -Math.abs(b.vx) * S.rest; wallHit(b); }
+  if (b.z < DIE_R){ b.z = DIE_R; b.vz = Math.abs(b.vz) * S.rest; wallHit(b); }
+  else if (b.z > TH - DIE_R){ b.z = TH - DIE_R; b.vz = -Math.abs(b.vz) * S.rest; wallHit(b); }
+
+  // ---- settle steering ----
+  // Once the die is on the felt and slowing, roll it smoothly onto its flat
+  // face (the nearest orientation that keeps the outcome face pointing up). It
+  // finishes before the slide stops, so the die is already lying flat when it
+  // rests — no snap, no visible face swap, and zero spin after it stops.
+  if (!b.aligning){
+    const spin0 = Math.hypot(b.wx, b.wy, b.wz);
+    // Start as soon as the die is in its settling phase — after its first
+    // bounce, spin low, and descending or already down — so the roll onto its
+    // face happens WHILE it is still moving, never after it has stopped.
+    const sinking = (b.y <= DIE_R + 2.5) || (b.vy < 0);
+    if (b.bounces > 0 && spin0 < 520 && sinking){
+      b.aligning = true; b.aT = 0; b.aP = 0;
+      b.aSpeed0 = Math.max(Math.hypot(b.vx, b.vy, b.vz), 60);
+      b.aFrom = { rx:b.rx, ry:b.ry, rz:b.rz };
+      b.aTo = flatTargetFor(b);
+      b.wx = b.wy = b.wz = 0;      // the blend owns the rotation from here
+    }
+  }
+  if (b.aligning && !b.aligned){
+    b.aT += dt;
+    // Progress is the FASTER of: elapsed time, and how much the die has slowed.
+    // Tying it to speed makes the roll finish right as the die stops, so no
+    // rotation is left once it is at rest. minP prevents an instant snap.
+    const timeP  = b.aT / 0.26;
+    const speedP = 1 - clamp(Math.hypot(b.vx, b.vy, b.vz) / b.aSpeed0, 0, 1);
+    const minP   = b.aT / 0.10;
+    b.aP = clamp(Math.max(b.aP, timeP, speedP, minP), 0, 1);  // monotonic
+    const e = b.aP*b.aP*(3-2*b.aP);  // smoothstep
+    b.rx = b.aFrom.rx + (b.aTo.rx - b.aFrom.rx)*e;
+    b.ry = b.aFrom.ry + (b.aTo.ry - b.aFrom.ry)*e;
+    b.rz = b.aFrom.rz + (b.aTo.rz - b.aFrom.rz)*e;
+    if (b.aP >= 1) b.aligned = true;
+  }
+
+  // rest: only once it is flat AND the slide has stopped
+  const speed = Math.hypot(b.vx, b.vy, b.vz);
+  if (b.aligned && b.y <= DIE_R + 0.8 && speed < 60) b.restT += dt; else b.restT = 0;
+  if (b.restT > 0.08) beginSettle(b);
+}
+function wallHit(b){
+  const impact = Math.hypot(b.vx, b.vz);
+  if (impact > 120 && !REDUCED) spawnDust(b, clamp(impact/900, 0.15, 0.7));
+}
+
+function collide(){
+  // Contact is tested in a space where z is scaled by the table-depth factor, so
+  // the collision shape is a sphere of radius DIE_R *as the eye sees it*. Testing
+  // in raw world units let two dice be exactly "touching" while 60 units apart in
+  // depth — which the camera squashes to ~28px, i.e. lying on top of each other.
+  const D = S.depth;
+  const min = DIE_R*2 + 6;   // + a hair of breathing room
+  for (let i=0;i<dice.length;i++){
+    for (let j=i+1;j<dice.length;j++){
+      const a = dice[i], b = dice[j];
+      let dx = b.x - a.x, dy = b.y - a.y, dz = (b.z - a.z) * D;
+      let dist = Math.hypot(dx, dy, dz);
+      if (dist >= min) continue;
+      let nx, ny, nz;
+      if (dist < 0.0001){ nx = 1; ny = 0; nz = 0; dist = 0.0001; }  // exactly stacked
+      else { nx = dx/dist; ny = dy/dist; nz = dz/dist; }
+      // Separate along the scaled normal, capped so nothing ever teleports;
+      // converting the depth part back to world units. Settled dice are immovable.
+      const push = Math.min(min - dist, 7);
+      const aw = a.settled ? 0 : (b.settled ? 1 : 0.5);
+      const bw = b.settled ? 0 : (a.settled ? 1 : 0.5);
+      a.x -= nx*push*aw; a.y -= ny*push*aw; a.z -= (nz*push*aw)/D;
+      b.x += nx*push*bw; b.y += ny*push*bw; b.z += (nz*push*bw)/D;
+      // bounce: impulse taken along the real (world) contact normal
+      let wx = nx, wy = ny, wz = nz/D;
+      const wl = Math.hypot(wx, wy, wz) || 1;
+      wx /= wl; wy /= wl; wz /= wl;
+      const rvx = b.vx-a.vx, rvy = b.vy-a.vy, rvz = b.vz-a.vz;
+      const vn = rvx*wx + rvy*wy + rvz*wz;
+      if (vn < 0){
+        const jimp = -(1+S.rest) * vn / ((a.settled?0:1)+(b.settled?0:1) || 1);
+        if (!a.settled){ a.vx -= jimp*wx; a.vy -= jimp*wy; a.vz -= jimp*wz;
+          a.wx += rand(-90,90); a.wy += rand(-90,90); }
+        if (!b.settled){ b.vx += jimp*wx; b.vy += jimp*wy; b.vz += jimp*wz;
+          b.wx += rand(-90,90); b.wy += rand(-90,90); }
+        if (!REDUCED) spawnDust(a, 0.25);
+      }
+    }
+  }
+}
+
+// Nearest orientation in which the die lies FLAT on a face with its outcome
+// (top) face pointing up. rx/rz snap to multiples of 180 whose parities match —
+// that is exactly the "one face down, opposite face up" condition — while the
+// yaw (ry) is left as rolled, so dice stay non-uniform. Max correction 90/axis.
+function flatTargetFor(b){
+  let best = null;
+  const cand = (v) => [Math.floor(v/180), Math.ceil(v/180)];
+  for (const a of cand(b.rx)) {
+    for (const c of cand(b.rz)) {
+      if (((a - c) % 2 + 2) % 2 !== 0) continue;   // parities must match
+      const tRx = a*180, tRz = c*180;
+      const cost = Math.abs(b.rx - tRx) + Math.abs(b.rz - tRz);
+      if (!best || cost < best.cost) best = { rx:tRx, rz:tRz, cost };
+    }
+  }
+  return { rx: best.rx, ry: b.ry, rz: best.rz };
+}
+
+function beginSettle(b){
+  if (b.settled) return;
+  b.settled = true;
+  b.y = DIE_R;
+  b.vx = b.vy = b.vz = 0;
+  b.wx = b.wy = b.wz = 0;
+  if (!b.aligned){
+    const t = flatTargetFor(b);   // timeout path — land it flat, no animation
+    b.rx = t.rx; b.ry = t.ry; b.rz = t.rz;
+    b.aligned = true;
+  }
+  lastSettleAt = performance.now();
+  if (!REDUCED){
+    spawnRing(b);
+    playThunk(0.85);
+    buzz([12,30,12]);
+  }
+}
+
+// ------------------------- Main loop -------------------------
+function tick(now){
+  let dt = Math.min(0.034, (now - lastT)/1000);
+  lastT = now;
+
+  const moving = dice.filter(b=>!b.settled).length;
+  let scale = 1;
+  if (moving === 1 && (now - rollStart) > 700){
+    if (S.slowmoOn) scale = S.slowmo;
+    if (S.zoomOn) dolly.classList.add("closeup");
+  }
+  const sdt = dt * scale;
+
+  dice.forEach(b => step(b, sdt));
+  collide();
+
+  if (now - rollStart > S.maxRoll) dice.forEach(b => { if (!b.settled) beginSettle(b); });
+
+  render();
+  fxFrame(dt);
+
+  const allSettled = dice.every(b => b.settled);
+  if (allSettled && !landedFired){ landedFired = true; onLanded(); }
+
+  // Keep the loop alive only long enough for the dust/rings to finish, then stop.
+  const fxAlive = particles.length > 0 || rings.length > 0;
+  if (!allSettled || fxAlive || (now - lastSettleAt) < 450){
+    rafId = requestAnimationFrame(tick);
+  } else {
+    rafId = null;
+  }
+}
+
+// ------------------------- Render (DOM) -------------------------
+function render(){
+  lightFrame++;
+  const doLight = (lightFrame % 2 === 0);
+  const hy0 = projHalfY();
+  dice.forEach(b => {
+    // Perspective cue: a die rising toward the camera grows a little. Without
+    // this, flight reads as flat sliding no matter how correct the arc is.
+    const lift = clamp((b.y - DIE_R) / 1400, 0, 0.18);
+    const sc = depthScale(b) * (1 + lift);
+    const sx = screenX(b);
+    // screenY() already subtracts the die's height, so it is the SCREEN POSITION
+    // OF THE DIE'S BASE. The cube's projected half-height then puts its centre
+    // DIE_R above the base at rest. (Re-adding b.y here cancelled the height and
+    // pinned every die to the counter — that is why the roll looked unnatural.)
+    const hy = hy0 * sc;
+    const centreY = screenY(b) + DIE_R - hy;
+    b.wrap.style.transform = `translate(${(sx - 31).toFixed(1)}px, ${(centreY - 31).toFixed(1)}px) scale(${sc.toFixed(3)})`;
+    b.wrap.style.zIndex = String(Math.round(b.z));
+    // camera tilt outermost, then the die's own rotation. Flat-resting dice
+    // therefore show their top face plus two sides — chunky 3D, yet genuinely
+    // lying flat on the table (not balanced on an edge).
+    b.die.style.transform = `rotateX(${(-S.camTilt).toFixed(1)}deg) rotateZ(${b.rz.toFixed(1)}deg) rotateX(${b.rx.toFixed(1)}deg) rotateY(${b.ry.toFixed(1)}deg)`;
+    if (doLight) shadeFaces(b);
+  });
+}
+
+// Apply the die's rotation (CSS order rotateZ·rotateX·rotateY = Rz*Rx*Ry) to
+// each face normal, then shade by how squarely it faces the light.
+function shadeFaces(b){
+  const rx = b.rx*Math.PI/180, ry = b.ry*Math.PI/180, rz = b.rz*Math.PI/180;
+  const cam = -S.camTilt*Math.PI/180;
+  const cx=Math.cos(rx), sx=Math.sin(rx), cy=Math.cos(ry), sy=Math.sin(ry), cz=Math.cos(rz), sz=Math.sin(rz);
+  const cc=Math.cos(cam), sc=Math.sin(cam);
+  const amb = S.faceAmb, gain = S.faceGain;
+  for (let i=0;i<6;i++){
+    const n = FACE_N[i];
+    // CSS order rotateX(cam)·rotateZ(rz)·rotateX(rx)·rotateY(ry) → Ry, Rx, Rz, cam
+    const x1 = n[0]*cy + n[2]*sy, y1 = n[1], z1 = -n[0]*sy + n[2]*cy;
+    const x2 = x1, y2 = y1*cx - z1*sx, z2 = y1*sx + z1*cx;
+    const x3 = x2*cz - y2*sz, y3 = x2*sz + y2*cz, z3 = z2;
+    const x4 = x3, y4 = y3*cc - z3*sc, z4 = y3*sc + z3*cc;
+    const d = Math.max(0, x4*LIGHT.x + y4*LIGHT.y + z4*LIGHT.z);
+    const bright = clamp(amb + gain*d, 0.5, 1.2);
+    // specular: faces near the light/view half-vector catch a glossy hot-spot
+    const s = Math.max(0, x4*HALF.x + y4*HALF.y + z4*HALF.z);
+    const spec = Math.min(1, Math.pow(s, 22) * S.glossGain);
+    const el = b.faceEls[i];
+    el.style.filter = `brightness(${bright.toFixed(3)})`;
+    el.style.setProperty("--gloss", spec.toFixed(3));
+  }
+}
+
+// ------------------------- FX canvas -------------------------
+function spawnDust(b, power){
+  if (!S.dustFx) return;
+  const sx = screenX(b), sy = screenY(b);
+  const col = FACE_COLOR[b.cls] || "#fff";
+  const n = Math.round(S.dust*power + 3);
+  for (let i=0;i<n;i++){
+    particles.push({
+      x: sx + rand(-12,12), y: sy + rand(8, 26),
+      vx: rand(-140,140), vy: rand(-60,90) * power,
+      life: 0, max: rand(0.3, 0.7), size: rand(1.5, 3.6), col
+    });
+  }
+}
+function spawnRing(b){
+  rings.push({ x: screenX(b), y: screenY(b) + 18, r: 6, maxR: 46, life: 0, dur: 0.5, col: FACE_COLOR[b.cls] || "#fff" });
+}
+function burst(cols, n){
+  const cx = TW/2, cy = TH*0.5;
+  for (let i=0;i<n;i++){
+    const a = Math.random()*Math.PI*2, sp = rand(160, 620);
+    particles.push({ x:cx, y:cy, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp - 120,
+      life:0, max:rand(0.6,1.2), size:rand(2,4.5), col:cols[i%cols.length], glow:true });
+  }
+}
+
+function fxFrame(dt){
+  ctx.clearRect(0, 0, TW, TH);
+
+  // 1) contact shadows (size/opacity follow height)
+  ctx.save();
+  if (S.shadows) dice.forEach(b => {
+    const sc = depthScale(b);
+    const gy = Y0 + b.z * S.depth;
+    const lift = clamp(b.y / 300, 0, 1);
+    const rx = DIE_H * sc * (1 + lift * 0.8);
+    const ry = rx * SP;            // same foreshortening as the felt plane
+    const a = 0.42 * (1 - lift*0.75);
+    const g = ctx.createRadialGradient(b.x, gy, 0, b.x, gy, rx);
+    g.addColorStop(0, `rgba(0,0,0,${a.toFixed(3)})`);
+    g.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.ellipse(b.x, gy, rx, ry, 0, 0, Math.PI*2); ctx.fill();
+  });
+  ctx.restore();
+
+  // 2) motion trails (ghosts behind the dice)
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  if (S.trails) dice.forEach(b => {
+    const sp = Math.hypot(b.vx, b.vy, b.vz) + Math.abs(b.rz);
+    if (sp < 60) return;
+    const col = FACE_COLOR[b.cls] || "#fff";
+    for (let i=0;i<b.trail.length;i++){
+      const g0 = b.trail[i];
+      const a = (i/b.trail.length) * 0.22;
+      const r = 16 * (0.6 + i/b.trail.length*0.5);
+      const grd = ctx.createRadialGradient(g0.x, g0.y, 0, g0.x, g0.y, r);
+      grd.addColorStop(0, hexA(col, a));
+      grd.addColorStop(1, hexA(col, 0));
+      ctx.fillStyle = grd;
+      ctx.beginPath(); ctx.arc(g0.x, g0.y, r, 0, Math.PI*2); ctx.fill();
+    }
+  });
+  ctx.restore();
+
+  // 3) particles
+  ctx.save();
+  for (let i=particles.length-1;i>=0;i--){
+    const p = particles[i];
+    p.life += dt;
+    if (p.life >= p.max){ particles.splice(i,1); continue; }
+    p.vy += 620 * dt; p.vx *= 0.985; p.vy *= 0.985;
+    p.x += p.vx*dt; p.y += p.vy*dt;
+    const t = p.life/p.max, a = (1-t) * (p.glow ? 0.9 : 0.75);
+    if (p.glow) ctx.globalCompositeOperation = "lighter"; else ctx.globalCompositeOperation = "source-over";
+    ctx.fillStyle = hexA(p.col, a);
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.size * (1-t*0.5), 0, Math.PI*2); ctx.fill();
+  }
+  ctx.globalCompositeOperation = "source-over";
+  // 4) impact rings
+  for (let i=rings.length-1;i>=0;i--){
+    const r = rings[i]; r.life += dt;
+    if (r.life >= r.dur){ rings.splice(i,1); continue; }
+    const t = r.life/r.dur;
+    ctx.globalCompositeOperation = "lighter";
+    ctx.strokeStyle = hexA(r.col, (1-t)*0.55);
+    ctx.lineWidth = 2.5*(1-t)+0.5;
+    ctx.beginPath(); ctx.ellipse(r.x, r.y, r.r + (r.maxR-r.r)*t, (r.r + (r.maxR-r.r)*t)*0.42, 0, 0, Math.PI*2); ctx.stroke();
+  }
+  ctx.restore();
+
+  // 5) record trail history (throttled by distance)
+  dice.forEach(b => {
+    const sp = Math.hypot(b.vx, b.vy, b.vz);
+    if (sp < 60) { if (b.trail.length) b.trail.length = 0; return; }
+    const p = { x: screenX(b), y: screenY(b) };
+    const last = b.trail[b.trail.length-1];
+    if (!last || Math.hypot(p.x-last.x, p.y-last.y) > 7){ b.trail.push(p); if (b.trail.length > 7) b.trail.shift(); }
+  });
+}
+function hexA(hex, a){
+  const h = hex.replace("#",""); const r=parseInt(h.slice(0,2),16), g=parseInt(h.slice(2,4),16), b=parseInt(h.slice(4,6),16);
+  return `rgba(${r},${g},${b},${a.toFixed(3)})`;
+}
+
+// ------------------------- Landing payoff -------------------------
+function onLanded(){
+  dolly.classList.remove("zooming","closeup");
+  const finalDice = dice.map(b => ({ sym:b.sym, cls:b.cls, color:b.color }));
+  afterSettle(finalDice);
+}
+
+function afterSettle(finalDice){
+  const res = evalRoll(finalDice);
+  const st = document.getElementById("statusLine");
+  st.className = "status";
+  st.innerHTML = finalDice.map(d=>displayLetter(d.cls)).join(" · ") +
+    (res.score>0 ? ` <span class="pts">+${res.score}</span>` : "");
+
+  if (busy && !REDUCED) buzz([10]);
+
+  if (res.kind === "six" || res.kind === "greed"){
+    spectacle(res.kind === "six" ? "SIX OF A KIND!" : "$GREED!", res.kind === "six");
+  } else if (res.kind === "multi"){
+    spectacle("TRIPLE!", false);
+  } else if (res.score > 0){
+    playChink();
+  }
+
+  busy = false;
+  document.getElementById("rollBtn").disabled = false;
+  const rb = document.getElementById("rollRemainBtn");
+  if (rb){ rb.disabled = false; rb.classList.remove("hidden"); }
+  // everything on the felt is now tappable
+  document.querySelectorAll("#diceLayer .die-wrap").forEach(el => el.classList.add("pickable"));
+  renderTray();
+}
+
+function spectacle(label, mega){
+  const combo = document.getElementById("combo");
+  combo.textContent = label;
+  combo.classList.remove("on"); void combo.offsetWidth; combo.classList.add("on");
+  dolly.classList.add("hitstop");
+  const flash = document.getElementById("flash");
+  flash.classList.add("on"); void flash.offsetWidth; flash.classList.remove("on");
+  burst(["#d9724a","#e8935a","#ffd400","#2a9d8f","#8fae5c","#c0392b"], mega ? 90 : 45);
+  playFanfare();
+  buzz(mega ? [40,50,40,50,80] : [20,40,20]);
+  setTimeout(() => { dolly.classList.remove("hitstop"); hideCombo(); }, mega ? 1100 : 850);
+}
+function hideCombo(){ document.getElementById("combo").classList.remove("on"); }
+
+// ------------------------- On-page tuner -------------------------
+const TUNE_SPEC = [
+  { sec: "Physics" },
+  { key:"gravity",  label:"Gravity",       min:600,  max:6000, step:50 },
+  { key:"rest",     label:"Bounce",        min:0,    max:0.9,  step:0.02 },
+  { key:"friction", label:"Floor grip",    min:0.2,  max:1,    step:0.02 },
+  { key:"airdrag",  label:"Air drag",      min:0,    max:2.5,  step:0.05 },
+  { key:"spindrag", label:"Spin drag",     min:0,    max:2.5,  step:0.05 },
+  { key:"slowmo",   label:"Slow-mo",       min:0.1,  max:1,    step:0.02 },
+  { sec: "Throw" },
+  { key:"dropY",      label:"Drop height", min:0,   max:340,  step:5 },
+  { key:"throwPower", label:"Throw power", min:120, max:1000, step:10 },
+  { key:"spread",     label:"Spread",      min:0,   max:600,  step:10 },
+  { key:"spin",       label:"Spin",        min:0,   max:1200, step:20 },
+  { sec: "Table" },
+  { key:"depth",   label:"Depth squash", min:0.2,  max:0.9,  step:0.02 },
+  { key:"maxRoll", label:"Max roll (ms)", min:1200, max:8000, step:100 },
+  { sec: "Camera" },
+  { key:"camTilt", label:"Camera tilt",  min:0, max:80, step:1 },
+  { sec: "Look" },
+  { key:"faceAmb",  label:"Ambient light", min:0.2, max:1,   step:0.02 },
+  { key:"faceGain", label:"Face lighting", min:0,   max:1.2, step:0.02 },
+  { key:"glossGain",label:"Gloss",         min:0,   max:1.5, step:0.05 },
+  { key:"dust",     label:"Dust amount",   min:0,   max:30,  step:1 },
+  { sec: "Effects" },
+  { key:"shadows",  label:"Contact shadows",  toggle:true },
+  { key:"trails",   label:"Motion trails",    toggle:true },
+  { key:"dustFx",   label:"Dust particles",   toggle:true },
+  { key:"slowmoOn", label:"Slow-mo last die", toggle:true },
+  { key:"zoomOn",   label:"Camera zoom",      toggle:true }
+];
+
+function fmtVal(v, step){ v = parseFloat(v); return step >= 1 ? String(Math.round(v)) : v.toFixed(2); }
+
+function buildTuner(){
+  const body = document.getElementById("tuneBody");
+  if (!body) return;
+  body.innerHTML = "";
+  TUNE_SPEC.forEach(item => {
+    if (item.sec){
+      const h = document.createElement("h4");
+      h.textContent = item.sec;
+      body.appendChild(h);
+      return;
+    }
+    const row = document.createElement("div");
+    row.className = "trow" + (item.toggle ? " trow-toggle" : "");
+    const lab = document.createElement("label");
+    lab.textContent = item.label;
+    row.appendChild(lab);
+    if (item.toggle){
+      const cb = document.createElement("input");
+      cb.type = "checkbox"; cb.checked = !!S[item.key];
+      cb.addEventListener("change", () => { S[item.key] = cb.checked; });
+      row.appendChild(cb);
+    } else {
+      const rng = document.createElement("input");
+      rng.type = "range"; rng.min = item.min; rng.max = item.max; rng.step = item.step;
+      rng.value = S[item.key];
+      const val = document.createElement("span");
+      val.className = "tv"; val.textContent = fmtVal(S[item.key], item.step);
+      rng.addEventListener("input", () => {
+        S[item.key] = parseFloat(rng.value);
+        val.textContent = fmtVal(rng.value, item.step);
+        applyCam();            // keep the table plane in step with the camera
+      });
+      row.appendChild(rng);
+      row.appendChild(val);
+    }
+    body.appendChild(row);
+  });
+}
+
+function toggleTune(){
+  const p = document.getElementById("tunePanel");
+  p.classList.toggle("open");
+  document.getElementById("tuneToggle").textContent =
+    p.classList.contains("open") ? "▾ Hide tuner" : "⚙︎ Tune physics & FX";
+}
+function resetTune(){ Object.assign(S, DEFAULTS); applyCam(); buildTuner(); }
+function copyTune(){
+  const txt = "const DEFAULTS = " + JSON.stringify(S, null, 2) + ";";
+  const msg = document.getElementById("copyMsg");
+  const done = () => { msg.textContent = "copied!"; setTimeout(() => { msg.textContent = ""; }, 1600); };
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done, done);
+    else done();
+  } catch (e) { done(); }
+}
+
+// ------------------------- Interaction -------------------------
+stage.addEventListener("click", doRoll);
+// Tapping a die lifts it into the tray — and must not also trigger a reroll.
+diceLayer.addEventListener("click", (ev) => {
+  const wrap = ev.target && ev.target.closest ? ev.target.closest(".die-wrap") : null;
+  if (!wrap || !wrap.__body) return;
+  ev.stopPropagation();
+  setAside(wrap.__body);
 });
-// Straight to roll on open
-window.addEventListener("load", () => setTimeout(doRoll, 300));
+document.addEventListener("keydown", (e) => {
+  const t = e.target;
+  if (t && (t.tagName === "INPUT" || t.tagName === "BUTTON")) return; // don't roll while tuning
+  if (e.code === "Space" || e.key === " "){ e.preventDefault(); doRoll(); }
+});
+// ------------------------- Ambient motes -------------------------
+function buildMotes(){
+  const layer = document.getElementById("motes");
+  if (!layer || REDUCED) return;
+  const frag = document.createDocumentFragment();
+  for (let i = 0; i < 18; i++){
+    const m = document.createElement("div");
+    m.className = "mote";
+    const s = (1.5 + Math.random()*2.5).toFixed(1);
+    m.style.width = s + "px";
+    m.style.height = s + "px";
+    m.style.left = (Math.random()*100) + "vw";
+    m.style.animationDuration = (16 + Math.random()*20).toFixed(1) + "s";
+    m.style.animationDelay = (-Math.random()*32).toFixed(1) + "s";
+    m.style.setProperty("--dx", ((Math.random()*90) - 45).toFixed(0) + "px");
+    frag.appendChild(m);
+  }
+  layer.appendChild(frag);
+}
+
+// ------------------------- Busy bar backdrop -------------------------
+function buildBar(){
+  const bokeh = document.getElementById("bbBokeh");
+  if (bokeh && !REDUCED){
+    const frag = document.createDocumentFragment();
+    // distant lights beyond the bar — livelier now, since the room should feel used
+    for (let i = 0; i < 16; i++){
+      const d = document.createElement("i");
+      const s = (5 + Math.random()*15).toFixed(0);
+      d.style.width = s + "px"; d.style.height = s + "px";
+      d.style.left = (Math.random()*100) + "%";
+      d.style.top = (Math.random()*88) + "%";
+      d.style.animationDuration = (5 + Math.random()*7).toFixed(1) + "s";
+      d.style.animationDelay = (-Math.random()*12).toFixed(1) + "s";
+      frag.appendChild(d);
+    }
+    bokeh.appendChild(frag);
+  }
+}
+
+window.addEventListener("load", () => { resize(); applyCam(); buildTuner(); buildMotes(); buildBar(); renderTray(); setTimeout(doRoll, 250); });
+resize();
+buildTuner();
 </script>
 </body>
 </html>
