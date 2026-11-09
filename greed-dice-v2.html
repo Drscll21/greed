@@ -945,7 +945,7 @@
 
 <!-- Version footer -->
 <div style="text-align:center; margin-top:16px; padding:8px; color:var(--text-dim); font-size:11px; opacity:0.7;">
-  $GREED Dice v1.6.3 — Local Only
+  $GREED Dice v2.0.0 DiceFX — Local Only
 </div>
 </div>
 
@@ -1377,6 +1377,142 @@ function seedPrevTotals() {
   prevTotals = players.map(p => p.total);
 }
 
+// =========================================================================
+// DICE AUDIO (v2) — zero-asset WebAudio synth. Created lazily on the first
+// gesture so mobile autoplay rules are satisfied; every helper no-ops if an
+// AudioContext isn't available yet. Nothing here can throw on old devices.
+// =========================================================================
+let actx = null;
+let noiseBuf = null;
+function ensureAudio() {
+  try {
+    if (!actx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return false;
+      actx = new AC();
+    }
+    if (actx.state === "suspended") actx.resume();
+    return true;
+  } catch (e) { return false; }
+}
+function getNoiseBuffer(c) {
+  if (noiseBuf) return noiseBuf;
+  const len = Math.floor(c.sampleRate * 0.3);
+  noiseBuf = c.createBuffer(1, len, c.sampleRate);
+  const d = noiseBuf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+  return noiseBuf;
+}
+// Rattle: filtered noise swell used while the dice tumble.
+function playRattle(dur = 0.9, gain = 0.1) {
+  if (!ensureAudio()) return;
+  try {
+    const c = actx, t = c.currentTime;
+    const src = c.createBufferSource();
+    src.buffer = getNoiseBuffer(c);
+    src.loop = true;
+    const hp = c.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 1100;
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(gain, t + 0.12);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    src.connect(hp); hp.connect(g); g.connect(c.destination);
+    src.start(t); src.stop(t + dur + 0.05);
+  } catch (e) {}
+}
+// Thunk: low "die hits the floor" hit with a quick pitch drop.
+function playThunk(weight = 0.6) {
+  if (!ensureAudio()) return;
+  try {
+    const c = actx, t = c.currentTime;
+    const o = c.createOscillator();
+    o.type = "sine";
+    o.frequency.setValueAtTime(200 + Math.random() * 50, t);
+    o.frequency.exponentialRampToValueAtTime(78, t + 0.11);
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.26 * weight, t + 0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.14);
+    o.connect(g); g.connect(c.destination);
+    o.start(t); o.stop(t + 0.16);
+  } catch (e) {}
+}
+// Chink: bright double-ping for a bank.
+function playChink() {
+  if (!ensureAudio()) return;
+  try {
+    const c = actx, t = c.currentTime;
+    [880, 1318].forEach((f, i) => {
+      const o = c.createOscillator();
+      o.type = "triangle";
+      o.frequency.value = f;
+      const g = c.createGain();
+      const t0 = t + i * 0.07;
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(0.16, t0 + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.3);
+      o.connect(g); g.connect(c.destination);
+      o.start(t0); o.stop(t0 + 0.32);
+    });
+  } catch (e) {}
+}
+// Pickup: tight short click when a die is set aside (or moved back).
+function playPickup() {
+  if (!ensureAudio()) return;
+  try {
+    const c = actx, t = c.currentTime;
+    const o = c.createOscillator();
+    o.type = "square";
+    o.frequency.value = 1500;
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.08, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
+    o.connect(g); g.connect(c.destination);
+    o.start(t); o.stop(t + 0.06);
+  } catch (e) {}
+}
+// Bust: descending buzz for GREED OUT.
+function playBust() {
+  if (!ensureAudio()) return;
+  try {
+    const c = actx, t = c.currentTime;
+    const o = c.createOscillator();
+    o.type = "sawtooth";
+    o.frequency.setValueAtTime(320, t);
+    o.frequency.exponentialRampToValueAtTime(95, t + 0.5);
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.16, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.55);
+    o.connect(g); g.connect(c.destination);
+    o.start(t); o.stop(t + 0.6);
+  } catch (e) {}
+}
+// Fanfare: quick ascending arpeggio for a solo win.
+function playFanfare() {
+  if (!ensureAudio()) return;
+  try {
+    const c = actx, t = c.currentTime;
+    [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
+      const o = c.createOscillator();
+      o.type = "triangle";
+      o.frequency.value = f;
+      const g = c.createGain();
+      const t0 = t + i * 0.11;
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(0.14, t0 + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.5);
+      o.connect(g); g.connect(c.destination);
+      o.start(t0); o.stop(t0 + 0.52);
+    });
+  } catch (e) {}
+}
+// ---------- Haptics (Android) ----------
+function buzz(pattern) {
+  try {
+    if (navigator.vibrate) navigator.vibrate(pattern);
+  } catch (e) {}
+}
+
 function rollDie() {
   const base = DICE_SYMS[Math.floor(Math.random() * DICE_SYMS.length)];
   return { sym: base.sym, cls: base.cls, color: base.color || null };
@@ -1395,6 +1531,8 @@ function shuffleArray(arr) {
 // The front face shows the outcome symbol (sym/cls). The other 5 faces
 // show random symbols so hidden sides remain visible in 3D when viewed from angles.
 function createCubeDie(cls, sym, randomFaces) {
+  const wrap = document.createElement("div");
+  wrap.className = "die-wrap";
   const die = document.createElement("div");
   die.className = "die " + cls;
   die.dataset.outcomeSym = sym;
@@ -1424,7 +1562,8 @@ function createCubeDie(cls, sym, randomFaces) {
     face.appendChild(glyphNode(faceCls));
     die.appendChild(face);
   });
-  return die;
+  wrap.appendChild(die);
+  return wrap;
 }
 
 // Score a set of dice -> { score, kept:[indices] }
@@ -1542,13 +1681,19 @@ function diceRoll() {
   shuffleArray(startOrder);
   for (let i = 0; i < count; i++) {
     // Create a 3D cube die with random face permutation, marked as rolling
-    const el = createCubeDie(finalDice[i].cls, finalDice[i].sym, true);
-    el.classList.add("rolling");
+    const wrap = createCubeDie(finalDice[i].cls, finalDice[i].sym, true);
+    const dieEl = wrap.firstChild;
+    wrap.classList.add("rolling");
+    dieEl.classList.add("rolling");
     // Stagger the animation start by randomized order, not left-to-right
     const orderIndex = startOrder.indexOf(i);
-    el.style.animationDelay = (orderIndex * 0.05) + "s";
-    row.appendChild(el);
-    spinEls.push({ el, orderIndex });
+    wrap.style.setProperty("--roll-delay", (orderIndex * 0.05) + "s");
+    // Per-die personality: how far it drifts sideways and how hard it spins
+    wrap.style.setProperty("--tx", ((Math.random() * 150) - 75) + "px");
+    wrap.style.setProperty("--rx", (260 + Math.random() * 240) + "deg");
+    wrap.style.setProperty("--ry", (220 + Math.random() * 280) + "deg");
+    row.appendChild(wrap);
+    spinEls.push({ el: wrap, orderIndex });
   }
   dicePhase = "rolling";
   document.getElementById("rollBtn").classList.add("hidden");
@@ -1556,6 +1701,9 @@ function diceRoll() {
   document.getElementById("hotBtn").classList.add("hidden");
   document.getElementById("clearBtn").classList.add("hidden");
   document.getElementById("diceHint").textContent = "Rolling…";
+  // v2: auditory cue — noise swell while the dice tumble + a light tick
+  playRattle(1.0, 0.10);
+  buzz([10]);
 
   // Lock in the result now so we can settle even if a timer is lost (e.g. tab throttled).
   pendingRoll = { finalDice, fresh };
@@ -1565,7 +1713,7 @@ function diceRoll() {
   clearTimeout(diceSpinTimer);
   clearTimeout(diceWatchdog);
   const maxStagger = (count - 1) * 0.05;
-  diceAnimTimer = setTimeout(() => settleDice(finalDice, fresh), 1200 + maxStagger * 1000);
+  diceAnimTimer = setTimeout(() => settleDice(finalDice, fresh), 1150 + maxStagger * 1000 + 120);
   // Safety net: if for any reason the settle timer never fires, force a settle
   diceWatchdog = setTimeout(() => {
     if (dicePhase === "rolling") settleDice(finalDice, fresh);
@@ -1593,11 +1741,20 @@ function settleDice(finalDice, fresh) {
   const row = document.getElementById("diceRow");
   if (row) {
     row.innerHTML = "";
-    finalDice.forEach(d => {
-      const el = createCubeDie(d.cls, d.sym);
-      el.classList.add("land");
-      row.appendChild(el);
+    finalDice.forEach((d, i) => {
+      const wrap = createCubeDie(d.cls, d.sym);
+      wrap.classList.add("land");
+      // Staggered squash-pop landing; each die gets a random wobble angle
+      wrap.style.setProperty("--roll-delay", (i * 0.075) + "s");
+      wrap.style.setProperty("--wob", ((Math.random() * 10) - 5).toFixed(1) + "deg");
+      row.appendChild(wrap);
+      // Thunk as each die hits the tray — later dice land heavier
+      const tLand = 520 + i * 75;
+      setTimeout(() => playThunk(0.5 + (i / Math.max(1, finalDice.length - 1)) * 0.35), tLand);
     });
+    // Heavier final clonk once the last die settles + a soft vibration
+    const tLast = 520 + (finalDice.length - 1) * 75 + 30;
+    setTimeout(() => { playThunk(0.9); buzz([12, 30, 12]); }, tLast);
   }
   document.getElementById("diceHint").textContent = "Rolled!";
 
@@ -1613,6 +1770,9 @@ function settleDice(finalDice, fresh) {
     toast(fresh
       ? "GREED OUT — 0 scored, turn passed"
       : "GREED OUT — all set-aside dice & score lost, turn passed");
+    playBust();
+    buzz([40, 80, 40]);
+    shakeScreen();
     diceAnimTimer = setTimeout(() => {
       cpuThinking = false;
       resetDice();
@@ -1649,6 +1809,7 @@ function toggleDie(index) {
   // Find the newly-arrived banked die's rect (last child of bankedRow is the
   // freshly-added die, since unselectDie only operates on the current roll's
   // group which is the last group rendered last in the bankedRow).
+  playPickup(); buzz([8]);
   if (sourceEl) {
     const targetEl = document.querySelectorAll("#bankedRow .die");
     const tEl = targetEl[targetEl.length - 1];
@@ -1681,6 +1842,7 @@ function unselectDie(index) {
     const diceEls = document.querySelectorAll("#diceRow .die");
     const targetEl = diceEls[diceEls.length - 1];
     if (targetEl) tuckDieTo(sourceEl, targetEl.getBoundingClientRect(), d.cls);
+    playPickup(); buzz([8]);
   }
 }
 
@@ -1691,6 +1853,7 @@ function clearSelection() {
   g.length = 0;
   recomputeTurnScore();
   renderDiceControls();
+  playPickup(); buzz([8]);
 }
 
 function renderDiceControls() {
@@ -1742,6 +1905,7 @@ function renderDiceControls() {
       // Stagger the land-pop: each die lands 100ms after the one before in random order
       const orderIdx = landOrder.indexOf(i);
       el.style.animationDelay = (orderIdx * 0.1) + "s";
+      el.style.setProperty("--wob", ((Math.random() * 10) - 5).toFixed(1) + "deg");
       return el.outerHTML;
     }).join("");
   } else {
@@ -1822,6 +1986,8 @@ async function diceBank() {
     }
     return;
   }
+  playChink();
+  buzz([15, 30, 40, 30, 15]);
   resetDice();
 }
 
@@ -3092,6 +3258,8 @@ function showWinnerScreen() {
     document.getElementById("winnerTotalDisplay").textContent = `${topScore} points`;
     // v1.4.0: celebrate the solo winner with confetti. Ties skip it.
     spawnConfetti(60);
+    playFanfare();
+    buzz([30, 40, 60, 40, 30]);
   }
   renderPlayerCards("finalCardsGrid");
 }
@@ -3365,7 +3533,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // Version display
-const APP_VERSION = "1.6.3";
+const APP_VERSION = "2.0.0";
 console.log(`$GREED Dice v${APP_VERSION} loaded`);
 </script>
 </body>
