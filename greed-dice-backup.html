@@ -768,7 +768,11 @@ function resetDice() {
   rollGroups = [];
   turnScore = 0;
   dicePhase = "idle";
+  // stop any throw that is still in flight
+  if (typeof simEnd === "function") simEnd();
+  simOnDone = null;
   const row = document.getElementById("diceRow");
+  if (row) row.classList.remove("simming");
   const bankedRow = document.getElementById("bankedRow");
   const rollBtn = document.getElementById("rollBtn");
   const bankBtn = document.getElementById("bankBtn");
