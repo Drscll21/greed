@@ -1060,20 +1060,6 @@ function diceRoll() {
 
   const row = document.getElementById("diceRow");
   row.innerHTML = "";
-  const spinEls = [];
-  // Randomize the start order for a more natural, less mechanical cascade
-  const startOrder = [...Array(count).keys()];
-  shuffleArray(startOrder);
-  for (let i = 0; i < count; i++) {
-    // Create a 3D cube die with random face permutation, marked as rolling
-    const el = createCubeDie(finalDice[i].cls, finalDice[i].sym, true);
-    el.classList.add("rolling");
-    // Stagger the animation start by randomized order, not left-to-right
-    const orderIndex = startOrder.indexOf(i);
-    el.style.animationDelay = (orderIndex * 0.05) + "s";
-    row.appendChild(el);
-    spinEls.push({ el, orderIndex });
-  }
   dicePhase = "rolling";
   document.getElementById("rollBtn").classList.add("hidden");
   document.getElementById("bankBtn").classList.add("hidden");
@@ -1084,16 +1070,18 @@ function diceRoll() {
   // Lock in the result now so we can settle even if a timer is lost (e.g. tab throttled).
   pendingRoll = { finalDice, fresh };
 
-  // Wait for tumble animation to complete (1.2s + max stagger) then settle
   clearTimeout(diceAnimTimer);
   clearTimeout(diceSpinTimer);
   clearTimeout(diceWatchdog);
-  const maxStagger = (count - 1) * 0.05;
-  diceAnimTimer = setTimeout(() => settleDice(finalDice, fresh), 1200 + maxStagger * 1000);
-  // Safety net: if for any reason the settle timer never fires, force a settle
-  diceWatchdog = setTimeout(() => {
-    if (dicePhase === "rolling") settleDice(finalDice, fresh);
-  }, 2500);
+  diceAnimTimer = null; diceSpinTimer = null; diceWatchdog = null;
+
+  // Physics throw replaces the old CSS keyframe tumble. The sim calls back once
+  // every die has come to rest, then the normal settle path takes over.
+  simThrow(row, finalDice, () => {
+    row.classList.remove("simming");
+    if (dicePhase !== "rolling") return;   // a new game started mid-flight
+    settleDice(finalDice, fresh);
+  });
 }
 
 function scoreGroup(dice) {
@@ -1116,11 +1104,10 @@ function settleDice(finalDice, fresh) {
   // Note: renderDiceControls will rebuild with selectable + staggered land-pop
   const row = document.getElementById("diceRow");
   if (row) {
+    row.classList.add("simming");
     row.innerHTML = "";
-    finalDice.forEach(d => {
-      const el = createCubeDie(d.cls, d.sym);
-      el.classList.add("land");
-      row.appendChild(el);
+    simThrow(row, finalDice, () => {
+      settleDice(finalDice, fresh);
     });
   }
   document.getElementById("diceHint").textContent = "Rolled!";
