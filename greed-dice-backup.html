@@ -1104,10 +1104,12 @@ function settleDice(finalDice, fresh) {
   // Note: renderDiceControls will rebuild with selectable + staggered land-pop
   const row = document.getElementById("diceRow");
   if (row) {
-    row.classList.add("simming");
+    row.classList.remove("simming");   // back to the flex tray for the settled dice
     row.innerHTML = "";
-    simThrow(row, finalDice, () => {
-      settleDice(finalDice, fresh);
+    finalDice.forEach(d => {
+      const el = createCubeDie(d.cls, d.sym);
+      el.classList.add("land");
+      row.appendChild(el);
     });
   }
   document.getElementById("diceHint").textContent = "Rolled!";
