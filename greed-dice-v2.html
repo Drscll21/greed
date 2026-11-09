@@ -332,10 +332,33 @@
   .score-guide .sg-legend .dot.e-green{ background:#7bb661; }
   .score-guide .sg-legend .dot.e-blue{ background:#3b6fb5; }
   .score-guide .sg-legend .dot.d{ background:#0a0a0a; }
-  .dice-row{ display:flex; flex-wrap:wrap; gap:16px; justify-content:center; min-height:72px; align-items:center; perspective:700px; }
-  .dice-row.side{ min-height:64px; justify-content:flex-start; align-content:flex-start; }
+  .dice-row{ display:flex; flex-wrap:wrap; gap:16px; justify-content:center; min-height:72px; align-items:center; perspective:700px; padding-top:16px; }
+  .dice-row.side{ min-height:64px; justify-content:flex-start; align-content:flex-start; padding-top:0; }
   .dice-prompt{ color:var(--text-dim); font-size:14px; text-align:center; }
-  /* 3D cube die structure */
+  /* 3D cube die structure — v2. Each die lives in a .die-wrap that provides
+     its own perspective plane, carries a floor contact shadow (::after), and
+     moves positionally during a throw. The inner .die only rotates/spins. */
+  .die-wrap{
+    position:relative;
+    width:62px; height:62px;
+    perspective:700px;
+    flex:0 0 auto;
+  }
+  /* Floor contact shadow: stays glued to the "table" while the die hops. The
+     roll-shadow keyframes counter-translate the wrapper's hop so the shadow
+     never lifts off the floor; its size/opacity track the die's height. */
+  .die-wrap::after{
+    content:'';
+    position:absolute;
+    left:50%; bottom:-14px;
+    width:78%; height:18px;
+    transform:translateX(-50%);
+    border-radius:50%;
+    background:radial-gradient(ellipse at center, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.32) 45%, rgba(0,0,0,0) 72%);
+    opacity:.55;
+    pointer-events:none;
+    will-change:transform, opacity;
+  }
   .die{ width:62px; height:62px; position:relative; transform-style:preserve-3d; }
   .die-face{
     position:absolute; width:62px; height:62px;
@@ -346,7 +369,16 @@
     display:flex; align-items:center; justify-content:center;
     backface-visibility:hidden;
     user-select:none;
-    box-shadow:0 4px 8px rgba(0,0,0,0.35);
+    /* v2 glossy-plastic look: beveled light top/left edges, inner bottom
+       shade, a drop shadow under the cube, and embossed glyph shading */
+    border-top-color:rgba(255,255,255,0.32);
+    border-left-color:rgba(255,255,255,0.22);
+    border-bottom-color:rgba(0,0,0,0.28);
+    border-right-color:rgba(0,0,0,0.18);
+    box-shadow:inset 0 1px 1px rgba(255,255,255,0.28),
+               inset 0 -7px 12px -6px rgba(0,0,0,0.42),
+               0 4px 8px rgba(0,0,0,0.35);
+    text-shadow:0 1px 0 rgba(255,255,255,0.22), 0 -1px 1px rgba(0,0,0,0.35);
     transition:background .2s, color .2s, border-color .2s;
   }
   .die-face .cool-s{ width:44px; height:44px; display:block; overflow:visible; }
@@ -478,23 +510,64 @@
     67%{    text-shadow:0 0 10px rgba(0,195,255,0.9), 0 0 24px rgba(0,195,255,0.4), 0 0 40px rgba(0,195,255,0.2); }
     83%{    text-shadow:0 0 10px rgba(234,0,255,0.9), 0 0 24px rgba(234,0,255,0.4), 0 0 40px rgba(234,0,255,0.2); }
   }
-  .die.selectable{ cursor:pointer; transition:transform .1s ease, box-shadow .1s ease; }
-  .die.selectable:hover{ transform:translateY(-3px) scale(1.05); box-shadow:0 0 0 3px rgba(192,82,42,0.55), 0 6px 14px rgba(0,0,0,0.4); }
-  .die.banked{ outline:3px solid var(--green); outline-offset:1px; cursor:pointer; }
-  .die.banked:hover{ transform:scale(0.95); }
-  .die.rolling{ animation:tumble 1.2s linear; will-change:transform; }
-  @keyframes tumble{
-    0%{ transform:translateY(0) rotateX(0deg) rotateY(0deg); }
-    25%{ transform:translateY(-12px) rotateX(200deg) rotateY(110deg); }
-    50%{ transform:translateY(0) rotateX(400deg) rotateY(220deg); }
-    75%{ transform:translateY(-8px) rotateX(560deg) rotateY(300deg); }
-    100%{ transform:translateY(0) rotateX(720deg) rotateY(360deg); }
+  .die-wrap.selectable{ cursor:pointer; transition:box-shadow .1s ease; }
+  .die-wrap.selectable:hover{ box-shadow:0 0 0 3px rgba(192,82,42,0.55), 0 6px 14px rgba(0,0,0,0.4); }
+  .die-wrap.selectable:hover .die{ transform:translateY(-3px) scale(1.05); }
+  .die-wrap.banked{ outline:3px solid var(--green); outline-offset:1px; cursor:pointer; }
+  .die-wrap.banked:hover .die{ transform:scale(0.95); }
+  .die-wrap.selectable .die,
+  .die-wrap.banked .die{ transition:transform .1s ease; }
+  /* ---- v2 throw: positional hop+drift on the wrapper, spin + motion blur on
+     the inner die, floor shadow counter-animated. All pieces run 1.15s and
+     share --roll-delay so the JS settle timer stays in sync. ---- */
+  .die-wrap.rolling{
+    animation:roll-hop 1.15s cubic-bezier(.3,.62,.3,1) forwards;
+    animation-delay:var(--roll-delay,0s);
+    will-change:transform;
   }
-  .die.land{ animation:landpop 0.36s cubic-bezier(.18,.89,.32,1.28); }
+  .die-wrap.rolling::after{
+    animation:roll-shadow 1.15s cubic-bezier(.3,.62,.3,1) forwards;
+    animation-delay:var(--roll-delay,0s);
+  }
+  .die.rolling{
+    animation:tumble 1.15s cubic-bezier(.3,.62,.3,1) forwards;
+    animation-delay:var(--roll-delay,0s);
+    will-change:transform, filter;
+  }
+  @keyframes roll-hop{
+    0%  { transform:translate(var(--tx,0px), 0) scale(.92); }
+    18% { transform:translate(var(--tx,0px), -24px) scale(1.02); }
+    45% { transform:translate(calc(var(--tx,0px)*.72), -10px) scale(1); }
+    68% { transform:translate(calc(var(--tx,0px)*.4), -18px) scale(1); }
+    88% { transform:translate(calc(var(--tx,0px)*.12), -4px) scale(1); }
+    100%{ transform:translate(0,0) scale(1); }
+  }
+  @keyframes roll-shadow{
+    0%  { transform:translateX(-50%) translateY(0) scale(1); opacity:.55; }
+    18% { transform:translateX(-50%) translateY(24px) scale(.45); opacity:.15; }
+    45% { transform:translateX(-50%) translateY(10px) scale(.75); opacity:.32; }
+    68% { transform:translateX(-50%) translateY(18px) scale(.58); opacity:.2; }
+    88% { transform:translateX(-50%) translateY(4px) scale(.9); opacity:.42; }
+    100%{ transform:translateX(-50%) translateY(0) scale(1); opacity:.55; }
+  }
+  @keyframes tumble{
+    0%  { transform:rotateX(0deg) rotateY(0deg) scale(.72); filter:blur(1.6px) brightness(1.07); }
+    30% { transform:rotateX(calc(var(--rx,380deg)*.8)) rotateY(calc(var(--ry,300deg)*.55)) scale(1); filter:blur(1.5px) brightness(1.09); }
+    60% { transform:rotateX(calc(var(--rx,380deg)*1.65)) rotateY(calc(var(--ry,300deg)*1.3)) scale(1); filter:blur(1px) brightness(1.05); }
+    85% { transform:rotateX(calc(var(--rx,380deg)*2.15)) rotateY(calc(var(--ry,300deg)*2.05)) scale(1); filter:blur(.6px) brightness(1.02); }
+    100%{ transform:rotateX(calc(var(--rx,380deg)*2.5)) rotateY(calc(var(--ry,300deg)*2.4)) scale(1); filter:blur(0) brightness(1); }
+  }
+  /* Landing: squash-stretch pop with a decaying rotational wobble. */
+  .die-wrap.land{
+    animation:landpop .45s cubic-bezier(.18,.89,.32,1.28) var(--roll-delay,0s);
+    will-change:transform;
+  }
   @keyframes landpop{
-    0%{ transform:scale(1.35) translateY(-10px); }
-    55%{ transform:scale(0.9) translateY(3px); }
-    100%{ transform:scale(1) translateY(0); }
+    0%  { transform:scale(1.38) translateY(-6px) rotate(var(--wob,0deg)); }
+    55% { transform:scale(.92) translateY(2px) rotate(var(--wob,0deg)); }
+    75% { transform:scale(1.05) translateY(-1px) rotate(calc(var(--wob,0deg)*-.6)); }
+    92% { transform:scale(.99) translateY(0) rotate(calc(var(--wob,0deg)*.3)); }
+    100%{ transform:scale(1) translateY(0) rotate(0deg); }
   }
 
   /* Subtle "crossed the gate" pulse on player cards — fires when their total
@@ -734,13 +807,17 @@
     .confetti-piece,
     .bg-particles .mote,
     .die.tuck-clone,
-    .p-total.bonus-flash{
+    .p-total.bonus-flash,
+    .die-wrap.rolling,
+    .die-wrap.land,
+    .die.rolling{
       animation:none !important;
       transition:none !important;
     }
     .die.tuck-clone{ display:none !important; }
     .bg-particles{ display:none !important; }
     .confetti-piece{ display:none !important; }
+    /* Dice render still but sit with their static contact shadow — nothing moves */
   }
 </style>
 </head>
